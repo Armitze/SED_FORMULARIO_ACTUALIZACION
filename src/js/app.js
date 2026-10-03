@@ -454,9 +454,11 @@
   function guardarComo() {
     if (!G) return;
     if (!G.soportaArchivos()) { descargarCopia(); return; }
+    // Se propone el mismo archivo que está abierto (mismo nombre, misma carpeta): los datos quedan en él.
+    const actual = G.archivoActual();
     let eleccion;
     try {
-      eleccion = G.elegirArchivo(nombreArchivoHtml());
+      eleccion = G.elegirArchivo(actual.nombre || nombreArchivoHtml(), actual.carpeta);
     } catch (e) {
       avisarUnaVez('Guardado.elegirArchivo', e);
       return;
@@ -494,10 +496,32 @@
     }
   }
 
+  /**
+   * Explica qué pulsar y luego abre el cuadro de guardar del navegador (desde el clic en "Guardar").
+   * El navegador no deja que una página escriba sola en su archivo: hace falta elegirlo una vez.
+   */
+  async function guardarConExplicacion() {
+    if (!G) return;
+    if (!G.soportaArchivos()) { descargarCopia(); return; }
+    archivo.preguntado = true;
+    const actual = G.archivoActual();
+    const enEste = actual.nombre
+      ? 'En la ventana que se abre aparece este mismo archivo («' + actual.nombre + '»). Pulsa «Guardar» y luego «Sí» para reemplazarlo.'
+      : 'En la ventana que se abre, elige dónde guardar tu formulario y pulsa «Guardar».';
+    const r = await confirmar({
+      titulo: 'Guarda tu formulario',
+      mensaje: 'Así tus datos quedan dentro del archivo y no los pierdes si lo cierras. ' + enEste +
+        ' Después se guardará solo.' + (actual.nombre && !actual.carpeta ? ' Si no ves el archivo, busca la carpeta donde lo tienes.' : ''),
+      principal: 'Guardar', secundario: 'Ahora no', enfocar: 'principal',
+      nativo: { pregunta: '¿Guardar ahora?', si: 'principal' },
+    });
+    if (r === 'principal') guardarComo();
+  }
+
   /** El primer guardado se pide solo, apenas la persona avanza con algún dato (una vez por sesión). */
   function pedirPrimerGuardado() {
     if (!G || archivo.manejador || archivo.preguntado || !tieneDatos(estado.s) || !G.soportaArchivos() || !hayGesto()) return;
-    guardarComo();
+    guardarConExplicacion();
   }
 
   /** Al reabrir el archivo el navegador pide una vez permiso para seguir guardando en él. */
@@ -551,7 +575,7 @@
         break;
       default:
         agregarHijos(el, [h('span', { class: 'guardado-sin' }, 'Sin guardar'),
-          soporta ? boton('Guardar', guardarComo) : boton('Descargar copia', descargarCopia)]);
+          soporta ? boton('Guardar', guardarConExplicacion) : boton('Descargar copia', descargarCopia)]);
     }
     el.hidden = false;
   }

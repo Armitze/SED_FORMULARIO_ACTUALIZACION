@@ -70,13 +70,41 @@
 
   const soportaArchivos = () => typeof root.showSaveFilePicker === 'function';
 
-  /** "Guardar como": devuelve el manejador del archivo elegido. Lanza AbortError si la persona cancela. */
-  function elegirArchivo(nombreSugerido) {
-    // Se llama sin await previo: el navegador exige que venga directo de un clic.
-    return root.showSaveFilePicker({
+  // Carpetas en las que el navegador puede abrir directamente el cuadro de guardar (startIn).
+  const CARPETAS = [
+    [/^(downloads|descargas)$/, 'downloads'], [/^(desktop|escritorio)$/, 'desktop'],
+    [/^(documents|documentos|mis documentos)$/, 'documents'], [/^(pictures|imagenes|imágenes)$/, 'pictures'],
+    [/^(music|musica|música)$/, 'music'], [/^(videos|vídeos)$/, 'videos'],
+  ];
+
+  /**
+   * Archivo desde el que se abrió el formulario (solo file://): { nombre, carpeta } donde carpeta es la
+   * carpeta conocida que lo contiene ('downloads', 'desktop'…) o null. url: para pruebas.
+   */
+  function archivoActual(url) {
+    let u;
+    try { u = new URL(url || root.location.href); } catch (e) { return { nombre: '', carpeta: null }; }
+    if (u.protocol !== 'file:') return { nombre: '', carpeta: null };
+    const partes = decodeURIComponent(u.pathname).split('/').filter(Boolean);
+    const nombre = partes.length ? partes[partes.length - 1] : '';
+    const padre = partes.length > 1 ? partes[partes.length - 2].toLowerCase() : '';
+    const hallada = CARPETAS.find(([re]) => re.test(padre));
+    const esHtml = ['.html', '.htm'].some((ext) => nombre.toLowerCase().endsWith(ext));
+    return { nombre: esHtml ? nombre : '', carpeta: hallada ? hallada[1] : null };
+  }
+
+  /**
+   * "Guardar como": devuelve el manejador del archivo elegido. Lanza AbortError si la persona cancela.
+   * carpeta: carpeta conocida donde abrir el cuadro (la del archivo abierto, para guardar sobre él).
+   */
+  function elegirArchivo(nombreSugerido, carpeta) {
+    const opciones = {
       suggestedName: nombreSugerido || 'formulario-13-IF-016.html',
-      types: [{ description: 'Formulario 13-IF-016', accept: { 'text/html': ['.html'] } }],
-    });
+      types: [{ description: 'Formulario 13-IF-016', accept: { 'text/html': ['.html', '.htm'] } }],
+    };
+    if (carpeta) opciones.startIn = carpeta;
+    // Se llama sin await previo: el navegador exige que venga directo de un clic.
+    return root.showSaveFilePicker(opciones);
   }
 
   /** 'granted' | 'prompt' | 'denied'. pedir: solicita el permiso (necesita un gesto de la persona). */
@@ -180,7 +208,7 @@
   }
 
   const Guardado = {
-    ID_BLOQUE, capturar, leerEmbebido, html, jsonSeguro, soportaArchivos, elegirArchivo, permiso, escribir, descargar,
+    ID_BLOQUE, capturar, leerEmbebido, html, jsonSeguro, soportaArchivos, archivoActual, elegirArchivo, permiso, escribir, descargar,
     recordarArchivo, archivoRecordado, guardarPendiente, leerPendiente, borrarPendiente, nuevoId,
     _reiniciarPlantilla: () => { plantilla = null; },
   };

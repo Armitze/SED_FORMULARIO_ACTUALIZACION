@@ -69,3 +69,16 @@ describe('Guardado: respaldo en el navegador', () => {
     assert.notEqual(Guardado.nuevoId(), Guardado.nuevoId());
   });
 });
+
+describe('Guardado.archivoActual', () => {
+  test('nombre y carpeta conocida del archivo abierto (para guardar sobre él)', () => {
+    assert.deepEqual(Guardado.archivoActual('file:///C:/Users/Ana/Downloads/formulario-13-IF-016.html'),
+      { nombre: 'formulario-13-IF-016.html', carpeta: 'downloads' });
+    assert.deepEqual(Guardado.archivoActual('file:///C:/Users/Ana/OneDrive/Escritorio/13-IF-016_PRUEBA%20ANA.html'),
+      { nombre: '13-IF-016_PRUEBA ANA.html', carpeta: 'desktop' });
+    assert.deepEqual(Guardado.archivoActual('file:///C:/Users/Ana/Documentos/form.htm'), { nombre: 'form.htm', carpeta: 'documents' });
+    assert.deepEqual(Guardado.archivoActual('file:///C:/Users/Ana/Documents/SED/form.html'), { nombre: 'form.html', carpeta: null });
+    assert.deepEqual(Guardado.archivoActual('http://localhost:8765/src/index.html'), { nombre: '', carpeta: null });
+    assert.deepEqual(Guardado.archivoActual('file:///C:/Users/Ana/Descargas/x.pdf'), { nombre: '', carpeta: 'downloads' });
+  });
+});
