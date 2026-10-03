@@ -1,0 +1,130 @@
+{
+  "tipo": "RIT",
+  "ok": true,
+  "campos": {
+    "actividadRit": {
+      "valor": "4644",
+      "etiqueta": "4644 — Comercio al por mayor de aparatos y equipo de uso doméstico",
+      "origen": "RIT · Actividad 1",
+      "confianza": "alta"
+    }
+  },
+  "extra": {
+    "tipoDetectado": "RIT",
+    "formato": "RIT-SHD v2.02",
+    "paginasRit": [
+      1,
+      2
+    ],
+    "contribuyente": {
+      "tipoDoc": "NIT",
+      "tipoDocImpreso": "N.I.T.",
+      "tipoDocumentoCatalogo": null,
+      "numero": "900365660",
+      "nombre": "PROVEER INSTITUCIONAL S.A.S",
+      "dvCalculado": "2"
+    },
+    "identificacion": "900365660",
+    "direccion": "CALLE 8 10 20 LA POPA",
+    "telefono": "3000000001",
+    "emailImpreso": "LICITACIONES@PROVEER.",
+    "emailRecortado": true,
+    "emailSiValido": null,
+    "ciudad": "DOSQUEBRADAS",
+    "departamento": "RISARALDA",
+    "departamentoCatalogo": "Risaralda",
+    "municipioCatalogo": "DOSQUEBRADAS",
+    "naturalezaJuridica": "PERSONA JURIDICA",
+    "esPersonaNatural": false,
+    "regimen": "COMUN",
+    "regimenNormalizado": "COMUN",
+    "regimenConfianza": "baja",
+    "regimenFechaDesde": "2010-06-24",
+    "matriculaMercantil": null,
+    "numEstablecimientos": 0,
+    "fechaCertificado": "2024-02-19",
+    "fechaInscripcion": "2018-02-28",
+    "fechaInscripcionEsMigracion": true,
+    "fechaInicioActividades": "2019-10-10",
+    "fechaCese": "NO",
+    "posibleEdicion": false,
+    "actividades": [
+      {
+        "orden": 1,
+        "codigo": "4644",
+        "codigoImpreso": "4644",
+        "descripcionImpresa": "Comercio al por mayor de aparatos y equipo de uso doméstico",
+        "descripcion": "Comercio al por mayor de aparatos y equipo de uso doméstico",
+        "principal": true,
+        "enCatalogo": true,
+        "descripcionCatalogo": "Comercio al por mayor de aparatos y equipo de uso doméstico",
+        "tarifa": 11.04,
+        "agrupacion": 204,
+        "codigoFormulario": "4644",
+        "descripcionCoincide": true
+      },
+      {
+        "orden": 2,
+        "codigo": "46491",
+        "codigoImpreso": "46491",
+        "descripcionImpresa": "Comercio al por mayor de otros utensilios domésticos n.c.p. (excepto joyas)",
+        "descripcion": "Comercio al por mayor de otros utensilios domésticos n.c.p. (excepto joyas)",
+        "principal": false,
+        "enCatalogo": true,
+        "descripcionCatalogo": "Comercio al por mayor de otros utensilios domésticos n.c.p. (excepto joyas)",
+        "tarifa": 11.04,
+        "agrupacion": 204,
+        "codigoFormulario": "46491",
+        "descripcionCoincide": true
+      },
+      {
+        "orden": 3,
+        "codigo": "47111",
+        "codigoImpreso": "47111",
+        "descripcionImpresa": "Comercio al por menor en establecimientos no especializados con surtido compuesto principalmente por alimentos, bebidas no alcohólicas o tabaco (excepto cigarrillos)",
+        "descripcion": "Comercio al por menor en establecimientos no especializados con surtido compuesto principalmente por alimentos, bebidas no alcohólicas o tabaco (excepto cigarrillos)",
+        "principal": false,
+        "enCatalogo": true,
+        "descripcionCatalogo": "Comercio al por menor en establecimientos no especializados con surtido compuesto principalmente por alimentos, bebidas no alcohólicas o tabaco (excepto cigarrillos)",
+        "tarifa": 4.14,
+        "agrupacion": 201,
+        "codigoFormulario": "47111",
+        "descripcionCoincide": true
+      },
+      {
+        "orden": 4,
+        "codigo": "47191",
+        "codigoImpreso": "47191",
+        "descripcionImpresa": "Comercio al por menor en establecimientos no especializados, con surtido compuesto principalmente por productos de bebidas alcohólicas y cigarrillos",
+        "descripcion": "Comercio al por menor en establecimientos no especializados, con surtido compuesto principalmente por productos de bebidas alcohólicas y cigarrillos",
+        "principal": false,
+        "enCatalogo": true,
+        "descripcionCatalogo": "Comercio al por menor en establecimientos no especializados, con surtido compuesto principalmente por productos de bebidas alcohólicas y cigarrillos",
+        "tarifa": 11.04,
+        "agrupacion": 204,
+        "codigoFormulario": "47191",
+        "descripcionCoincide": true
+      },
+      {
+        "orden": 5,
+        "codigo": "4722",
+        "codigoImpreso": "4722",
+        "descripcionImpresa": "Comercio al por menor de leche, productos lácteos y huevos, en establecimientos especializados",
+        "descripcion": "Comercio al por menor de leche, productos lácteos y huevos, en establecimientos especializados",
+        "principal": false,
+        "enCatalogo": true,
+        "descripcionCatalogo": "Comercio al por menor de leche, productos lácteos y huevos, en establecimientos especializados",
+        "tarifa": 4.14,
+        "agrupacion": 201,
+        "codigoFormulario": "4722",
+        "descripcionCoincide": true
+      }
+    ],
+    "diasDesdeExpedicion": 11,
+    "tarifa": 11.04,
+    "agrupacion": 204
+  },
+  "avisos": [
+    "Este RIT es de una persona jurídica (PROVEER INSTITUCIONAL S.A.S). El formulario 13-IF-016 es para personas naturales: verifica que subiste tu propio RIT."
+  ]
+}

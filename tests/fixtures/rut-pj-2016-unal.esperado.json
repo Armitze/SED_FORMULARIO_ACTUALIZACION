@@ -1,0 +1,176 @@
+{
+  "tipo": "RUT",
+  "ok": false,
+  "campos": {},
+  "extra": {
+    "paginas": {
+      "total": 1,
+      "principal": 1,
+      "rut": [
+        {
+          "pagina": 1,
+          "hoja": 1
+        }
+      ]
+    },
+    "esPersonaJuridica": true,
+    "esPersonaNatural": false,
+    "tipoContribuyente": {
+      "codigo": "1",
+      "descripcion": "Persona jurídica"
+    },
+    "nitLeido": "899999063",
+    "dvLeido": "3",
+    "dvCalculado": "3",
+    "nitIgualCedula": null,
+    "tipoDocumento": null,
+    "numeroIdentificacion": "",
+    "razonSocial": "UNIVERSIDAD NACIONAL DE COLOMBIA",
+    "nombreComercial": "UNIVERSIDAD NACIONAL DE COLOMBIA",
+    "sigla": "U.N.",
+    "fechaExpedicion": "",
+    "lugarExpedicion": null,
+    "ubicacion": {
+      "pais": {
+        "codigo": "169",
+        "nombre": "COLOMBIA"
+      },
+      "departamento": {
+        "codigo": "11",
+        "nombre": "Bogotá D.C"
+      },
+      "municipio": {
+        "codigo": "001",
+        "nombre": "BOGOTÁ"
+      },
+      "codigoDane": "11001",
+      "codigoPostal": "14490",
+      "codigoPostalEsApartadoAereo": true
+    },
+    "telefonos": [
+      {
+        "casilla": 44,
+        "numero": "3165598",
+        "tipo": "fijo7"
+      },
+      {
+        "casilla": 45,
+        "numero": "3165000",
+        "tipo": "fijo7"
+      }
+    ],
+    "responsabilidades": [
+      {
+        "codigo": "06",
+        "descripcion": "Ingresos y patrimonio"
+      },
+      {
+        "codigo": "07",
+        "descripcion": "Retención en la fuente a título de renta"
+      },
+      {
+        "codigo": "08",
+        "descripcion": "Retención timbre nacional"
+      },
+      {
+        "codigo": "09",
+        "descripcion": "Retención en la fuente en el impuesto sobre las ventas"
+      },
+      {
+        "codigo": "10",
+        "descripcion": "Obligado aduanero"
+      },
+      {
+        "codigo": "13",
+        "descripcion": "Gran contribuyente"
+      },
+      {
+        "codigo": "14",
+        "descripcion": "Informante de exógena"
+      },
+      {
+        "codigo": "42",
+        "descripcion": "Obligado a llevar contabilidad"
+      }
+    ],
+    "responsabilidadesConfiables": true,
+    "actividades": {
+      "principal": {
+        "codigo": "8544",
+        "descripcion": "Educación de universidades.",
+        "fechaInicio": "1968-01-02"
+      },
+      "secundaria": null,
+      "otras": [],
+      "ocupacion": "",
+      "numeroEstablecimientos": "13"
+    },
+    "fechaGeneracion": "2016-08-11",
+    "horaGeneracion": "11:19:41",
+    "fecha61": "2016-06-24",
+    "numeroFormulario": "14376977148",
+    "concepto": {
+      "codigo": "13",
+      "descripcion": "Actualización de oficio"
+    },
+    "seccional": {
+      "codigo": "31",
+      "nombre": "Impuestos de Grandes Contribuyentes"
+    },
+    "sugerencias": {
+      "declaranteRenta": false,
+      "regimenSimple": false
+    },
+    "datosPersonaJuridica": {
+      "nit": {
+        "valor": "899999063",
+        "origen": "Casilla 5",
+        "confianza": "baja"
+      },
+      "dv": {
+        "valor": "3",
+        "origen": "Casilla 6",
+        "confianza": "baja"
+      },
+      "direccion": {
+        "valor": "CR 45 26 85 OF 481 ED URIEL GUTIERREZ",
+        "origen": "Casilla 41",
+        "confianza": "baja"
+      },
+      "pais": {
+        "valor": "COLOMBIA",
+        "origen": "Casilla 38",
+        "confianza": "baja"
+      },
+      "departamento": {
+        "valor": "Bogotá D.C",
+        "origen": "Casilla 39",
+        "confianza": "baja"
+      },
+      "municipio": {
+        "valor": "BOGOTÁ",
+        "origen": "Casilla 40",
+        "confianza": "baja"
+      },
+      "email": {
+        "valor": "divnacc_nal@unal.edu.co",
+        "origen": "Casilla 42",
+        "confianza": "baja"
+      },
+      "telefono1": {
+        "valor": "3165598",
+        "origen": "Casilla 44",
+        "confianza": "baja"
+      },
+      "actividadRut": {
+        "valor": "8544",
+        "origen": "Casilla 46",
+        "confianza": "baja",
+        "etiqueta": "8544 — Educación de universidades."
+      }
+    }
+  },
+  "avisos": [
+    "Este RUT es de una persona jurídica (empresa o entidad) y este formulario es solo para personas naturales, así que no tomamos ningún dato de él. Sube tu RUT personal o llena el formulario a mano."
+  ]
+}

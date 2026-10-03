@@ -1,0 +1,59 @@
+{
+  "tipo": "RUT",
+  "ok": false,
+  "campos": {},
+  "extra": {
+    "paginas": {
+      "total": 1,
+      "principal": 1,
+      "rut": [
+        {
+          "pagina": 1,
+          "hoja": 1
+        }
+      ]
+    },
+    "esPersonaJuridica": false,
+    "esPersonaNatural": false,
+    "tipoContribuyente": null,
+    "nitLeido": "",
+    "dvLeido": "",
+    "dvCalculado": "",
+    "nitIgualCedula": null,
+    "tipoDocumento": null,
+    "numeroIdentificacion": "",
+    "razonSocial": "",
+    "nombreComercial": "",
+    "sigla": "",
+    "fechaExpedicion": "",
+    "lugarExpedicion": null,
+    "ubicacion": {
+      "pais": null,
+      "departamento": null,
+      "municipio": null,
+      "codigoDane": "",
+      "codigoPostal": "",
+      "codigoPostalEsApartadoAereo": false
+    },
+    "telefonos": [],
+    "responsabilidades": [],
+    "responsabilidadesConfiables": false,
+    "actividades": {
+      "principal": null,
+      "secundaria": null,
+      "otras": [],
+      "ocupacion": "",
+      "numeroEstablecimientos": ""
+    },
+    "fechaGeneracion": "",
+    "horaGeneracion": "",
+    "fecha61": "",
+    "numeroFormulario": "",
+    "concepto": null,
+    "seccional": null,
+    "sugerencias": {}
+  },
+  "avisos": [
+    "Este PDF es el formulario del RUT sin diligenciar (no trae NIT ni nombres). Descarga la copia de tu RUT desde el portal de la DIAN (servicios en línea MUISCA, opción «Copia del RUT») y súbela."
+  ]
+}

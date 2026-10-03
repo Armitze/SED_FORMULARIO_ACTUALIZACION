@@ -1,0 +1,214 @@
+{
+  "tipo": "RUT",
+  "ok": true,
+  "campos": {
+    "nit": {
+      "valor": "87654321",
+      "origen": "Casilla 5",
+      "confianza": "alta"
+    },
+    "dv": {
+      "valor": "2",
+      "origen": "Casilla 6",
+      "confianza": "alta"
+    },
+    "tipoDocumento": {
+      "valor": "Cédula de ciudadanía ",
+      "origen": "Casilla 25",
+      "confianza": "alta",
+      "etiqueta": "Cédula de ciudadanía"
+    },
+    "numeroId": {
+      "valor": "87654321",
+      "origen": "Casilla 26",
+      "confianza": "alta"
+    },
+    "primerApellido": {
+      "valor": "FICTICIO",
+      "origen": "Casilla 31",
+      "confianza": "alta"
+    },
+    "segundoApellido": {
+      "valor": "DE LA PRUEBA",
+      "origen": "Casilla 32",
+      "confianza": "alta"
+    },
+    "primerNombre": {
+      "valor": "JUAN",
+      "origen": "Casilla 33",
+      "confianza": "alta"
+    },
+    "otrosNombres": {
+      "valor": "CARLOS",
+      "origen": "Casilla 34",
+      "confianza": "alta"
+    },
+    "direccion": {
+      "valor": "KR 15 20 35 AP 101 BRR EL EJEMPLO",
+      "origen": "Casilla 41",
+      "confianza": "alta"
+    },
+    "pais": {
+      "valor": "COLOMBIA",
+      "origen": "Casilla 38",
+      "confianza": "alta"
+    },
+    "departamento": {
+      "valor": "Antioquia",
+      "origen": "Casilla 39",
+      "confianza": "alta"
+    },
+    "municipio": {
+      "valor": "MEDELLÍN",
+      "origen": "Casilla 40",
+      "confianza": "alta"
+    },
+    "email": {
+      "valor": "juan.ficticio@example.org",
+      "origen": "Casilla 42",
+      "confianza": "alta"
+    },
+    "telefono2": {
+      "valor": "3109876543",
+      "origen": "Casilla 45",
+      "confianza": "alta"
+    },
+    "telefono1": {
+      "valor": "2345678",
+      "origen": "Casilla 44",
+      "confianza": "media"
+    },
+    "actividadRut": {
+      "valor": "8513",
+      "origen": "Casilla 46",
+      "confianza": "alta",
+      "etiqueta": "8513 — Educación básica primaria."
+    },
+    "regimenIva": {
+      "valor": "NO RESPONSABLE IVA",
+      "origen": "Casilla 53 (código 49)",
+      "confianza": "media"
+    },
+    "c3": {
+      "valor": "NO",
+      "origen": "Casilla 53 (sin código 47)",
+      "confianza": "media",
+      "etiqueta": "No — tu RUT no tiene la responsabilidad 47 (Régimen Simple de Tributación)"
+    }
+  },
+  "extra": {
+    "paginas": {
+      "total": 1,
+      "principal": 1,
+      "rut": [
+        {
+          "pagina": 1,
+          "hoja": 1
+        }
+      ]
+    },
+    "esPersonaJuridica": false,
+    "esPersonaNatural": true,
+    "tipoContribuyente": {
+      "codigo": "2",
+      "descripcion": "Persona natural o sucesión ilíquida"
+    },
+    "nitLeido": "87654321",
+    "dvLeido": "2",
+    "dvCalculado": "2",
+    "nitIgualCedula": true,
+    "tipoDocumento": {
+      "codigo": "13",
+      "descripcion": "Cédula de ciudadanía"
+    },
+    "numeroIdentificacion": "87654321",
+    "nombreCompleto": "FICTICIO DE LA PRUEBA JUAN CARLOS",
+    "razonSocial": "",
+    "nombreComercial": "",
+    "sigla": "",
+    "fechaExpedicion": "1995-06-20",
+    "lugarExpedicion": {
+      "pais": "COLOMBIA",
+      "departamento": "Antioquia",
+      "municipio": "MEDELLÍN",
+      "codigoPais": "169",
+      "codigoDepartamento": "05",
+      "codigoMunicipio": "001"
+    },
+    "ubicacion": {
+      "pais": {
+        "codigo": "169",
+        "nombre": "COLOMBIA"
+      },
+      "departamento": {
+        "codigo": "05",
+        "nombre": "Antioquia"
+      },
+      "municipio": {
+        "codigo": "001",
+        "nombre": "MEDELLÍN"
+      },
+      "codigoDane": "05001",
+      "codigoPostal": "",
+      "codigoPostalEsApartadoAereo": false
+    },
+    "telefonos": [
+      {
+        "casilla": 44,
+        "numero": "2345678",
+        "tipo": "fijo7"
+      },
+      {
+        "casilla": 45,
+        "numero": "3109876543",
+        "tipo": "celular"
+      }
+    ],
+    "responsabilidades": [
+      {
+        "codigo": "05",
+        "descripcion": "Impuesto sobre la renta y complementarios – régimen ordinario"
+      },
+      {
+        "codigo": "49",
+        "descripcion": "No responsable de IVA"
+      }
+    ],
+    "responsabilidadesConfiables": true,
+    "actividades": {
+      "principal": {
+        "codigo": "8513",
+        "descripcion": "Educación básica primaria.",
+        "fechaInicio": "2015-04-01"
+      },
+      "secundaria": {
+        "codigo": "8512",
+        "descripcion": "Educación preescolar.",
+        "fechaInicio": "2018-09-01"
+      },
+      "otras": [],
+      "ocupacion": "",
+      "numeroEstablecimientos": ""
+    },
+    "fechaGeneracion": "2021-03-15",
+    "horaGeneracion": "22:20:30",
+    "fecha61": "2020-06-15",
+    "numeroFormulario": "14002025070",
+    "concepto": {
+      "codigo": "02",
+      "descripcion": "Actualización"
+    },
+    "seccional": {
+      "codigo": "01",
+      "nombre": "Impuestos y Aduanas de Armenia"
+    },
+    "sugerencias": {
+      "declaranteRenta": true,
+      "regimenSimple": false
+    }
+  },
+  "avisos": [
+    "El teléfono fijo de tu RUT (casilla 44) tiene 7 dígitos (numeración anterior a 2021). El formulario pide 10 dígitos: antepón el indicativo 604 (quedaría 6042345678).",
+    "Tu RUT fue generado el 15/03/2021, hace más de un año. Verifica que tu RUT esté actualizado: si algo cambió, descarga una copia reciente desde la DIAN."
+  ]
+}

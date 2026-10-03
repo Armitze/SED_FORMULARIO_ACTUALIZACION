@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="es-CO">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="Formulario 13-IF-016 de actualización de datos para contratistas personas naturales de la Secretaría de Educación de Bogotá, con lectura automática del RUT y el RIT.">
+  <title>Actualización de datos de contratistas · 13-IF-016</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="print.css">
+</head>
+<body>
+  <div class="app" id="app">
+    <header class="encabezado contenedor">
+      <div class="marca">
+        <img class="marca-logo" src="img/logo.png" alt="Alcaldía Mayor de Bogotá · Secretaría de Educación" width="122" height="134" onerror="this.remove()">
+        <p class="marca-texto">Secretaría de Educación de Bogotá<span class="marca-sep" aria-hidden="true"> · </span><br class="marca-br">Oficina de Tesorería y Contabilidad</p>
+      </div>
+      <h1 class="titulo">Actualización de datos de contratistas</h1>
+      <p class="subtitulo">Formato 13-IF-016 · Personas naturales — honorarios y servicios personales (art. 103 ET)</p>
+    </header>
+
+    <main class="contenedor" id="principal">
+      <div class="tarjeta" id="tarjeta">
+        <nav class="stepper" id="stepper" aria-label="Pasos del formulario"></nav>
+        <div id="paso" class="paso"></div>
+        <noscript>
+          <p class="aviso-noscript">Este formulario necesita JavaScript. Actívalo en tu navegador para continuar.</p>
+        </noscript>
+      </div>
+    </main>
+
+    <footer class="pie contenedor">
+      <p>Formato 13-IF-016 · Versión 1 · Secretaría de Educación de Bogotá</p>
+      <p>Tus datos se guardan dentro del archivo de tu formulario. <button type="button" class="enlace enlace--discreto" id="btn-reiniciar">Empezar de nuevo</button></p>
+      <p class="pie-version" id="pie-version"></p>
+    </footer>
+  </div>
+
+  <!-- Documento imprimible: lo arma Imprimir.render() y solo se ve al imprimir (print.css). -->
+  <div id="impresion" aria-hidden="true"></div>
+
+  <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+  <dialog class="dialogo" id="dialogo" aria-labelledby="dialogo-titulo"></dialog>
+  <!-- Datos del contratista guardados en este mismo archivo (vacío = formulario en limpio). Lo escribe js/guardado.js. -->
+  <script type="application/json" id="datos-formulario"></script>
+
+  <script src="../node_modules/pdfjs-dist/build/pdf.min.js"></script>
+  <script src="../node_modules/jszip/dist/jszip.min.js"></script>
+  <script src="js/catalogos.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/schema.js"></script>
+  <script src="js/calc.js"></script>
+  <script src="js/pdftext.js"></script>
+  <script src="js/parser-rut.js"></script>
+  <script src="js/parser-rit.js"></script>
+  <script src="js/secop.js"></script>
+  <script src="js/guardado.js"></script>
+  <script src="js/export-excel.js"></script>
+  <script src="js/print.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

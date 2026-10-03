@@ -1,0 +1,127 @@
+{
+  "tipo": "RIT",
+  "ok": true,
+  "campos": {},
+  "extra": {
+    "tipoDetectado": "RIT",
+    "formato": "RIT-SHD v2.02",
+    "paginasRit": [
+      1
+    ],
+    "contribuyente": {
+      "tipoDoc": "NIT",
+      "tipoDocImpreso": "N.I.T.",
+      "tipoDocumentoCatalogo": null,
+      "numero": "899999230",
+      "nombre": "UNIVERSIDAD DISTRITAL FRANCISCO JOSE DE CALDAS",
+      "dvCalculado": "7"
+    },
+    "identificacion": "899999230",
+    "direccion": "KR 7 40 B 53",
+    "telefono": "3406823",
+    "emailImpreso": "tesoreria@udistrital.edu.co",
+    "emailRecortado": false,
+    "emailSiValido": "tesoreria@udistrital.edu.co",
+    "ciudad": "BOGOTÁ DC",
+    "departamento": "BOGOTÁ, D.C.",
+    "departamentoCatalogo": "Bogotá D.C",
+    "municipioCatalogo": "BOGOTÁ",
+    "naturalezaJuridica": "PERSONA JURIDICA",
+    "esPersonaNatural": false,
+    "regimen": "COMUN",
+    "regimenNormalizado": "COMUN",
+    "regimenConfianza": "baja",
+    "regimenFechaDesde": null,
+    "matriculaMercantil": null,
+    "numEstablecimientos": 0,
+    "fechaCertificado": "2022-07-19",
+    "fechaInscripcion": "2018-02-28",
+    "fechaInscripcionEsMigracion": true,
+    "fechaInicioActividades": "2004-12-15",
+    "fechaCese": "NO",
+    "posibleEdicion": false,
+    "actividades": [
+      {
+        "orden": 1,
+        "codigo": "71101",
+        "codigoImpreso": "71101",
+        "descripcionImpresa": "Actividades de arquitectura e ingeniería y otras actividades conexas de consultoría técnica",
+        "descripcion": "Actividades de arquitectura e ingeniería y otras actividades conexas de consultoría técnica",
+        "principal": true,
+        "enCatalogo": false,
+        "descripcionCatalogo": null,
+        "tarifa": null,
+        "agrupacion": null,
+        "codigoFormulario": null,
+        "candidatos": [
+          {
+            "codigo": "71111",
+            "descripcion": "Actividades de arquitectura",
+            "tarifa": 8.66,
+            "agrupacion": 302
+          },
+          {
+            "codigo": "71112",
+            "descripcion": "Actividades de arquitectura en ejercicio de una profesión liberal",
+            "tarifa": 7.66,
+            "agrupacion": 304
+          },
+          {
+            "codigo": "71121",
+            "descripcion": "Actividades de ingeniería y otras actividades conexas de consultoría técnica",
+            "tarifa": 8.66,
+            "agrupacion": 302
+          },
+          {
+            "codigo": "71122",
+            "descripcion": "Actividades de ingeniería y otras actividades conexas de consultoría técnica en ejercicio de una profesión liberal",
+            "tarifa": 7.66,
+            "agrupacion": 304
+          }
+        ]
+      },
+      {
+        "orden": 2,
+        "codigo": "8544",
+        "codigoImpreso": "8544",
+        "descripcionImpresa": "Educación de universidades",
+        "descripcion": "Educación de universidades",
+        "principal": false,
+        "enCatalogo": true,
+        "descripcionCatalogo": "Educación de universidades",
+        "tarifa": 9.66,
+        "agrupacion": 304,
+        "codigoFormulario": "8544",
+        "descripcionCoincide": true
+      },
+      {
+        "orden": 3,
+        "codigo": "85591",
+        "codigoImpreso": "85511",
+        "descripcionImpresa": "Educación académica no formal (excepto programas de educación básica primaria, básica secundaria y media no gradual con fines de validación)",
+        "descripcion": "Educación académica no formal (excepto programas de educación básica primaria, básica secundaria y media no gradual con fines de validación)",
+        "principal": false,
+        "enCatalogo": false,
+        "descripcionCatalogo": null,
+        "tarifa": 9.66,
+        "agrupacion": 304,
+        "codigoFormulario": "85591",
+        "candidatos": [
+          {
+            "codigo": "85591",
+            "descripcion": "Educación académica no formal (excepto programas de educación básica primaria, básica secundaria y media no gradual con fines de validación)",
+            "tarifa": 9.66,
+            "agrupacion": 304
+          }
+        ],
+        "sugerido": "85591"
+      }
+    ],
+    "diasDesdeExpedicion": 1535
+  },
+  "avisos": [
+    "Este RIT es de una persona jurídica (UNIVERSIDAD DISTRITAL FRANCISCO JOSE DE CALDAS). El formulario 13-IF-016 es para personas naturales: verifica que subiste tu propio RIT.",
+    "Tu certificado RIT es del 19/07/2022 (hace 1535 días). Si cambiaste algo en tu RIT desde entonces, descarga uno reciente en la Oficina Virtual de la Secretaría Distrital de Hacienda (Mi RIT → Certificado RIT).",
+    "La actividad principal de tu RIT (71101) no está en la tabla de actividades ICA del formulario. Elige la que corresponda en el paso «Información tributaria»; opciones posibles: 71111, 71112, 71121, 71122."
+  ]
+}

@@ -1,0 +1,86 @@
+{
+  "tipo": "RIT",
+  "ok": true,
+  "campos": {
+    "actividadRit": {
+      "valor": "74902",
+      "etiqueta": "74902 — Otras actividades profesionales, científicas y técnicas n.c.p. en el ejercicio de una profesión liberal",
+      "origen": "RIT · Actividad 1",
+      "confianza": "alta"
+    }
+  },
+  "extra": {
+    "tipoDetectado": "RIT",
+    "formato": "RIT-SHD v2.02",
+    "paginasRit": [
+      1
+    ],
+    "contribuyente": {
+      "tipoDoc": "CC",
+      "tipoDocImpreso": "C.C.",
+      "tipoDocumentoCatalogo": "Cédula de ciudadanía ",
+      "numero": "52345678",
+      "nombre": "PEREZ GOMEZ MARIA JOSE"
+    },
+    "identificacion": "52345678",
+    "direccion": "CL 1 2 3 AP 401",
+    "telefono": "3000000000",
+    "emailImpreso": "usuario.ejemplo@correo",
+    "emailRecortado": true,
+    "emailSiValido": null,
+    "ciudad": "BOGOTÁ DC",
+    "departamento": "BOGOTÁ, D.C.",
+    "departamentoCatalogo": "Bogotá D.C",
+    "municipioCatalogo": "BOGOTÁ",
+    "naturalezaJuridica": "PERSONA NATURAL",
+    "esPersonaNatural": true,
+    "regimen": "SIMPLIFICADO",
+    "regimenNormalizado": "PREFERENCIAL",
+    "regimenConfianza": "baja",
+    "regimenFechaDesde": "2020-01-01",
+    "matriculaMercantil": null,
+    "numEstablecimientos": 0,
+    "fechaCertificado": "2020-08-18",
+    "fechaInscripcion": "2018-02-28",
+    "fechaInscripcionEsMigracion": true,
+    "fechaInicioActividades": "1997-09-01",
+    "fechaCese": "NO",
+    "posibleEdicion": false,
+    "actividades": [
+      {
+        "orden": 1,
+        "codigo": "74902",
+        "codigoImpreso": "74902",
+        "descripcionImpresa": "Otras actividades profesionales, científicas y técnicas n.c.p. en el ejercicio de una profesión liberal",
+        "descripcion": "Otras actividades profesionales, científicas y técnicas n.c.p. en el ejercicio de una profesión liberal",
+        "principal": true,
+        "enCatalogo": true,
+        "descripcionCatalogo": "Otras actividades profesionales, científicas y técnicas n.c.p. en el ejercicio de una profesión liberal",
+        "tarifa": 7.66,
+        "agrupacion": 304,
+        "codigoFormulario": "74902",
+        "descripcionCoincide": true
+      },
+      {
+        "orden": 2,
+        "codigo": "8559",
+        "codigoImpreso": "8559",
+        "descripcionImpresa": "Otros tipos de educación n.c.p.",
+        "descripcion": "Otros tipos de educación n.c.p.",
+        "principal": false,
+        "enCatalogo": true,
+        "descripcionCatalogo": "Otros tipos de educación n.c.p.",
+        "tarifa": 9.66,
+        "agrupacion": 304,
+        "codigoFormulario": "8559",
+        "descripcionCoincide": true
+      }
+    ],
+    "diasDesdeExpedicion": 14,
+    "tarifa": 7.66,
+    "agrupacion": 304
+  },
+  "avisos": [
+    "Tu RIT muestra el régimen SIMPLIFICADO del ICA. Ese dato puede estar desactualizado y no es el régimen de IVA del formulario: ese lo tomamos de tu RUT."
+  ]
+}

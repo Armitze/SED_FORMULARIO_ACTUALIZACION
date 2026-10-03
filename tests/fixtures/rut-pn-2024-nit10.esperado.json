@@ -1,0 +1,202 @@
+{
+  "tipo": "RUT",
+  "ok": true,
+  "campos": {
+    "nit": {
+      "valor": "1234567890",
+      "origen": "Casilla 5",
+      "confianza": "alta"
+    },
+    "dv": {
+      "valor": "2",
+      "origen": "Casilla 6",
+      "confianza": "alta"
+    },
+    "tipoDocumento": {
+      "valor": "Cédula de ciudadanía ",
+      "origen": "Casilla 25",
+      "confianza": "alta",
+      "etiqueta": "Cédula de ciudadanía"
+    },
+    "numeroId": {
+      "valor": "1234567890",
+      "origen": "Casilla 26",
+      "confianza": "alta"
+    },
+    "primerApellido": {
+      "valor": "DEMO",
+      "origen": "Casilla 31",
+      "confianza": "alta"
+    },
+    "segundoApellido": {
+      "valor": "ANONIMO",
+      "origen": "Casilla 32",
+      "confianza": "alta"
+    },
+    "primerNombre": {
+      "valor": "PEDRO",
+      "origen": "Casilla 33",
+      "confianza": "alta"
+    },
+    "otrosNombres": {
+      "valor": "PABLO",
+      "origen": "Casilla 34",
+      "confianza": "alta"
+    },
+    "direccion": {
+      "valor": "CR 50 SUR 40 45 BRR SAN DEMO",
+      "origen": "Casilla 41",
+      "confianza": "alta"
+    },
+    "pais": {
+      "valor": "COLOMBIA",
+      "origen": "Casilla 38",
+      "confianza": "alta"
+    },
+    "departamento": {
+      "valor": "Santander",
+      "origen": "Casilla 39",
+      "confianza": "alta"
+    },
+    "municipio": {
+      "valor": "BUCARAMANGA",
+      "origen": "Casilla 40",
+      "confianza": "alta"
+    },
+    "email": {
+      "valor": "pedro.demo@example.com",
+      "origen": "Casilla 42",
+      "confianza": "alta"
+    },
+    "telefono2": {
+      "valor": "3201112233",
+      "origen": "Casilla 44",
+      "confianza": "alta"
+    },
+    "telefono1": {
+      "valor": "0",
+      "origen": "Casilla 44/45 (sin teléfono fijo)",
+      "confianza": "media",
+      "etiqueta": "0 — tu RUT no registra teléfono fijo"
+    },
+    "actividadRut": {
+      "valor": "8299",
+      "origen": "Casilla 46",
+      "confianza": "alta",
+      "etiqueta": "8299 — Otras actividades de servicio de apoyo a las empresas n.c.p."
+    },
+    "regimenIva": {
+      "valor": "NO RESPONSABLE IVA",
+      "origen": "Casilla 53 (código 49)",
+      "confianza": "media"
+    },
+    "c3": {
+      "valor": "NO",
+      "origen": "Casilla 53 (sin código 47)",
+      "confianza": "media",
+      "etiqueta": "No — tu RUT no tiene la responsabilidad 47 (Régimen Simple de Tributación)"
+    }
+  },
+  "extra": {
+    "paginas": {
+      "total": 1,
+      "principal": 1,
+      "rut": [
+        {
+          "pagina": 1,
+          "hoja": 1
+        }
+      ]
+    },
+    "esPersonaJuridica": false,
+    "esPersonaNatural": true,
+    "tipoContribuyente": {
+      "codigo": "2",
+      "descripcion": "Persona natural o sucesión ilíquida"
+    },
+    "nitLeido": "1234567890",
+    "dvLeido": "2",
+    "dvCalculado": "2",
+    "nitIgualCedula": true,
+    "tipoDocumento": {
+      "codigo": "13",
+      "descripcion": "Cédula de ciudadanía"
+    },
+    "numeroIdentificacion": "1234567890",
+    "nombreCompleto": "DEMO ANONIMO PEDRO PABLO",
+    "razonSocial": "",
+    "nombreComercial": "",
+    "sigla": "",
+    "fechaExpedicion": "2008-09-15",
+    "lugarExpedicion": {
+      "pais": "COLOMBIA",
+      "departamento": "Santander",
+      "municipio": "BUCARAMANGA",
+      "codigoPais": "169",
+      "codigoDepartamento": "68",
+      "codigoMunicipio": "001"
+    },
+    "ubicacion": {
+      "pais": {
+        "codigo": "169",
+        "nombre": "COLOMBIA"
+      },
+      "departamento": {
+        "codigo": "68",
+        "nombre": "Santander"
+      },
+      "municipio": {
+        "codigo": "001",
+        "nombre": "BUCARAMANGA"
+      },
+      "codigoDane": "68001",
+      "codigoPostal": "",
+      "codigoPostalEsApartadoAereo": false
+    },
+    "telefonos": [
+      {
+        "casilla": 44,
+        "numero": "3201112233",
+        "tipo": "celular"
+      }
+    ],
+    "responsabilidades": [
+      {
+        "codigo": "49",
+        "descripcion": "No responsable de IVA"
+      }
+    ],
+    "responsabilidadesConfiables": true,
+    "actividades": {
+      "principal": {
+        "codigo": "8299",
+        "descripcion": "Otras actividades de servicio de apoyo a las empresas n.c.p.",
+        "fechaInicio": "2019-01-10"
+      },
+      "secundaria": null,
+      "otras": [],
+      "ocupacion": "",
+      "numeroEstablecimientos": ""
+    },
+    "fechaGeneracion": "2024-01-20",
+    "horaGeneracion": "09:10:11",
+    "fecha61": "2023-11-20",
+    "numeroFormulario": "14002025070",
+    "concepto": {
+      "codigo": "02",
+      "descripcion": "Actualización"
+    },
+    "seccional": {
+      "codigo": "06",
+      "nombre": "Impuestos de Cartagena"
+    },
+    "sugerencias": {
+      "declaranteRenta": false,
+      "regimenSimple": false
+    }
+  },
+  "avisos": [
+    "Tu RUT no registra teléfono fijo; dejamos 0 en Teléfono 1 como indica el formato. Cámbialo si tienes uno.",
+    "Tu RUT fue generado el 20/01/2024, hace más de un año. Verifica que tu RUT esté actualizado: si algo cambió, descarga una copia reciente desde la DIAN."
+  ]
+}

@@ -1,0 +1,315 @@
+/* Documento imprimible del formato 13-IF-016 (lo arma src/js/print.js dentro de #impresion).
+   En pantalla está oculto; al imprimir se oculta todo lo demás y solo se imprime este documento.
+   Puede enlazarse con o sin media="print". */
+
+@media screen {
+  #impresion { display: none !important; }
+}
+
+/* Sin margen de página: así el navegador no imprime su fecha, título y URL aunque la opción
+   "Encabezados y pies de página" esté activa. El margen lo da el relleno de cada hoja (9 mm × 10 mm),
+   que print.js tiene en cuenta al ajustar una hoja larga a una sola página. */
+@page {
+  size: letter portrait;
+  margin: 0;
+}
+
+@media print {
+  html, body {
+    background: #fff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  body > *:not(#impresion) { display: none !important; }
+  #impresion, #impresion[hidden] { display: block !important; }
+  .imp-hoja { padding: 9mm 10mm; }
+  /* Si alguien imprime sin pasar por el formulario y el documento aún no está armado. */
+  #impresion:empty::before {
+    content: "Para obtener el formulario usa el botón «Descargar PDF para firmar» en el paso Revisión.";
+    display: block;
+    padding: 20mm;
+    font: 12pt sans-serif;
+  }
+}
+
+/* ───────────── Documento ───────────── */
+
+#impresion {
+  --imp-borde: #222;
+  --imp-gris: #e6e6e6;
+  --imp-gris-texto: #3a3a3a;
+  color: #000;
+  background: #fff;
+  font-family: Calibri, Carlito, "Segoe UI", Arial, Helvetica, sans-serif;
+  font-size: 8.6pt;
+  line-height: 1.22;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+#impresion *,
+#impresion *::before,
+#impresion *::after { box-sizing: border-box; }
+
+#impresion p { margin: 0; }
+
+.imp-hoja {
+  width: 100%;
+  position: relative;
+}
+
+.imp-hoja + .imp-hoja {
+  break-before: page;
+  page-break-before: always;
+}
+
+/* Encabezado */
+.imp-encabezado {
+  display: grid;
+  grid-template-columns: 16mm 1fr 16mm;
+  align-items: center;
+  gap: 2mm;
+  padding-bottom: 1.2mm;
+  margin-bottom: 1mm;
+  border-bottom: 1.2pt solid var(--imp-borde);
+}
+.imp-logo img { display: block; width: 12.5mm; height: auto; }
+.imp-titulos { text-align: center; }
+.imp-entidad { font-size: 11pt; font-weight: 700; letter-spacing: .02em; }
+.imp-oficina { font-size: 8pt; font-weight: 700; margin-top: .2mm; }
+.imp-titulo { font-size: 7.8pt; font-weight: 700; margin-top: .6mm; }
+.imp-codigo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: 7pt;
+  color: var(--imp-gris-texto);
+}
+
+/* Secciones */
+.imp-seccion { margin-top: 1.1mm; break-inside: avoid; page-break-inside: avoid; }
+.imp-titulo-seccion {
+  margin: 0;
+  padding: .4mm 1.5mm;
+  font-size: 7.4pt;
+  font-weight: 700;
+  text-align: center;
+  background: var(--imp-gris);
+  border: .6pt solid var(--imp-borde);
+}
+.imp-subtitulo-seccion { display: block; font-size: 6.8pt; }
+
+/* Rejilla de 24 columnas: cada campo tiene rótulo pequeño arriba y valor abajo */
+.imp-fila {
+  display: grid;
+  grid-template-columns: repeat(24, minmax(0, 1fr));
+  border-left: .6pt solid var(--imp-borde);
+}
+.imp-campo {
+  min-width: 0;
+  padding: .25mm 1.1mm .4mm;
+  border-right: .6pt solid var(--imp-borde);
+  border-bottom: .6pt solid var(--imp-borde);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.imp-campo.imp-sin-borde { border-right-color: transparent; border-bottom-color: transparent; }
+.imp-rotulo {
+  display: block;
+  font-size: 6pt;
+  font-weight: 700;
+  color: var(--imp-gris-texto);
+  line-height: 1.08;
+}
+.imp-valor {
+  display: block;
+  min-height: 3.4mm;
+  font-size: 8.6pt;
+  line-height: 1.16;
+  overflow-wrap: anywhere;
+}
+/* Código de homologación (celdas sombreadas del Excel: tipo de documento DIAN, país, banco…). */
+.imp-cod {
+  float: right;
+  margin-left: 1mm;
+  padding: 0 .8mm;
+  border: .4pt solid #888;
+  background: var(--imp-gris);
+  font-size: 6.5pt;
+  line-height: 1.5;
+  color: var(--imp-gris-texto);
+}
+.imp-centro .imp-valor { text-align: center; }
+.imp-desc { display: block; font-size: 7.2pt; line-height: 1.12; margin-top: .3mm; }
+
+/* Casillas (cuenta, CIIU, RIT) */
+.imp-casillas { display: inline-flex; flex-wrap: nowrap; margin-top: .4mm; }
+.imp-casilla {
+  display: inline-block;
+  width: 3.55mm;
+  height: 3.9mm;
+  line-height: 3.9mm;
+  text-align: center;
+  font-size: 8.4pt;
+  border: .5pt solid var(--imp-borde);
+  border-left-width: 0;
+}
+.imp-casilla:first-child { border-left-width: .5pt; }
+.imp-con-casillas { justify-content: flex-start; }
+
+/* SI / NO */
+.imp-sino { display: inline-flex; align-items: center; gap: 1mm; font-size: 7.4pt; font-weight: 700; white-space: nowrap; }
+.imp-caja {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 4.2mm;
+  height: 3.5mm;
+  line-height: 1;
+  text-align: center;
+  font-size: 8.4pt;
+  border: .6pt solid var(--imp-borde);
+  margin-right: 1.2mm;
+}
+
+/* Preguntas C1–C4 */
+.imp-preguntas { border: .6pt solid var(--imp-borde); border-top: 0; }
+.imp-pregunta {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 1.5mm;
+  padding: .3mm 1.2mm;
+  border-bottom: .4pt solid #9a9a9a;
+  font-size: 7.5pt;
+}
+.imp-pregunta:last-child { border-bottom: 0; }
+.imp-pregunta-texto strong { font-weight: 700; }
+.imp-codificacion {
+  padding: .4mm 1.5mm;
+  border: .6pt solid var(--imp-borde);
+  border-top: 0;
+  text-align: center;
+  font-weight: 700;
+  font-size: 8.2pt;
+}
+.imp-codificacion .imp-rotulo { display: inline; margin-right: 1.5mm; }
+/* Lo que el Excel resalta en rojo (faltantes, IVA por cuantía, codificación a revisar). */
+.imp-alerta { border-width: 1.6pt; background: #d9d9d9; }
+.imp-alerta::before { content: "\26A0\00A0"; }
+
+/* Disminución de la base */
+.imp-certificados {
+  border: .6pt solid var(--imp-borde);
+  border-top: 0;
+  padding: .35mm 1.5mm;
+  font-size: 7.4pt;
+  font-weight: 700;
+  text-align: center;
+}
+.imp-nota { font-size: 6.4pt; font-weight: 400; margin-top: .3mm; }
+.imp-ahorros {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: .6pt solid var(--imp-borde);
+  border-top: 0;
+}
+.imp-ahorro { padding: .4mm 1.5mm .6mm; }
+.imp-ahorro + .imp-ahorro { border-left: .6pt solid var(--imp-borde); }
+.imp-ahorro-titulo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 7.4pt;
+  font-weight: 700;
+  margin-bottom: .2mm;
+}
+.imp-ahorro-fila {
+  display: grid;
+  grid-template-columns: 22mm 1fr;
+  align-items: baseline;
+  border-bottom: .4pt solid #9a9a9a;
+  min-height: 3.8mm;
+}
+.imp-ahorro-fila .imp-valor { min-height: 0; font-size: 8.4pt; }
+
+/* Certificación y firma */
+.imp-juramento {
+  border: .6pt solid var(--imp-borde);
+  border-top: 0;
+  padding: .8mm 2mm;
+  font-size: 6.9pt;
+  line-height: 1.2;
+  text-align: justify;
+}
+.imp-juramento p + p { margin-top: .7mm; }
+.imp-mensaje {
+  margin-top: .8mm;
+  padding: .5mm 2mm;
+  border: .6pt solid var(--imp-borde);
+  font-size: 7.2pt;
+  font-weight: 700;
+  text-align: center;
+}
+.imp-firma {
+  width: 82mm;
+  margin: 13mm auto 0;
+  text-align: center;
+  font-size: 8.4pt;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+.imp-firma-linea { border-top: .8pt solid var(--imp-borde); margin-bottom: .8mm; }
+.imp-firma-nombre { font-weight: 700; }
+
+/* Hoja de deducciones */
+.imp-bloque {
+  margin-top: 2mm;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+.imp-titulo-bloque {
+  margin: 0;
+  padding: .6mm 1.5mm;
+  font-size: 7.8pt;
+  font-weight: 700;
+  text-align: center;
+  background: var(--imp-gris);
+  border: .6pt solid var(--imp-borde);
+}
+.imp-titulo-bloque.imp-izq { text-align: left; }
+.imp-sub {
+  padding: .4mm 1.5mm;
+  font-size: 6.8pt;
+  font-weight: 700;
+  border: .6pt solid var(--imp-borde);
+  border-top: 0;
+}
+.imp-hoja-deducciones .imp-valor { min-height: 4.4mm; }
+.imp-declaracion {
+  margin-top: 3mm;
+  padding: 1.2mm 2mm;
+  border: .6pt solid var(--imp-borde);
+  font-size: 7.6pt;
+  text-align: center;
+  break-inside: avoid;
+}
+.imp-folios {
+  display: flex;
+  align-items: center;
+  gap: 3mm;
+  margin-top: 2.5mm;
+  font-size: 7.4pt;
+  font-weight: 700;
+}
+.imp-folios .imp-caja { width: 12mm; height: 5mm; line-height: 5mm; font-weight: 400; font-size: 9pt; }
+.imp-hoja-deducciones .imp-firma { margin-top: 16mm; }
+.imp-autorizacion {
+  margin-top: 4mm;
+  font-size: 6.4pt;
+  line-height: 1.25;
+  text-align: center;
+  color: #222;
+}
+.imp-autorizacion p + p { margin-top: .8mm; }

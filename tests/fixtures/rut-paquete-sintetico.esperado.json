@@ -1,0 +1,231 @@
+{
+  "tipo": "RUT",
+  "ok": true,
+  "campos": {
+    "nit": {
+      "valor": "12345678",
+      "origen": "Casilla 5",
+      "confianza": "alta"
+    },
+    "dv": {
+      "valor": "8",
+      "origen": "Casilla 6",
+      "confianza": "alta"
+    },
+    "tipoDocumento": {
+      "valor": "Cédula de ciudadanía ",
+      "origen": "Casilla 25",
+      "confianza": "alta",
+      "etiqueta": "Cédula de ciudadanía"
+    },
+    "numeroId": {
+      "valor": "12345678",
+      "origen": "Casilla 26",
+      "confianza": "alta"
+    },
+    "primerApellido": {
+      "valor": "PRUEBA",
+      "origen": "Casilla 31",
+      "confianza": "alta"
+    },
+    "segundoApellido": {
+      "valor": "EJEMPLO",
+      "origen": "Casilla 32",
+      "confianza": "alta"
+    },
+    "primerNombre": {
+      "valor": "ANA",
+      "origen": "Casilla 33",
+      "confianza": "alta"
+    },
+    "otrosNombres": {
+      "valor": "ISABEL",
+      "origen": "Casilla 34",
+      "confianza": "alta"
+    },
+    "direccion": {
+      "valor": "CL 26 68 90 BRR CENTRO DEMO",
+      "origen": "Casilla 41",
+      "confianza": "alta"
+    },
+    "pais": {
+      "valor": "COLOMBIA",
+      "origen": "Casilla 38",
+      "confianza": "alta"
+    },
+    "departamento": {
+      "valor": "Bogotá D.C",
+      "origen": "Casilla 39",
+      "confianza": "alta"
+    },
+    "municipio": {
+      "valor": "BOGOTÁ",
+      "origen": "Casilla 40",
+      "confianza": "alta"
+    },
+    "email": {
+      "valor": "ana.prueba@example.com",
+      "origen": "Casilla 42",
+      "confianza": "alta"
+    },
+    "telefono2": {
+      "valor": "3004445566",
+      "origen": "Casilla 44",
+      "confianza": "alta"
+    },
+    "telefono1": {
+      "valor": "0",
+      "origen": "Casilla 44/45 (sin teléfono fijo)",
+      "confianza": "media",
+      "etiqueta": "0 — tu RUT no registra teléfono fijo"
+    },
+    "actividadRut": {
+      "valor": "6920",
+      "origen": "Casilla 46",
+      "confianza": "alta",
+      "etiqueta": "6920 — Actividades de contabilidad, teneduría de libros, auditoría financiera y asesoría tributaria."
+    },
+    "regimenIva": {
+      "valor": "NO RESPONSABLE IVA",
+      "origen": "Casilla 53 (código 49)",
+      "confianza": "alta"
+    },
+    "c3": {
+      "valor": "NO",
+      "origen": "Casilla 53 (sin código 47)",
+      "confianza": "alta",
+      "etiqueta": "No — tu RUT no tiene la responsabilidad 47 (Régimen Simple de Tributación)"
+    }
+  },
+  "extra": {
+    "paginas": {
+      "total": 6,
+      "principal": 4,
+      "rut": [
+        {
+          "pagina": 3,
+          "hoja": 1
+        },
+        {
+          "pagina": 4,
+          "hoja": 1
+        },
+        {
+          "pagina": 5,
+          "hoja": 5
+        }
+      ]
+    },
+    "esPersonaJuridica": false,
+    "esPersonaNatural": true,
+    "tipoContribuyente": {
+      "codigo": "2",
+      "descripcion": "Persona natural o sucesión ilíquida"
+    },
+    "nitLeido": "12345678",
+    "dvLeido": "8",
+    "dvCalculado": "8",
+    "nitIgualCedula": true,
+    "tipoDocumento": {
+      "codigo": "13",
+      "descripcion": "Cédula de ciudadanía"
+    },
+    "numeroIdentificacion": "12345678",
+    "nombreCompleto": "PRUEBA EJEMPLO ANA ISABEL",
+    "razonSocial": "",
+    "nombreComercial": "",
+    "sigla": "",
+    "fechaExpedicion": "",
+    "lugarExpedicion": {
+      "pais": "COLOMBIA",
+      "departamento": "Bogotá D.C",
+      "municipio": "BOGOTÁ",
+      "codigoPais": "169",
+      "codigoDepartamento": "11",
+      "codigoMunicipio": "001"
+    },
+    "ubicacion": {
+      "pais": {
+        "codigo": "169",
+        "nombre": "COLOMBIA"
+      },
+      "departamento": {
+        "codigo": "11",
+        "nombre": "Bogotá D.C"
+      },
+      "municipio": {
+        "codigo": "001",
+        "nombre": "BOGOTÁ"
+      },
+      "codigoDane": "11001",
+      "codigoPostal": "",
+      "codigoPostalEsApartadoAereo": false
+    },
+    "telefonos": [
+      {
+        "casilla": 44,
+        "numero": "3004445566",
+        "tipo": "celular"
+      }
+    ],
+    "responsabilidades": [
+      {
+        "codigo": "05",
+        "descripcion": "Impuesto sobre la renta y complementarios – régimen ordinario"
+      },
+      {
+        "codigo": "22",
+        "descripcion": "Obligado a cumplir deberes formales a nombre de terceros"
+      },
+      {
+        "codigo": "49",
+        "descripcion": "No responsable de IVA"
+      },
+      {
+        "codigo": "52",
+        "descripcion": "Facturador electrónico"
+      }
+    ],
+    "responsabilidadesConfiables": true,
+    "actividades": {
+      "principal": {
+        "codigo": "6920",
+        "descripcion": "Actividades de contabilidad, teneduría de libros, auditoría financiera y asesoría tributaria.",
+        "fechaInicio": "2021-03-01"
+      },
+      "secundaria": {
+        "codigo": "4761",
+        "descripcion": "Comercio al por menor de libros, periódicos, materiales y artículos de papelería y escritorio, en establecimientos especializados.",
+        "fechaInicio": "2022-04-01"
+      },
+      "otras": [
+        {
+          "codigo": "6202",
+          "descripcion": "Actividades de consultoría informática y actividades de administración de instalaciones informáticas."
+        }
+      ],
+      "ocupacion": "2411",
+      "numeroEstablecimientos": ""
+    },
+    "fechaGeneracion": "2026-08-10",
+    "horaGeneracion": "21:15:00",
+    "fecha61": "",
+    "numeroFormulario": "140020250707",
+    "concepto": {
+      "codigo": "02",
+      "descripcion": "Actualización"
+    },
+    "seccional": {
+      "codigo": "46",
+      "nombre": "Impuestos y Aduanas de Puerto Asís"
+    },
+    "sugerencias": {
+      "declaranteRenta": true,
+      "regimenSimple": false
+    }
+  },
+  "avisos": [
+    "Este PDF trae 2 RUT de personas distintas; usamos el de la página 4. Verifica que sea el tuyo.",
+    "Tu RUT no registra teléfono fijo; dejamos 0 en Teléfono 1 como indica el formato. Cámbialo si tienes uno."
+  ]
+}

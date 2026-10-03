@@ -1,0 +1,77 @@
+{
+  "tipo": "RIT",
+  "ok": true,
+  "campos": {
+    "actividadRit": {
+      "valor": "46631",
+      "etiqueta": "46631 — Comercio al por mayor de materiales de construcción",
+      "origen": "RIT · Actividad 1",
+      "confianza": "baja"
+    }
+  },
+  "extra": {
+    "tipoDetectado": "RIT",
+    "formato": "RIT-SHD v2.02",
+    "paginasRit": [
+      1
+    ],
+    "contribuyente": {
+      "tipoDoc": "NIT",
+      "tipoDocImpreso": "N.I.T.",
+      "tipoDocumentoCatalogo": null,
+      "numero": "901539681",
+      "nombre": "UNION TEMPORAL ESTUDIOS 049",
+      "dvCalculado": "9"
+    },
+    "identificacion": "901539681",
+    "direccion": "AV CL 24 51 40 OF 316",
+    "telefono": "3000000002",
+    "emailImpreso": "contabilidadut000@correo.co",
+    "emailRecortado": false,
+    "emailSiValido": "contabilidadut000@correo.co",
+    "ciudad": "BOGOTÁ DC",
+    "departamento": "BOGOTÁ, D.C.",
+    "departamentoCatalogo": "Bogotá D.C",
+    "municipioCatalogo": "BOGOTÁ",
+    "naturalezaJuridica": "PERSONA JURIDICA",
+    "esPersonaNatural": false,
+    "regimen": "COMUN",
+    "regimenNormalizado": "COMUN",
+    "regimenConfianza": "baja",
+    "regimenFechaDesde": "2021-09-06",
+    "matriculaMercantil": null,
+    "numEstablecimientos": 0,
+    "fechaCertificado": "2024-12-02",
+    "fechaInscripcion": "2022-12-14",
+    "fechaInicioActividades": "2021-09-06",
+    "fechaCese": "NO",
+    "posibleEdicion": true,
+    "indiciosEdicion": [
+      "Texto con varios tipos de letra: «Fecha:02/12/2024»",
+      "La fecha impresa (02/12/2024) no coincide con la fecha de creación del PDF (01/04/2024)"
+    ],
+    "actividades": [
+      {
+        "orden": 1,
+        "codigo": "46631",
+        "codigoImpreso": "46631",
+        "descripcionImpresa": "Comercio al por mayor de materiales de construcción",
+        "descripcion": "Comercio al por mayor de materiales de construcción",
+        "principal": true,
+        "enCatalogo": true,
+        "descripcionCatalogo": "Comercio al por mayor de materiales de construcción",
+        "tarifa": 6.9,
+        "agrupacion": 202,
+        "codigoFormulario": "46631",
+        "descripcionCoincide": true
+      }
+    ],
+    "diasDesdeExpedicion": 8,
+    "tarifa": 6.9,
+    "agrupacion": 202
+  },
+  "avisos": [
+    "Este RIT es de una persona jurídica (UNION TEMPORAL ESTUDIOS 049). El formulario 13-IF-016 es para personas naturales: verifica que subiste tu propio RIT.",
+    "Este PDF parece modificado después de generado (texto con varios tipos de letra: «Fecha:02/12/2024»). Te recomendamos descargar el certificado de nuevo en la Oficina Virtual de la Secretaría Distrital de Hacienda (Mi RIT → Certificado RIT)."
+  ]
+}

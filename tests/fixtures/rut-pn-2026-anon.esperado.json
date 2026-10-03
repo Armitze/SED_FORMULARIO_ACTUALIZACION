@@ -1,0 +1,217 @@
+{
+  "tipo": "RUT",
+  "ok": true,
+  "campos": {
+    "nit": {
+      "valor": "1019283754",
+      "origen": "Casilla 5",
+      "confianza": "alta"
+    },
+    "dv": {
+      "valor": "9",
+      "origen": "Casilla 6",
+      "confianza": "alta"
+    },
+    "tipoDocumento": {
+      "valor": "Cédula de ciudadanía ",
+      "origen": "Casilla 25",
+      "confianza": "alta",
+      "etiqueta": "Cédula de ciudadanía"
+    },
+    "numeroId": {
+      "valor": "1019283754",
+      "origen": "Casilla 26",
+      "confianza": "alta"
+    },
+    "primerApellido": {
+      "valor": "FALSO",
+      "origen": "Casilla 31",
+      "confianza": "alta"
+    },
+    "segundoApellido": {
+      "valor": "MODELO",
+      "origen": "Casilla 32",
+      "confianza": "alta"
+    },
+    "primerNombre": {
+      "valor": "ANDRES",
+      "origen": "Casilla 33",
+      "confianza": "alta"
+    },
+    "otrosNombres": {
+      "valor": "JULIAN",
+      "origen": "Casilla 34",
+      "confianza": "alta"
+    },
+    "direccion": {
+      "valor": "CL 98 SUR 45 67",
+      "origen": "Casilla 41",
+      "confianza": "alta"
+    },
+    "pais": {
+      "valor": "COLOMBIA",
+      "origen": "Casilla 38",
+      "confianza": "alta"
+    },
+    "departamento": {
+      "valor": "Bogotá D.C",
+      "origen": "Casilla 39",
+      "confianza": "alta"
+    },
+    "municipio": {
+      "valor": "BOGOTÁ",
+      "origen": "Casilla 40",
+      "confianza": "alta"
+    },
+    "email": {
+      "valor": "ajfalso@example.com",
+      "origen": "Casilla 42",
+      "confianza": "alta"
+    },
+    "telefono2": {
+      "valor": "3216549870",
+      "origen": "Casilla 44",
+      "confianza": "alta"
+    },
+    "telefono1": {
+      "valor": "0",
+      "origen": "Casilla 44/45 (sin teléfono fijo)",
+      "confianza": "media",
+      "etiqueta": "0 — tu RUT no registra teléfono fijo"
+    },
+    "actividadRut": {
+      "valor": "6920",
+      "origen": "Casilla 46",
+      "confianza": "alta",
+      "etiqueta": "6920 — Actividades de contabilidad, teneduría de libros, auditoría financiera y asesoría tributaria."
+    },
+    "regimenIva": {
+      "valor": "NO RESPONSABLE IVA",
+      "origen": "Casilla 53 (código 49)",
+      "confianza": "alta"
+    },
+    "c3": {
+      "valor": "NO",
+      "origen": "Casilla 53 (sin código 47)",
+      "confianza": "alta",
+      "etiqueta": "No — tu RUT no tiene la responsabilidad 47 (Régimen Simple de Tributación)"
+    }
+  },
+  "extra": {
+    "paginas": {
+      "total": 1,
+      "principal": 1,
+      "rut": [
+        {
+          "pagina": 1,
+          "hoja": 1
+        }
+      ]
+    },
+    "esPersonaJuridica": false,
+    "esPersonaNatural": true,
+    "tipoContribuyente": {
+      "codigo": "2",
+      "descripcion": "Persona natural o sucesión ilíquida"
+    },
+    "nitLeido": "1019283754",
+    "dvLeido": "9",
+    "dvCalculado": "9",
+    "nitIgualCedula": true,
+    "tipoDocumento": {
+      "codigo": "13",
+      "descripcion": "Cédula de ciudadanía"
+    },
+    "numeroIdentificacion": "1019283754",
+    "nombreCompleto": "FALSO MODELO ANDRES JULIAN",
+    "razonSocial": "",
+    "nombreComercial": "",
+    "sigla": "",
+    "fechaExpedicion": "",
+    "lugarExpedicion": {
+      "pais": "COLOMBIA",
+      "departamento": "Bogotá D.C",
+      "municipio": "BOGOTÁ",
+      "codigoPais": "169",
+      "codigoDepartamento": "11",
+      "codigoMunicipio": "001"
+    },
+    "ubicacion": {
+      "pais": {
+        "codigo": "169",
+        "nombre": "COLOMBIA"
+      },
+      "departamento": {
+        "codigo": "11",
+        "nombre": "Bogotá D.C"
+      },
+      "municipio": {
+        "codigo": "001",
+        "nombre": "BOGOTÁ"
+      },
+      "codigoDane": "11001",
+      "codigoPostal": "",
+      "codigoPostalEsApartadoAereo": false
+    },
+    "telefonos": [
+      {
+        "casilla": 44,
+        "numero": "3216549870",
+        "tipo": "celular"
+      }
+    ],
+    "responsabilidades": [
+      {
+        "codigo": "05",
+        "descripcion": "Impuesto sobre la renta y complementarios – régimen ordinario"
+      },
+      {
+        "codigo": "22",
+        "descripcion": "Obligado a cumplir deberes formales a nombre de terceros"
+      },
+      {
+        "codigo": "49",
+        "descripcion": "No responsable de IVA"
+      },
+      {
+        "codigo": "52",
+        "descripcion": "Facturador electrónico"
+      }
+    ],
+    "responsabilidadesConfiables": true,
+    "actividades": {
+      "principal": {
+        "codigo": "6920",
+        "descripcion": "Actividades de contabilidad, teneduría de libros, auditoría financiera y asesoría tributaria.",
+        "fechaInicio": "2024-01-01"
+      },
+      "secundaria": {
+        "codigo": "7490",
+        "descripcion": "Otras actividades profesionales, científicas y técnicas n.c.p.",
+        "fechaInicio": "2026-01-01"
+      },
+      "otras": [],
+      "ocupacion": "",
+      "numeroEstablecimientos": ""
+    },
+    "fechaGeneracion": "2026-03-16",
+    "horaGeneracion": "11:12:00",
+    "fecha61": "2026-03-16",
+    "numeroFormulario": "141299990001",
+    "concepto": {
+      "codigo": "02",
+      "descripcion": "Actualización"
+    },
+    "seccional": {
+      "codigo": "32",
+      "nombre": "Impuestos de Bogotá"
+    },
+    "sugerencias": {
+      "declaranteRenta": true,
+      "regimenSimple": false
+    }
+  },
+  "avisos": [
+    "Tu RUT no registra teléfono fijo; dejamos 0 en Teléfono 1 como indica el formato. Cámbialo si tienes uno."
+  ]
+}

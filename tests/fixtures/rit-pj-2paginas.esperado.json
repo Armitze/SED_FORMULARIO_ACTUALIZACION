@@ -1,0 +1,117 @@
+{
+  "tipo": "RIT",
+  "ok": true,
+  "campos": {
+    "actividadRit": {
+      "valor": "6202",
+      "etiqueta": "6202 — Actividades de consultoría informática y actividades de administración de instalaciones informáticas",
+      "origen": "RIT · Actividad 1",
+      "confianza": "alta"
+    }
+  },
+  "extra": {
+    "tipoDetectado": "RIT",
+    "formato": "RIT-SHD v2.02",
+    "paginasRit": [
+      1,
+      2
+    ],
+    "contribuyente": {
+      "tipoDoc": "NIT",
+      "tipoDocImpreso": "N.I.T.",
+      "tipoDocumentoCatalogo": null,
+      "numero": "830035246",
+      "nombre": "DELL COLOMBIA INC",
+      "dvCalculado": "7"
+    },
+    "identificacion": "830035246",
+    "direccion": "KR 7 113 43 OF 1401",
+    "telefono": "5240900",
+    "emailImpreso": "ANDEAN.ACCOUNTING.",
+    "emailRecortado": true,
+    "emailSiValido": null,
+    "ciudad": "BOGOTÁ DC",
+    "departamento": "BOGOTÁ, D.C.",
+    "departamentoCatalogo": "Bogotá D.C",
+    "municipioCatalogo": "BOGOTÁ",
+    "naturalezaJuridica": "PERSONA JURIDICA",
+    "esPersonaNatural": false,
+    "regimen": "COMUN",
+    "regimenNormalizado": "COMUN",
+    "regimenConfianza": "baja",
+    "regimenFechaDesde": null,
+    "matriculaMercantil": null,
+    "numEstablecimientos": 1,
+    "fechaCertificado": "2020-08-18",
+    "fechaInscripcion": "2018-02-28",
+    "fechaInscripcionEsMigracion": true,
+    "fechaInicioActividades": "1997-09-01",
+    "fechaCese": "NO",
+    "posibleEdicion": false,
+    "actividades": [
+      {
+        "orden": 1,
+        "codigo": "6202",
+        "codigoImpreso": "6202",
+        "descripcionImpresa": "Actividades de consultoría informática y actividades de administración de instalaciones informáticas",
+        "descripcion": "Actividades de consultoría informática y actividades de administración de instalaciones informáticas",
+        "principal": true,
+        "enCatalogo": true,
+        "descripcionCatalogo": "Actividades de consultoría informática y actividades de administración de instalaciones informáticas",
+        "tarifa": 6.9,
+        "agrupacion": 302,
+        "codigoFormulario": "6202",
+        "descripcionCoincide": true
+      },
+      {
+        "orden": 2,
+        "codigo": "4651",
+        "codigoImpreso": "4651",
+        "descripcionImpresa": "Comercio al por mayor de computadores, equipo periférico y programas de informática",
+        "descripcion": "Comercio al por mayor de computadores, equipo periférico y programas de informática",
+        "principal": false,
+        "enCatalogo": true,
+        "descripcionCatalogo": "Comercio al por mayor de computadores, equipo periférico y programas de informática",
+        "tarifa": 11.04,
+        "agrupacion": 204,
+        "codigoFormulario": "4651",
+        "descripcionCoincide": true
+      },
+      {
+        "orden": 3,
+        "codigo": "4741",
+        "codigoImpreso": "4741",
+        "descripcionImpresa": "Comercio al por menor de computadores, equipos periféricos, programas de informática y equipos de telecomunicaciones en establecimientos especializados",
+        "descripcion": "Comercio al por menor de computadores, equipos periféricos, programas de informática y equipos de telecomunicaciones en establecimientos especializados",
+        "principal": false,
+        "enCatalogo": true,
+        "descripcionCatalogo": "Comercio al por menor de computadores, equipos periféricos, programas de informática y equipos de telecomunicaciones en establecimientos especializados",
+        "tarifa": 11.04,
+        "agrupacion": 204,
+        "codigoFormulario": "4741",
+        "descripcionCoincide": true
+      },
+      {
+        "orden": 4,
+        "codigo": "6209",
+        "codigoImpreso": "6209",
+        "descripcionImpresa": "Otras actividades de tecnologías de información y actividades de servicios informáticos",
+        "descripcion": "Otras actividades de tecnologías de información y actividades de servicios informáticos",
+        "principal": false,
+        "enCatalogo": true,
+        "descripcionCatalogo": "Otras actividades de tecnologías de información y actividades de servicios informáticos",
+        "tarifa": 9.66,
+        "agrupacion": 304,
+        "codigoFormulario": "6209",
+        "descripcionCoincide": true
+      }
+    ],
+    "diasDesdeExpedicion": 2235,
+    "tarifa": 6.9,
+    "agrupacion": 302
+  },
+  "avisos": [
+    "Este RIT es de una persona jurídica (DELL COLOMBIA INC). El formulario 13-IF-016 es para personas naturales: verifica que subiste tu propio RIT.",
+    "Tu certificado RIT es del 18/08/2020 (hace 2235 días). Si cambiaste algo en tu RIT desde entonces, descarga uno reciente en la Oficina Virtual de la Secretaría Distrital de Hacienda (Mi RIT → Certificado RIT)."
+  ]
+}
