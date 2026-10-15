@@ -12,7 +12,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '1.0.0';
+  const VERSION = '1.01';
   const MAX_OPCIONES_COMBO = 50;
 
   const SCHEMA = window.SCHEMA;
@@ -2194,9 +2194,7 @@
 
   function construirDocumentos(cuerpo) {
     const zonas = h('div', { class: 'zonas' }, crearZona('RUT'), crearZona('RIT'));
-    const privacidad = h('p', { class: 'privacidad' }, icono('candado'),
-      h('span', null, 'Tus documentos se leen en este dispositivo; no se envían a ningún servidor.'));
-    cuerpo.append(zonas, privacidad);
+    cuerpo.append(zonas);
   }
 
   function crearZona(tipo) {
@@ -2829,11 +2827,10 @@
 
     const botonPdf = h('button', { type: 'button', class: 'boton boton--primario boton--grande', onclick: () => descargarPdf(botonPdf) },
       icono('firma'), h('span', null, 'Descargar PDF para firmar'));
-    const botonExcel = h('button', { type: 'button', class: 'boton boton--secundario boton--grande', onclick: () => descargarExcel(botonExcel) },
-      icono('tabla'), h('span', null, 'Descargar Excel diligenciado'));
+    // Botón de Excel oculto por ahora; descargarExcel() se conserva para reactivarlo.
     cuerpo.append(h('section', { class: 'grupo descargas', 'aria-labelledby': 'rev-desc' },
       h('h3', { class: 'grupo-titulo', id: 'rev-desc' }, 'Descargas'),
-      h('div', { class: 'descargas-botones' }, botonPdf, botonExcel),
+      h('div', { class: 'descargas-botones' }, botonPdf),
       h('p', { class: 'ayuda-campo' }, 'El PDF se genera con la ventana de impresión de tu navegador: elige «Guardar como PDF».')));
 
     // El nombre solo se muestra cuando ya cumple la regla NOMBRE_CONTRATO_AÑOCONTRATO.
