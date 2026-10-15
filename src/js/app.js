@@ -3278,14 +3278,22 @@
         return;
       }
 
-      G.descargar(nuevo, nombreArchivoHtml());
-      boton.textContent = 'Descargado';
-      await confirmar({
-        titulo: 'Descargamos la versión ' + info.version,
-        mensaje: (conDatos ? 'El archivo nuevo ya tiene tus datos. ' : '') +
-          'Cierra esta ventana, abre el archivo «' + nombreArchivoHtml() + '» de tu carpeta de descargas y borra el anterior.',
-        principal: 'Entendido', secundario: 'Cerrar', enfocar: 'principal',
+      // Primero se explica qué hacer; la descarga empieza al pulsar «Entendido».
+      const nombre = nombreArchivoHtml();
+      const r = await confirmar({
+        titulo: 'La versión ' + info.version + ' está lista',
+        mensaje: 'Al pulsar «Entendido» se descargará el archivo «' + nombre + '»' + (conDatos ? ' con tus datos' : '') +
+          '. Después cierra esta ventana, abre ese archivo desde tu carpeta de descargas y borra el anterior.',
+        principal: 'Entendido', secundario: 'Cancelar', enfocar: 'principal',
+        nativo: { pregunta: '¿Descargar ahora?', si: 'principal' },
       });
+      if (r !== 'principal') {
+        boton.disabled = false;
+        boton.textContent = 'Actualizar';
+        return;
+      }
+      G.descargar(nuevo, nombre);
+      boton.textContent = 'Descargado';
     } catch (e) {
       avisarUnaVez('Actualizar', e);
       boton.disabled = false;
