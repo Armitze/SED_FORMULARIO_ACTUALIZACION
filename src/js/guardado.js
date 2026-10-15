@@ -66,6 +66,25 @@
     return e;
   }
 
+  // ─────────── Versiones publicadas ───────────
+
+  /** true si la versión a es mayor que b ('1.10' > '1.9' > '1.01'): compara cada parte como número. */
+  function versionMayor(a, b) {
+    const x = String(a || '').split('.').map((n) => parseInt(n, 10) || 0);
+    const y = String(b || '').split('.').map((n) => parseInt(n, 10) || 0);
+    for (let i = 0; i < Math.max(x.length, y.length); i++) {
+      const d = (x[i] || 0) - (y[i] || 0);
+      if (d) return d > 0;
+    }
+    return false;
+  }
+
+  /** true si el texto es un formulario 13-IF-016 construido que puede llevar datos (para actualizar). */
+  function esFormulario(texto) {
+    const t = String(texto || '');
+    return /<!--\s*Formulario 13-IF-016 · versión /.test(t.slice(0, 2000)) && RE_BLOQUE.test(t);
+  }
+
   // ─────────── Archivos (Chrome / Edge) ───────────
 
   const soportaArchivos = () => typeof root.showSaveFilePicker === 'function';
@@ -208,7 +227,7 @@
   }
 
   const Guardado = {
-    ID_BLOQUE, capturar, leerEmbebido, html, jsonSeguro, soportaArchivos, archivoActual, elegirArchivo, permiso, escribir, descargar,
+    ID_BLOQUE, capturar, leerEmbebido, html, jsonSeguro, versionMayor, esFormulario, soportaArchivos, archivoActual, elegirArchivo, permiso, escribir, descargar,
     recordarArchivo, archivoRecordado, guardarPendiente, leerPendiente, borrarPendiente, nuevoId,
     _reiniciarPlantilla: () => { plantilla = null; },
   };

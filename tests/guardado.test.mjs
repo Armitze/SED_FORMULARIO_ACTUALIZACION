@@ -11,6 +11,24 @@ const Guardado = require('../src/js/guardado.js');
 const BASE = '<!DOCTYPE html>\n<html><head><title>t</title></head><body><div id="paso"></div>' +
   '<script type="application/json" id="datos-formulario"></script><script>window.x = "$&";</script></body></html>';
 
+describe('Guardado.versionMayor / esFormulario', () => {
+  test('compara cada parte como número', () => {
+    assert.equal(Guardado.versionMayor('1.02', '1.01'), true);
+    assert.equal(Guardado.versionMayor('1.10', '1.9'), true);
+    assert.equal(Guardado.versionMayor('2', '1.99'), true);
+    assert.equal(Guardado.versionMayor('1.01', '1.01'), false);
+    assert.equal(Guardado.versionMayor('1.0.1', '1.01'), false, '1.01 se lee como 1.1');
+    assert.equal(Guardado.versionMayor('', '1.01'), false);
+  });
+
+  test('solo acepta un formulario construido con bloque de datos', () => {
+    const marca = '<!doctype html>\n<!-- Formulario 13-IF-016 · versión 1.02 · construido x con tools/build.mjs -->\n';
+    assert.equal(Guardado.esFormulario(marca + BASE.replace('<!DOCTYPE html>\n', '')), true);
+    assert.equal(Guardado.esFormulario(BASE), false, 'sin la marca del build');
+    assert.equal(Guardado.esFormulario(marca + '<html><body>404: Not Found</body></html>'), false, 'sin bloque de datos');
+  });
+});
+
 describe('Guardado.html', () => {
   test('inserta los datos en el bloque y vuelve al HTML original con datos null', () => {
     const datos = { id: 'a1', nombre: 'PRUEBA $& $1', s: { nit: '52345678' } };

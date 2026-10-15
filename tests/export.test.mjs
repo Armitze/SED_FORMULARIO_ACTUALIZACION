@@ -998,9 +998,14 @@ function verificarHtmlConstruido(html) {
   assert.ok(Buffer.from(b64, 'base64').equals(PLANTILLA), 'plantilla embebida idéntica');
 }
 
+const URL_VERSION = 'https://raw.githubusercontent.com/Armitze/SED_FORMULARIO_ACTUALIZACION/main/version.json';
+// La consulta de versión puede fallar (sin internet o repositorio privado): el formulario la ignora.
+const sinConsultaVersion = (errores) => errores.filter((e) => !e.includes(URL_VERSION));
+
 function verificarEnNavegador(res) {
   assert.equal(res.excepcion, undefined, 'la prueba en la página no lanzó: ' + JSON.stringify(res.excepcion));
-  assert.deepEqual(res.red, [], 'no hubo peticiones de red');
+  // Lo único que sale al abrir es la consulta de versión (config.js → actualizaciones.versionUrl).
+  assert.deepEqual(sinConsultaVersion(res.red), [], 'sin otras peticiones de red');
   const v = res.valor;
   assert.equal(v.ExportExcel, 'object');
   assert.equal(v.Imprimir, 'object');
@@ -1070,7 +1075,7 @@ ${propios.map((p) => `<script src="${relativo(p)}"></script>`).join('\n')}
     if (res.valor.pdfText !== undefined) {
       assert.match(res.valor.pdfText, /Hola RUT 13-IF-016/, 'PdfText.leer funciona en el HTML construido');
     }
-    assert.deepEqual(res.errores, [], 'sin errores en la consola');
+    assert.deepEqual(sinConsultaVersion(res.errores), [], 'sin errores en la consola');
   });
 
   test('construye src/index.html completo (si todos sus archivos existen)', { timeout: 240000 }, async (t) => {
@@ -1084,7 +1089,7 @@ ${propios.map((p) => `<script src="${relativo(p)}"></script>`).join('\n')}
     if (!NAVEGADOR) return t.skip('No hay Edge/Chrome para probar en navegador');
     const res = await enNavegador(pathToFileURL(salida).href, PRUEBA_EN_PAGINA, (evaluar) => evaluar(PRUEBA_DOCUMENTOS));
     verificarEnNavegador(res);
-    assert.deepEqual(res.errores, [], 'sin errores en la consola');
+    assert.deepEqual(sinConsultaVersion(res.errores), [], 'sin errores en la consola');
 
     // Documentos → formulario, conflictos, SECOP, guardado y Revisión de la app construida.
     const d = res.extra;
@@ -1122,8 +1127,8 @@ ${propios.map((p) => `<script src="${relativo(p)}"></script>`).join('\n')}
     const copia = await enNavegador(pathToFileURL(rutaCopia).href, PRUEBA_COPIA);
     fs.rmSync(rutaCopia, { force: true });
     assert.equal(copia.excepcion, undefined);
-    assert.deepEqual(copia.errores, [], 'la copia abre sin errores');
-    assert.deepEqual(copia.red, [], 'la copia no hace peticiones de red al abrir');
+    assert.deepEqual(sinConsultaVersion(copia.errores), [], 'la copia abre sin errores');
+    assert.deepEqual(sinConsultaVersion(copia.red), [], 'la copia no hace otras peticiones de red al abrir');
     const v2 = copia.valor;
     assert.equal(v2.nit, '52345678');
     assert.equal(v2.apellido, 'PRUEBA');

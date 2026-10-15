@@ -3150,6 +3150,8 @@
       e.preventDefault();
       e.returnValue = '';
     });
+
+    buscarActualizacion();
   }
 
   /** Busca el archivo donde se guardó este formulario (Chrome/Edge lo recuerdan) para seguir autoguardando. */
@@ -3198,6 +3200,100 @@
     renderPaso();
     guardarPronto();
     toast('Recuperamos tu avance.');
+  }
+
+  // ─────────────────────────── Actualizaciones ───────────────────────────
+  //
+  // Al abrir se consulta version.json en el repositorio. Si allá hay una versión mayor se ofrece
+  // «Actualizar»: se descarga el formulario nuevo y se le incrustan los datos de este (guardado.js).
+  // Si este formulario ya se guarda en un archivo (Chrome/Edge), se reemplaza ese archivo y se recarga;
+  // si no, se descarga la versión nueva con los datos. Sin internet no pasa nada.
+
+  const versionActual = () => (window.BUILD_INFO && window.BUILD_INFO.version) || VERSION;
+  let actualizando = false;
+
+  async function traer(url, comoTexto) {
+    const cfg = CFG.actualizaciones || {};
+    const control = typeof AbortController === 'function' ? new AbortController() : null;
+    const espera = control ? setTimeout(() => control.abort(), cfg.tiempoMaximoMs || 8000) : null;
+    try {
+      const r = await fetch(url + (url.includes('?') ? '&' : '?') + 't=' + Date.now(), { cache: 'no-store', signal: control ? control.signal : undefined });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return comoTexto ? await r.text() : await r.json();
+    } finally {
+      clearTimeout(espera);
+    }
+  }
+
+  async function buscarActualizacion() {
+    const cfg = CFG.actualizaciones;
+    if (!G || !cfg || !cfg.versionUrl || !cfg.htmlUrl || typeof fetch !== 'function') return;
+    try {
+      const info = await traer(cfg.versionUrl);
+      if (info && info.version && G.versionMayor(info.version, versionActual())) mostrarAvisoVersion(info);
+    } catch (e) { /* sin conexión o repositorio no disponible: se sigue con esta versión */ }
+  }
+
+  function mostrarAvisoVersion(info) {
+    if (document.getElementById('aviso-version')) return;
+    const principal = document.getElementById('principal');
+    if (!principal) return;
+    const notas = String(info.notas || '').trim();
+    const boton = h('button', { type: 'button', class: 'boton boton--primario' }, 'Actualizar');
+    const aviso = h('div', { class: 'aviso-version', id: 'aviso-version', role: 'status' },
+      icono('info'),
+      h('span', { class: 'aviso-version-texto' },
+        h('strong', null, 'Hay una nueva versión del formulario (' + info.version + ').'),
+        ' Tienes la ' + versionActual() + '. Tus datos se conservan.' + (notas ? ' ' + notas : '')),
+      boton,
+      h('button', { type: 'button', class: 'aviso-version-cerrar', 'aria-label': 'Cerrar aviso', html: svgIcono('cerrar'), onclick: () => aviso.remove() }));
+    boton.addEventListener('click', () => actualizarFormulario(info, boton));
+    principal.prepend(aviso);
+  }
+
+  async function actualizarFormulario(info, boton) {
+    if (actualizando) return;
+    actualizando = true;
+    boton.disabled = true;
+    boton.textContent = 'Descargando…';
+    try {
+      const texto = await traer(CFG.actualizaciones.htmlUrl, true);
+      if (!G.esFormulario(texto)) throw new Error('el archivo descargado no es el formulario');
+      const conDatos = tieneDatos(estado.s);
+      if (conDatos && !archivo.id) archivo.id = G.nuevoId();
+      const nuevo = G.html(conDatos ? datosParaGuardar() : null, texto);
+
+      // Chrome/Edge con el archivo de este formulario: se escribe la versión nueva encima y se recarga.
+      const actual = G.archivoActual();
+      const mismoArchivo = archivo.manejador && actual.nombre && actual.nombre === archivo.nombre;
+      if (mismoArchivo && (await G.permiso(archivo.manejador, true)) === 'granted') {
+        clearTimeout(temporizadorArchivo);
+        if (archivo.escribiendo) await archivo.escribiendo;
+        await G.escribir(archivo.manejador, nuevo);
+        // La página vieja ya no debe escribir en el archivo (lo devolvería a la versión anterior).
+        archivo.manejador = null;
+        archivo.sucio = false;
+        G.borrarPendiente(archivo.id);
+        location.reload();
+        return;
+      }
+
+      G.descargar(nuevo, nombreArchivoHtml());
+      boton.textContent = 'Descargado';
+      await confirmar({
+        titulo: 'Descargamos la versión ' + info.version,
+        mensaje: (conDatos ? 'El archivo nuevo ya tiene tus datos. ' : '') +
+          'Cierra esta ventana, abre el archivo «' + nombreArchivoHtml() + '» de tu carpeta de descargas y borra el anterior.',
+        principal: 'Entendido', secundario: 'Cerrar', enfocar: 'principal',
+      });
+    } catch (e) {
+      avisarUnaVez('Actualizar', e);
+      boton.disabled = false;
+      boton.textContent = 'Actualizar';
+      toast('No pudimos descargar la nueva versión. Revisa tu conexión e intenta de nuevo.', { tono: 'error' });
+    } finally {
+      actualizando = false;
+    }
   }
 
   window.App = {

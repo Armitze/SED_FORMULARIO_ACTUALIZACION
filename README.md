@@ -64,6 +64,16 @@ Luego compila el archivo único:
 npm run build
 ```
 
+### Publicar una versión nueva
+
+Los formularios ya entregados consultan al abrir `version.json` en GitHub (`actualizaciones` en `src/js/config.js`). Si allá hay una versión mayor, muestran «Hay una nueva versión» con el botón **Actualizar**, que descarga el formulario nuevo y le pasa los datos del contratista. En Chrome/Edge, si el formulario ya se guarda en su archivo, lo reemplaza y recarga; si no, descarga la versión nueva con los datos.
+
+1. Sube `version` en `package.json` (se compara parte por parte como número: `1.02` > `1.01`, `1.10` > `1.9`).
+2. Opcional: escribe en `"notas"` de `version.json` una frase corta para el contratista.
+3. `npm run build` (actualiza `formulario-13-IF-016.html` y `version.json`) y sube ambos archivos a `main`.
+
+El repositorio debe ser público: sin eso GitHub responde 404 y el aviso nunca aparece (el formulario sigue funcionando igual).
+
 ### Si cambia el Excel oficial
 
 Reemplaza el `.xlsx` en la raíz (mismo prefijo `13-IF-016`) y regenera los catálogos (países, municipios, bancos, CIIU, RIT, ARL, áreas…):

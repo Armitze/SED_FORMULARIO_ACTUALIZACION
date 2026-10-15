@@ -288,6 +288,20 @@ window.LOGO_SRC = ${JSON.stringify(logo)};
   return { salida, bytes: Buffer.byteLength(html), ...informe, worker: workerPdf ? rel(workerPdf) : null, plantilla: rel(rutaPlantilla) };
 }
 
+/**
+ * version.json en la raíz: lo consultan los formularios ya entregados para avisar que hay una versión
+ * nueva (app.js → buscarActualizacion). La versión sale de package.json; "notas" se escribe a mano
+ * (un texto corto que ve el contratista) y se conserva entre builds.
+ */
+function escribirVersionJson() {
+  const ruta = path.join(RAIZ, 'version.json');
+  let notas = '';
+  try { notas = String(JSON.parse(fs.readFileSync(ruta, 'utf8')).notas || ''); } catch (e) { /* primera vez */ }
+  const datos = { version: leerVersion(), notas };
+  fs.writeFileSync(ruta, JSON.stringify(datos, null, 2) + '\n', 'utf8');
+  return datos;
+}
+
 // ───────────────────────── CLI ─────────────────────────
 
 const esPrincipal = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
@@ -299,6 +313,8 @@ if (esPrincipal) {
       process.exit(0);
     }
     const r = construir(args);
+    const v = escribirVersionJson();
+    console.log(`version.json: ${v.version}${v.notas ? ' · ' + v.notas : ''}`);
     console.log(`Listo: ${path.relative(process.cwd(), r.salida) || r.salida} (${(r.bytes / 1024 / 1024).toFixed(2)} MB)`);
     console.log(`  estilos: ${r.estilos.length} · scripts: ${r.scripts.length} · imágenes: ${r.imagenes.length} · worker pdf.js: ${r.worker || 'no'} · plantilla: ${r.plantilla}`);
   } catch (e) {

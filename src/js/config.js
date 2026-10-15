@@ -38,5 +38,12 @@ window.CONFIG = {
     estadosExcluidos: ['Borrador', 'Cancelado', 'Cerrado', 'terminado'],
     tiempoMaximoMs: 20000,
   },
+  // Aviso de nueva versión: al abrir, el formulario consulta version.json (lo escribe tools/build.mjs).
+  // Las dos direcciones deben poder leerse sin iniciar sesión (repositorio público).
+  actualizaciones: {
+    versionUrl: 'https://raw.githubusercontent.com/Armitze/SED_FORMULARIO_ACTUALIZACION/main/version.json',
+    htmlUrl: 'https://raw.githubusercontent.com/Armitze/SED_FORMULARIO_ACTUALIZACION/main/formulario-13-IF-016.html',
+    tiempoMaximoMs: 8000,
+  },
   textoBancos: 'Bancos autorizados por la Superintendencia Financiera',
 };
