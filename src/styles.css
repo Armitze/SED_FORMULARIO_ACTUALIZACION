@@ -660,6 +660,66 @@ fieldset.campo.pregunta:last-child { border-bottom: 0; }
 .boton-agregar:focus-visible { outline: none; box-shadow: 0 0 0 4px var(--anillo); }
 .boton-agregar .icono { width: 16px; height: 16px; }
 
+/* Soportes adjuntos (certificación bancaria y certificados de deducciones) */
+.soportes {
+  margin-top: 22px;
+  padding: 16px 18px;
+  border: 1px solid var(--borde-suave);
+  border-radius: 12px;
+  background: var(--superficie-suave);
+  transition: border-color var(--transicion), background-color var(--transicion);
+}
+.soportes.arrastrando { border-color: var(--acento); background: var(--acento-50); box-shadow: 0 0 0 4px var(--anillo-suave); }
+.soportes-titulo { margin: 0; font-weight: 600; color: var(--texto); }
+.soportes-desc { margin: 2px 0 0; font-size: 14px; color: var(--texto-3); }
+.soportes-lista { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 8px; }
+.soporte {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--borde-suave);
+  border-radius: var(--radio);
+  background: var(--superficie);
+}
+.soporte-icono { flex: none; width: 20px; height: 20px; color: var(--exito); }
+.soporte-datos { display: flex; flex-direction: column; flex: 1 1 auto; min-width: 0; }
+.soporte-nombre { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14.5px; font-weight: 500; color: var(--texto); }
+.soporte-meta { font-size: 12.5px; color: var(--texto-3); }
+.soporte-acciones { display: flex; flex: none; gap: 14px; font-size: 14px; }
+.soportes-error {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin: 12px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--error);
+}
+.soportes-error .icono { flex: none; width: 17px; height: 17px; margin-top: 2px; }
+.soportes.con-falta { border-color: var(--error-borde); background: var(--error-50); }
+.soportes-falta {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin: 12px 0 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--error);
+}
+.soportes-falta .icono { flex: none; width: 17px; height: 17px; margin-top: 2px; }
+.soportes-pie { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 16px; }
+.soportes-agregar { margin-top: 12px; background: var(--superficie); }
+.soportes-limite { margin-top: 12px; font-size: 13px; color: var(--texto-3); }
+.soportes-lista--revision { margin-top: 4px; }
+input.sr-only:focus-visible + .soportes-pie .soportes-agregar { box-shadow: 0 0 0 4px var(--anillo); }
+@media (max-width: 520px) {
+  .soporte { flex-wrap: wrap; }
+  .soporte-acciones { width: 100%; padding-left: 32px; }
+}
+
 /* ───────── Combobox ───────── */
 
 .combo { position: relative; }

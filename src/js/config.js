@@ -31,6 +31,10 @@ window.CONFIG = {
 
   correoRadicacion: 'actualizarterceros@educacionbogota.gov.co',
 
+  // Soportes que se guardan dentro del archivo (certificación bancaria y certificados de deducciones).
+  // Van codificados en el HTML (ocupan un 33 % más), así que el total se limita para que guardar siga siendo rápido.
+  soportes: { maxArchivoMb: 4, maxTotalMb: 12, maxPorTipo: 5 },
+
   // Consulta del contrato en SECOP II (Datos Abiertos Colombia, conjunto jbjy-vk9h "Contratos Electrónicos").
   secop: {
     url: 'https://www.datos.gov.co/api/v3/views/jbjy-vk9h/query.json',

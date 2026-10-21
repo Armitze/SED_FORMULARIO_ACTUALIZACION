@@ -6,8 +6,9 @@
  * Imprimir (PDF) y ExportExcel (xlsx). Cada módulo externo se usa con guardas:
  * si falta, la interfaz sigue funcionando y muestra un mensaje amable.
  *
- * Estado: `estado.s` = { idCampo: string } (convenciones en schema.js) y
- * `estado.meta` = { paso, fuentes, visitados, plegables, docs } (se autoguarda).
+ * Estado: `estado.s` = { idCampo: string } (convenciones en schema.js),
+ * `estado.meta` = { paso, fuentes, visitados, plegables, docs } y
+ * `estado.soportes` = { banco|dependientes|hipotecario|saludNoPos: [archivo] } (soportes.js); todo se autoguarda.
  */
 (function () {
   'use strict';
@@ -211,6 +212,7 @@
       'Escribe el número de cuenta sin guiones ni caracteres especiales; debe coincidir con tu certificación bancaria.',
       'La identificación del titular se calcula con tu NIT y tu DV.',
       'Verifica que la cuenta esté activa y sin restricciones para recibir pagos electrónicos.',
+      'Adjunta tu certificación bancaria al final de esta sección: queda guardada en este archivo.',
     ],
     tributario: [
       'La información debe coincidir con tu RUT y tu RIT vigentes.',
@@ -231,7 +233,7 @@
     retencion: [
       'Responde Sí o No a las cuatro preguntas.',
       'Dependientes, crédito hipotecario y salud no POS: marca solo lo que aplique y llena sus datos tal como aparecen en los certificados.',
-      'Los certificados deben tener corte al 31 de diciembre del año indicado. Adjúntalos legibles, del mismo año fiscal, en el mismo PDF que envías.',
+      'Los certificados deben tener corte al 31 de diciembre del año indicado. Adjúntalos legibles, del mismo año fiscal, debajo de cada deducción (PDF o foto).',
       'Salud no POS: certificado de la entidad de medicina prepagada o del plan complementario con lo que pagaste. Crédito hipotecario o leasing habitacional: certificado de la entidad financiera con los intereses pagados.',
       'Cuentas AFC y pensiones voluntarias: si respondes Sí, registra la entidad, su NIT y el valor mensual.',
       'Al firmar declaras que la información es cierta y respondes por ella.',
@@ -290,6 +292,7 @@
   const estado = {
     s: {},
     meta: metaInicial(),
+    soportes: {},
   };
 
   const sesion = {
@@ -344,6 +347,10 @@
     });
   }
 
+  const haySoportes = () => !!(S && S.cantidad(estado.soportes));
+  /** Algo que valga la pena guardar: datos o soportes adjuntos. */
+  const hayAlgo = () => tieneDatos(estado.s) || haySoportes();
+
   // ─────────────────────────── Persistencia: dentro del propio archivo ───────────────────────────
   //
   // El formulario se guarda como un Excel: los datos van dentro del mismo archivo HTML (guardado.js).
@@ -351,6 +358,7 @@
   // llega al archivo queda en la memoria del navegador solo como red de seguridad (se ofrece recuperarlo).
 
   const G = window.Guardado || null;
+  const S = window.Soportes || null;
   const archivo = {
     id: null,           // identificador del formulario guardado (va dentro del archivo)
     manejador: null,    // archivo elegido en "Guardar como" (Chrome/Edge)
@@ -386,10 +394,25 @@
     guardarRespaldo();
   }
 
+  // Los soportes no caben en localStorage: su respaldo va en IndexedDB (soportes.js), con la misma clave, y se
+  // escribe al adjuntar o quitar un archivo (respaldarSoportes), no en cada tecla.
   function guardarRespaldo() {
     if (!G || !archivo.sucio) return;
-    if (tieneDatos(estado.s)) G.guardarPendiente(archivo.id, datosParaGuardar());
-    else G.borrarPendiente(archivo.id);
+    if (hayAlgo()) {
+      const datos = datosParaGuardar();
+      delete datos.soportes;
+      G.guardarPendiente(archivo.id, datos);
+    } else borrarPendientes(archivo.id);
+  }
+
+  function respaldarSoportes() {
+    return S ? S.guardarRespaldo(archivo.id, estado.soportes) : Promise.resolve(false);
+  }
+
+  /** Borra el respaldo del navegador (datos y soportes) de ese formulario: ya está en el archivo o se descartó. */
+  function borrarPendientes(id) {
+    if (G) G.borrarPendiente(id);
+    return S ? S.borrarRespaldo(id) : Promise.resolve(false);
   }
 
   function nombrePersona(s) {
@@ -406,6 +429,7 @@
       nombre: nombrePersona(),
       s: estado.s,
       meta: estado.meta,
+      soportes: estado.soportes,
     };
   }
 
@@ -430,7 +454,7 @@
         archivo.estado = 'guardado';
         if (version === cambios) {
           archivo.sucio = false;
-          G.borrarPendiente(archivo.id);
+          borrarPendientes(archivo.id);
         }
       } catch (e) {
         avisarUnaVez('Guardado.escribir', e);
@@ -470,7 +494,10 @@
       archivo.manejador = manejador;
       archivo.nombre = (manejador && manejador.name) || '';
       await G.recordarArchivo(archivo.id, manejador);
-      if (idPrevio !== archivo.id) G.borrarPendiente(idPrevio);
+      if (idPrevio !== archivo.id) {
+        borrarPendientes(idPrevio);
+        if (haySoportes()) await respaldarSoportes();
+      }
       archivo.sucio = true;
       archivo.estado = 'nuevo';
       await escribirArchivo();
@@ -520,7 +547,7 @@
 
   /** El primer guardado se pide solo, apenas la persona avanza con algún dato (una vez por sesión). */
   function pedirPrimerGuardado() {
-    if (!G || archivo.manejador || archivo.preguntado || !tieneDatos(estado.s) || !G.soportaArchivos() || !hayGesto()) return;
+    if (!G || archivo.manejador || archivo.preguntado || !hayAlgo() || !G.soportaArchivos() || !hayGesto()) return;
     guardarConExplicacion();
   }
 
@@ -542,7 +569,7 @@
   function pintarGuardado() {
     const el = document.getElementById('guardado');
     if (!el) return;
-    const conDatos = tieneDatos(estado.s);
+    const conDatos = hayAlgo();
     const soporta = !!(G && G.soportaArchivos());
     let est = archivo.estado;
     if (est === 'guardado' && archivo.sucio && !archivo.escribiendo) est = 'guardando';
@@ -667,6 +694,7 @@
     meta.paso = Number.isInteger(paso) && paso >= 0 && paso < PASOS.length ? paso : 0;
     estado.s = s;
     estado.meta = meta;
+    estado.soportes = S ? S.normalizar(datos && datos.soportes) : {};
     marcarVistosDeVisitados();
     return usados;
   }
@@ -889,7 +917,15 @@
     return { completo: !faltantes.length && !Object.keys(errores).length, faltantes, errores, advertencias: [] };
   }
 
+  /** Validación de los campos más los soportes obligatorios que falten (cuentan como un dato pendiente más). */
   function validar() {
+    const v = validarCampos();
+    const soportes = faltantesSoportes();
+    if (!soportes.length) return v;
+    return Object.assign({}, v, { completo: false, faltantes: v.faltantes.concat(soportes) });
+  }
+
+  function validarCampos() {
     const limpio = estadoLimpio();
     try {
       if (modulo('Calc', 'validar')) {
@@ -1550,6 +1586,7 @@
       estado.meta.visitados[anterior.id] = true;
       // Lo que estaba a la vista al salir del paso ya se puede marcar como pendiente al volver.
       for (const [id, c] of Object.entries(sesion.controles)) if (!c.cont.hidden) sesion.vistos.add(id);
+      for (const clave of soportesRequeridos()) if (SOPORTES[clave].paso === anterior.id) sesion.vistos.add(campoSoporte(clave));
     }
     sesion.bloqueo = '';
     // Con el primer avance (un clic) se pide dónde guardar el formulario.
@@ -1605,6 +1642,9 @@
       if (f && f.opcionalPlegable) { abrirPlegableHasta(primero.campo); actualizarUI(); }
       c.cont.scrollIntoView({ block: 'center', behavior: movimientoReducido() ? 'auto' : 'smooth' });
       c.enfocar();
+    } else {
+      const soporte = propios.find((p) => claveSoporte(p.campo));
+      if (soporte) enfocarSoporte(claveSoporte(soporte.campo));
     }
     anunciar(propios.length === 1 ? 'Falta 1 dato obligatorio en esta sección.' : 'Faltan ' + propios.length + ' datos obligatorios en esta sección.');
   }
@@ -1613,6 +1653,11 @@
     const destino = paso || pasoDeCampo(campo);
     irA(destino, { enfocar: false });
     const c = sesion.controles[campo];
+    if (!c && claveSoporte(campo)) {
+      sesion.vistos.add(campo);
+      actualizarUI();
+      if (enfocarSoporte(claveSoporte(campo))) return;
+    }
     if (!c) { const t = document.getElementById('paso-titulo'); if (t) t.focus({ preventScroll: true }); return; }
     sesion.vistos.add(campo);
     const f = CAMPOS[campo];
@@ -1649,6 +1694,7 @@
       case 'revision': construirRevision(cuerpo); break;
       default: construirGenerico(cuerpo, paso.id);
     }
+    if (paso.id === 'pagos') cuerpo.append(crearSoportes('banco'));
 
     if (paso.id !== 'documentos' && paso.id !== 'revision') {
       contenido.append(h('div', { class: 'avisos-paso', id: 'avisos-paso', hidden: true }));
@@ -1816,7 +1862,7 @@
     for (const id of checks) {
       seccionDeducciones.append(crearCampo(id));
       const sub = camposDelPaso('retencion').filter((c) => CAMPOS[c].grupo === gruposSub[id]);
-      if (sub.length) seccionDeducciones.append(h('div', { class: 'subformulario', 'data-de': id }, construirRejilla(sub)));
+      if (sub.length) seccionDeducciones.append(h('div', { class: 'subformulario', 'data-de': id }, construirRejilla(sub), crearSoportes(SOPORTE_DE_CHECK[id])));
     }
     seccionDeducciones.append(h('p', { class: 'nota-certificados', id: 'nota-certificados', hidden: true }, icono('info'), h('span', null)));
     const anexos = camposDelPaso('retencion').filter((c) => CAMPOS[c].grupo === 'Anexos');
@@ -1841,6 +1887,226 @@
     if (restantes.length) cuerpo.append(construirGrupo('Otros datos', restantes));
   }
 
+  // ─────────────────────────── Soportes adjuntos ───────────────────────────
+  //
+  // La certificación bancaria (paso Pagos) y los certificados de cada deducción se guardan dentro del archivo
+  // (soportes.js): al reabrirlo siguen ahí. Se validan por contenido (PDF, JPG o PNG) y con límites de tamaño.
+
+  // La certificación bancaria siempre es obligatoria; el soporte de cada deducción, cuando se marca.
+  const SOPORTES = {
+    banco: { paso: 'pagos', titulo: 'Certificación bancaria', falta: 'certificación bancaria',
+      descripcion: 'Expedida por tu banco a tu nombre, con el mismo número y tipo de cuenta que escribiste arriba.' },
+    dependientes: { paso: 'retencion', titulo: 'Soportes del dependiente', falta: 'soportes del dependiente',
+      descripcion: 'Registro civil, certificado de estudio o de dependencia económica, según el motivo.' },
+    hipotecario: { paso: 'retencion', titulo: 'Certificado de intereses', falta: 'certificado de intereses del crédito hipotecario',
+      descripcion: 'Certificado de la entidad financiera con los intereses pagados.' },
+    saludNoPos: { paso: 'retencion', titulo: 'Certificado de salud no POS', falta: 'certificado de salud no POS',
+      descripcion: 'Certificado de la medicina prepagada o del plan complementario con lo que pagaste.' },
+  };
+  const SOPORTE_DE_CHECK = { dedDependientes: 'dependientes', dedHipotecario: 'hipotecario', dedSaludNoPos: 'saludNoPos' };
+
+  // En la validación cada soporte es un "campo" 'soporte:clave' de su paso (sin control en sesion.controles).
+  const campoSoporte = (clave) => 'soporte:' + clave;
+  const claveSoporte = (campo) => (/^soporte:/.test(String(campo)) ? String(campo).slice(8) : '');
+
+  function soportesRequeridos() {
+    if (!S) return [];
+    return ['banco'].concat(Object.keys(SOPORTE_DE_CHECK).filter((c) => estado.s[c] === 'SI').map((c) => SOPORTE_DE_CHECK[c]));
+  }
+
+  const faltaSoporte = (clave) => soportesRequeridos().includes(clave) && !(estado.soportes[clave] || []).length;
+
+  function faltantesSoportes() {
+    return soportesRequeridos().filter(faltaSoporte)
+      .map((c) => ({ campo: campoSoporte(c), step: SOPORTES[c].paso, mensaje: 'Falta adjuntar: ' + SOPORTES[c].falta }));
+  }
+  const ACEPTA_SOPORTES = '.pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png';
+  const errorSoportes = {}; // clave -> mensaje del último intento (no se guarda)
+
+  const limitesSoportes = () => (S ? S.limites(CFG) : null);
+  const extensionDe = (tipo) => ({ 'application/pdf': 'PDF', 'image/jpeg': 'JPG', 'image/png': 'PNG' }[tipo] || '');
+
+  function crearSoportes(clave) {
+    const info = SOPORTES[clave];
+    const inputId = 'soporte-' + clave;
+    const tituloId = inputId + '-titulo';
+    const bloque = h('div', { class: 'soportes', 'data-soporte': clave, role: 'group', 'aria-labelledby': tituloId });
+    if (!S) return bloque;
+    const input = h('input', { type: 'file', id: inputId, class: 'sr-only', accept: ACEPTA_SOPORTES, multiple: true });
+    input.addEventListener('change', () => {
+      const archivos = Array.from(input.files || []);
+      input.value = '';
+      if (archivos.length) agregarSoportes(clave, archivos);
+    });
+    bloque.addEventListener('dragover', (e) => { e.preventDefault(); bloque.classList.add('arrastrando'); });
+    bloque.addEventListener('dragleave', (e) => { if (!bloque.contains(e.relatedTarget)) bloque.classList.remove('arrastrando'); });
+    bloque.addEventListener('drop', (e) => {
+      e.preventDefault();
+      bloque.classList.remove('arrastrando');
+      const archivos = Array.from((e.dataTransfer && e.dataTransfer.files) || []);
+      if (archivos.length) agregarSoportes(clave, archivos);
+    });
+    agregarHijos(bloque, [
+      h('p', { class: 'soportes-titulo', id: tituloId }, info.titulo),
+      h('p', { class: 'soportes-desc' }, info.descripcion),
+      h('ul', { class: 'soportes-lista' }),
+      h('p', { class: 'soportes-error', role: 'alert', hidden: true }),
+      h('p', { class: 'soportes-falta', hidden: true }, icono('alerta'), h('span', null, 'Adjunta este documento para continuar.')),
+      input,
+      h('div', { class: 'soportes-pie' },
+        h('label', { class: 'boton-agregar soportes-agregar', for: inputId }, icono('subir'), h('span', null)),
+        h('span', { class: 'soportes-limite' })),
+    ]);
+    pintarSoportes(clave, bloque);
+    return bloque;
+  }
+
+  function pintarSoportes(clave, bloqueEl) {
+    const bloque = bloqueEl || document.querySelector('.soportes[data-soporte="' + clave + '"]');
+    if (!bloque || !S) return;
+    const lista = estado.soportes[clave] || [];
+    const lim = limitesSoportes();
+    const ul = bloque.querySelector('.soportes-lista');
+    ul.textContent = '';
+    for (const item of lista) {
+      ul.append(h('li', { class: 'soporte' },
+        icono('archivoOk', 'icono soporte-icono'),
+        h('span', { class: 'soporte-datos' },
+          h('span', { class: 'soporte-nombre', title: item.nombre }, item.nombre),
+          h('span', { class: 'soporte-meta' }, extensionDe(item.tipo) + ' · ' + S.tamanoTexto(item.bytes))),
+        h('span', { class: 'soporte-acciones' },
+          h('button', { type: 'button', class: 'enlace', onclick: () => verSoporte(item), 'aria-label': 'Ver ' + item.nombre }, 'Ver'),
+          h('button', { type: 'button', class: 'enlace enlace--discreto', onclick: () => quitarSoporte(clave, item.id), 'aria-label': 'Quitar ' + item.nombre }, 'Quitar'))));
+    }
+    ul.hidden = !lista.length;
+    const error = bloque.querySelector('.soportes-error');
+    error.textContent = '';
+    if (errorSoportes[clave]) error.append(icono('alerta'), h('span', null, errorSoportes[clave]));
+    error.hidden = !errorSoportes[clave];
+    const agregar = bloque.querySelector('.soportes-agregar');
+    agregar.hidden = lista.length >= lim.maxPorTipo;
+    agregar.querySelector('span').textContent = lista.length ? 'Adjuntar otro archivo' : 'Adjuntar archivo';
+    const usado = S.totalBytes(estado.soportes);
+    bloque.querySelector('.soportes-limite').textContent = 'PDF, JPG o PNG · hasta ' + S.tamanoTexto(lim.maxArchivo) + ' por archivo' +
+      (usado ? ' · usas ' + S.tamanoTexto(usado) + ' de ' + S.tamanoTexto(lim.maxTotal) : '');
+    pintarFaltaSoporte(clave, bloque);
+  }
+
+  /** "Adjunta este documento para continuar": como "Falta este dato", solo después de dejar el paso o intentar avanzar. */
+  function pintarFaltaSoporte(clave, bloque) {
+    const mostrar = faltaSoporte(clave) && sesion.vistos.has(campoSoporte(clave));
+    bloque.classList.toggle('con-falta', mostrar);
+    bloque.querySelector('.soportes-falta').hidden = !mostrar;
+  }
+
+  function enfocarSoporte(clave) {
+    const bloque = document.querySelector('.soportes[data-soporte="' + clave + '"]');
+    if (!bloque) return false;
+    bloque.scrollIntoView({ block: 'center', behavior: movimientoReducido() ? 'auto' : 'smooth' });
+    const input = bloque.querySelector('input[type="file"]');
+    if (input) input.focus({ preventScroll: true });
+    return true;
+  }
+
+  /** Repinta todos los bloques de soportes (el total usado se muestra en cada uno) y lo que depende de ellos (pendientes del paso). */
+  function pintarTodosSoportes() {
+    document.querySelectorAll('.soportes[data-soporte]').forEach((b) => pintarSoportes(b.dataset.soporte, b));
+    actualizarUI();
+  }
+
+  async function agregarSoportes(clave, archivos) {
+    if (!S) return;
+    const lim = limitesSoportes();
+    const errores = [];
+    const agregados = [];
+    for (const f of archivos) {
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        const item = await S.leer(f, lim);
+        const error = S.comprobar(estado.soportes, clave, item, lim);
+        if (error) throw error;
+        estado.soportes = Object.assign({}, estado.soportes, { [clave]: (estado.soportes[clave] || []).concat(item) });
+        agregados.push(item.nombre);
+      } catch (e) {
+        if (!e || !e.codigo) avisarUnaVez('Soportes.leer', e);
+        errores.push(e && e.codigo ? e.message : 'No pudimos adjuntar «' + (f && f.name) + '». Intenta de nuevo.');
+      }
+    }
+    errorSoportes[clave] = errores.join(' ');
+    pintarTodosSoportes();
+    if (!agregados.length) return;
+    await respaldarSoportes();
+    guardarPronto();
+    anunciar(agregados.length === 1 ? 'Adjuntamos ' + agregados[0] + '.' : 'Adjuntamos ' + agregados.length + ' archivos.');
+  }
+
+  function quitarSoporte(clave, idItem) {
+    const lista = estado.soportes[clave] || [];
+    const i = lista.findIndex((x) => x.id === idItem);
+    if (i < 0) return;
+    const quitado = lista[i];
+    const resto = lista.filter((x) => x.id !== idItem);
+    estado.soportes = Object.assign({}, estado.soportes);
+    if (resto.length) estado.soportes[clave] = resto; else delete estado.soportes[clave];
+    errorSoportes[clave] = '';
+    pintarTodosSoportes();
+    respaldarSoportes();
+    guardarPronto();
+    toast('Quitamos «' + quitado.nombre + '».', {
+      accion: 'Deshacer',
+      alAccionar: () => {
+        const actual = estado.soportes[clave] || [];
+        if (actual.some((x) => x.id === quitado.id)) return;
+        const copia = actual.slice();
+        copia.splice(Math.min(i, copia.length), 0, quitado);
+        estado.soportes = Object.assign({}, estado.soportes, { [clave]: copia });
+        pintarTodosSoportes();
+        respaldarSoportes();
+        guardarPronto();
+      },
+    });
+  }
+
+  function verSoporte(item) {
+    try {
+      const url = URL.createObjectURL(S.aBlob(item));
+      const a = h('a', { href: url, target: '_blank', rel: 'noopener', hidden: true });
+      document.body.append(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch (e) {
+      avisarUnaVez('Soportes.ver', e);
+      toast('No pudimos abrir este archivo.', { tono: 'error' });
+    }
+  }
+
+  function descargarSoporte(item) {
+    try { descargarBlob(S.aBlob(item), item.nombre); } catch (e) {
+      avisarUnaVez('Soportes.descargar', e);
+      toast('No pudimos descargar este archivo.', { tono: 'error' });
+    }
+  }
+
+  /** Revisión: los soportes adjuntos de lo que aplica, para descargarlos (los que faltan van en Pendientes). */
+  function construirSoportesRevision() {
+    if (!S) return null;
+    const claves = soportesRequeridos().filter((c) => (estado.soportes[c] || []).length);
+    if (!claves.length) return null;
+    return h('section', { class: 'grupo', 'aria-labelledby': 'rev-soportes' },
+      h('h3', { class: 'grupo-titulo', id: 'rev-soportes' }, 'Soportes adjuntos'),
+      h('p', { class: 'grupo-intro' }, 'Quedan guardados en este archivo. Descárgalos para enviarlos junto con el PDF firmado.'),
+      h('ul', { class: 'soportes-lista soportes-lista--revision' }, claves.flatMap((c) => estado.soportes[c].map((item) =>
+        h('li', { class: 'soporte' },
+          icono('archivoOk', 'icono soporte-icono'),
+          h('span', { class: 'soporte-datos' },
+            h('span', { class: 'soporte-nombre', title: item.nombre }, item.nombre),
+            h('span', { class: 'soporte-meta' }, SOPORTES[c].titulo + ' · ' + extensionDe(item.tipo) + ' · ' + S.tamanoTexto(item.bytes))),
+          h('span', { class: 'soporte-acciones' },
+            h('button', { type: 'button', class: 'enlace', onclick: () => verSoporte(item), 'aria-label': 'Ver ' + item.nombre }, 'Ver'),
+            h('button', { type: 'button', class: 'enlace', onclick: () => descargarSoporte(item), 'aria-label': 'Descargar ' + item.nombre }, 'Descargar')))))));
+  }
+
   // ─────────────────────────── Actualización de la interfaz ───────────────────────────
 
   function actualizarUI() {
@@ -1854,6 +2120,7 @@
     actualizarSugerencias();
     actualizarPlegables();
     actualizarGrupos();
+    document.querySelectorAll('.soportes[data-soporte]').forEach((b) => pintarFaltaSoporte(b.dataset.soporte, b));
     actualizarResumenPaso(v, paso, d);
     pintarStepper(v);
     pintarGuardado();
@@ -2759,8 +3026,9 @@
     const v = validar();
     const d = derivar();
     const pendientes = listaPendientes(v);
-    const requeridos = IDS.filter((id) => visibleEn(id, estado.s) && requeridoEn(id, estado.s));
-    const llenos = requeridos.filter((id) => estado.s[id] && !v.errores[id]).length;
+    const requeridos = IDS.filter((id) => visibleEn(id, estado.s) && requeridoEn(id, estado.s)).concat(soportesRequeridos().map(campoSoporte));
+    const lleno = (id) => (claveSoporte(id) ? !faltaSoporte(claveSoporte(id)) : estado.s[id] && !v.errores[id]);
+    const llenos = requeridos.filter(lleno).length;
     const completo = v.completo && !pendientes.length;
     const pct = completo ? 100 : Math.min(99, Math.round((llenos / Math.max(1, requeridos.length)) * 100));
 
@@ -2832,6 +3100,8 @@
       h('h3', { class: 'grupo-titulo', id: 'rev-desc' }, 'Descargas'),
       h('div', { class: 'descargas-botones' }, botonPdf),
       h('p', { class: 'ayuda-campo' }, 'El PDF se genera con la ventana de impresión de tu navegador: elige «Guardar como PDF».')));
+    const soportes = construirSoportesRevision();
+    if (soportes) cuerpo.append(soportes);
 
     // El nombre solo se muestra cuando ya cumple la regla NOMBRE_CONTRATO_AÑOCONTRATO.
     const limpio = estadoLimpio();
@@ -2990,12 +3260,15 @@
 
   /** Formulario en limpio: sin datos y sin archivo (el siguiente guardado pide un archivo nuevo). */
   function reiniciar() {
-    if (G) { G.borrarPendiente(archivo.id); G.borrarPendiente(null); }
+    borrarPendientes(archivo.id);
+    borrarPendientes(null);
     clearTimeout(temporizadorRespaldo);
     clearTimeout(temporizadorArchivo);
     Object.assign(archivo, { id: null, manejador: null, nombre: '', estado: 'nuevo', sucio: false, preguntado: false, repetir: false });
     estado.s = estadoInicial();
     estado.meta = metaInicial();
+    estado.soportes = {};
+    for (const k of Object.keys(errorSoportes)) delete errorSoportes[k];
     sesion.tocados.clear();
     sesion.vistos.clear();
     sesion.resultados = { RUT: null, RIT: null };
@@ -3113,16 +3386,17 @@
     if (G) G.capturar(document);
     estado.s = estadoInicial();
     estado.meta = metaInicial();
+    estado.soportes = {};
     const embebido = G ? G.leerEmbebido(document) : null;
     if (embebido) {
       cargarDatos(embebido);
       archivo.id = typeof embebido.id === 'string' && embebido.id ? embebido.id.slice(0, 80) : null;
-      archivo.estado = tieneDatos(estado.s) ? 'leido' : 'nuevo';
+      archivo.estado = hayAlgo() ? 'leido' : 'nuevo';
     }
 
     construirStepper();
     renderPaso();
-    if (embebido && tieneDatos(estado.s)) mostrarDueno(embebido);
+    if (embebido && hayAlgo()) mostrarDueno(embebido);
     ofrecerRecuperacion(embebido);
     if (archivo.id) reconectarArchivo();
 
@@ -3145,7 +3419,7 @@
     window.addEventListener('pagehide', guardarAhora);
     // Como en Excel: si hay cambios que aún no están en el archivo, el navegador pregunta antes de cerrar.
     window.addEventListener('beforeunload', (e) => {
-      if (!archivo.sucio || !tieneDatos(estado.s)) return;
+      if (!archivo.sucio || !hayAlgo()) return;
       guardarAhora();
       e.preventDefault();
       e.returnValue = '';
@@ -3179,7 +3453,7 @@
     if (!G) return;
     const pendiente = G.leerPendiente(archivo.id);
     if (!pendiente || !valoresDe(pendiente).usados) return;
-    if (embebido && String(pendiente.guardado || '') <= String(embebido.guardado || '')) { G.borrarPendiente(archivo.id); return; }
+    if (embebido && String(pendiente.guardado || '') <= String(embebido.guardado || '')) { borrarPendientes(archivo.id); return; }
     const fecha = pendiente.guardado ? new Date(pendiente.guardado) : null;
     const cuando = fecha && !isNaN(fecha)
       ? ' del ' + String(fecha.getDate()).padStart(2, '0') + '/' + String(fecha.getMonth() + 1).padStart(2, '0') + '/' + fecha.getFullYear() +
@@ -3192,9 +3466,13 @@
       principal: 'Recuperar', secundario: 'Descartar', enfocar: 'principal',
       nativo: { pregunta: '¿Recuperarlo?', si: 'principal' },
     });
-    if (r !== 'principal') { G.borrarPendiente(archivo.id); return; }
+    if (r !== 'principal') { borrarPendientes(archivo.id); return; }
     const paso = estado.meta.paso;
+    // El respaldo de los datos no lleva los soportes: vienen de IndexedDB o, si no hay, se quedan los del archivo.
+    const soportesRespaldo = S ? await S.leerRespaldo(archivo.id) : null;
+    const soportesArchivo = estado.soportes;
     cargarDatos(pendiente);
+    estado.soportes = soportesRespaldo || soportesArchivo;
     estado.meta.paso = paso;
     sesion.tocados.clear();
     renderPaso();
@@ -3259,7 +3537,7 @@
     try {
       const texto = await traer(CFG.actualizaciones.htmlUrl, true);
       if (!G.esFormulario(texto)) throw new Error('el archivo descargado no es el formulario');
-      const conDatos = tieneDatos(estado.s);
+      const conDatos = hayAlgo();
       if (conDatos && !archivo.id) archivo.id = G.nuevoId();
       const nuevo = G.html(conDatos ? datosParaGuardar() : null, texto);
 
@@ -3273,7 +3551,7 @@
         // La página vieja ya no debe escribir en el archivo (lo devolvería a la versión anterior).
         archivo.manejador = null;
         archivo.sucio = false;
-        G.borrarPendiente(archivo.id);
+        await borrarPendientes(archivo.id);
         location.reload();
         return;
       }
