@@ -36,8 +36,13 @@ window.CONFIG = {
   soportes: { maxArchivoMb: 4, maxTotalMb: 12, maxPorTipo: 5 },
 
   // Consulta del contrato en SECOP II (Datos Abiertos Colombia, conjunto jbjy-vk9h "Contratos Electrónicos").
+  // La API v3 (url) exige un token de aplicación gratuito de datos.gov.co (Perfil → Configuración del desarrollador →
+  // Crear nuevo token de aplicación). Con appToken la cédula va en el cuerpo de la petición; sin él se usa urlAbierta,
+  // donde va en la URL. El token queda visible dentro del HTML: solo sirve para la cuota de consultas.
   secop: {
     url: 'https://www.datos.gov.co/api/v3/views/jbjy-vk9h/query.json',
+    urlAbierta: 'https://www.datos.gov.co/resource/jbjy-vk9h.json',
+    appToken: '',
     codigoEntidad: '701321135', // Secretaría de Educación del Distrito
     estadosExcluidos: ['Borrador', 'Cancelado', 'Cerrado', 'terminado'],
     tiempoMaximoMs: 20000,

@@ -1,10 +1,16 @@
 // Consulta del contrato del contratista en SECOP II (Datos Abiertos Colombia, conjunto jbjy-vk9h).
 // Filtra por la entidad (Secretaría de Educación del Distrito, código 701321135) y por el documento del
 // proveedor, descarta los contratos que ya no están vigentes y traduce el contrato elegido a campos del
-// formulario. La cédula viaja en el cuerpo de una petición POST (no en la URL).
+// formulario.
+//
+// Desde 2026 la API v3 de Datos Abiertos (POST, la cédula en el cuerpo) exige un token de aplicación. Con
+// CONFIG.secop.appToken se usa esa; sin token (o si la rechaza) se usa la API abierta v2 (GET), donde la
+// cédula va en la consulta de la URL: viaja cifrada (HTTPS) y sin Referer, pero queda en los registros del servidor.
 (function (root) {
   const POR_DEFECTO = {
     url: 'https://www.datos.gov.co/api/v3/views/jbjy-vk9h/query.json',
+    urlAbierta: 'https://www.datos.gov.co/resource/jbjy-vk9h.json',
+    appToken: '',
     codigoEntidad: '701321135',
     estadosExcluidos: ['Borrador', 'Cancelado', 'Cerrado', 'terminado'],
     tiempoMaximoMs: 20000,
@@ -33,12 +39,23 @@
 
   const soloDigitos = (t) => String(t == null ? '' : t).replace(/\D/g, '');
 
-  /** SoQL de la consulta. Solo dígitos llegan a la consulta: no hay inyección posible. */
-  function consulta(documento) {
+  /** Condición SoQL de la consulta. Solo dígitos llegan a la consulta: no hay inyección posible. */
+  function filtro(documento) {
     const doc = soloDigitos(documento);
     if (doc.length < 5 || doc.length > 12) throw error('DOCUMENTO_INVALIDO', 'Número de identificación no válido para consultar SECOP.');
     const entidad = soloDigitos(config().codigoEntidad);
-    return 'SELECT ' + COLUMNAS.join(', ') + " WHERE codigo_entidad='" + entidad + "' AND documento_proveedor='" + doc + "' LIMIT 100";
+    return "codigo_entidad='" + entidad + "' AND documento_proveedor='" + doc + "'";
+  }
+
+  /** SoQL completa (API v3, en el cuerpo del POST). */
+  function consulta(documento) {
+    return 'SELECT ' + COLUMNAS.join(', ') + ' WHERE ' + filtro(documento) + ' LIMIT 100';
+  }
+
+  /** Dirección de la API abierta v2 con la consulta en sus parámetros. */
+  function urlAbierta(documento) {
+    const p = { $select: COLUMNAS.join(','), $where: filtro(documento), $limit: '100' };
+    return config().urlAbierta + '?' + Object.entries(p).map(([k, v]) => k + '=' + encodeURIComponent(v)).join('&');
   }
 
   const fechaIso = (v) => {
@@ -120,6 +137,19 @@
     return { vigentes, otros };
   }
 
+  /** Una petición con tiempo máximo; los fallos de red salen como SIN_CONEXION o TIEMPO. */
+  async function pedir(f, url, init, cfg) {
+    const control = typeof AbortController === 'function' ? new AbortController() : null;
+    const reloj = control ? setTimeout(() => control.abort(), cfg.tiempoMaximoMs) : null;
+    try {
+      return await f(url, Object.assign({ signal: control ? control.signal : undefined, credentials: 'omit', referrerPolicy: 'no-referrer' }, init));
+    } catch (e) {
+      throw error(e && e.name === 'AbortError' ? 'TIEMPO' : 'SIN_CONEXION', 'No pudimos conectarnos con SECOP II.');
+    } finally {
+      if (reloj) clearTimeout(reloj);
+    }
+  }
+
   /**
    * Busca los contratos del documento con la entidad. opts: { fetch, hoy, senal }.
    * Devuelve { vigentes, otros, total }. Errores con .codigo: DOCUMENTO_INVALIDO, SIN_CONEXION, TIEMPO, HTTP_nnn, RESPUESTA.
@@ -128,25 +158,20 @@
     const o = opts || {};
     const f = o.fetch || root.fetch;
     if (typeof f !== 'function') throw error('SIN_CONEXION', 'Este navegador no puede consultar SECOP.');
-    const cuerpo = JSON.stringify({ query: consulta(documento) });
     const cfg = config();
-    const control = typeof AbortController === 'function' ? new AbortController() : null;
-    const reloj = control ? setTimeout(() => control.abort(), cfg.tiempoMaximoMs) : null;
-    let respuesta;
-    try {
-      respuesta = await f(cfg.url, {
+    const token = String(cfg.appToken || '').trim();
+    let respuesta = null;
+    if (token) {
+      respuesta = await pedir(f, cfg.url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: cuerpo,
-        signal: control ? control.signal : undefined,
-        credentials: 'omit',
-        referrerPolicy: 'no-referrer',
-      });
-    } catch (e) {
-      throw error(e && e.name === 'AbortError' ? 'TIEMPO' : 'SIN_CONEXION', 'No pudimos conectarnos con SECOP II.');
-    } finally {
-      if (reloj) clearTimeout(reloj);
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-App-Token': token },
+        body: JSON.stringify({ query: consulta(documento) }),
+      }, cfg);
+      // Token vencido o revocado: se sigue con la API abierta para no dejar a la persona sin consulta.
+      if (respuesta && (respuesta.status === 401 || respuesta.status === 403)) respuesta = null;
     }
+    // GET sin encabezados propios: petición simple, sin verificación previa de CORS.
+    if (!respuesta) respuesta = await pedir(f, urlAbierta(documento), { method: 'GET' }, cfg);
     if (!respuesta || !respuesta.ok) throw error('HTTP_' + (respuesta ? respuesta.status : 0), 'SECOP II no respondió como esperábamos.');
     let datos;
     try { datos = await respuesta.json(); } catch (e) { throw error('RESPUESTA', 'La respuesta de SECOP II no se pudo leer.'); }
@@ -197,7 +222,7 @@
     return { campos, notas };
   }
 
-  const Secop = { buscar, clasificar, normalizar, aCampos, areaDesdeObjeto, duracionEnDias, consulta, config };
+  const Secop = { buscar, clasificar, normalizar, aCampos, areaDesdeObjeto, duracionEnDias, consulta, urlAbierta, config };
   root.Secop = Secop;
   if (typeof module !== 'undefined' && module.exports) module.exports = Secop;
 })(typeof window !== 'undefined' ? window : globalThis);
