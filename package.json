@@ -1,6 +1,6 @@
 {
   "name": "sed-formulario-actualizacion",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "private": true,
   "description": "Formulario web 13-IF-016 de actualización de datos (personas naturales, honorarios y servicios personales art. 103 ET) con lectura automática de RUT y RIT en PDF.",
   "scripts": {
