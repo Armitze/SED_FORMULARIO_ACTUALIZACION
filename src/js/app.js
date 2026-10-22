@@ -219,6 +219,7 @@
       'Actividad económica RUT: tu actividad principal (código CIIU de 4 dígitos).',
       'Actividad económica RIT: la actividad principal registrada en Bogotá; debe corresponder a la que realizas en el contrato (art. 11 del Acuerdo 065 de 2002).',
       'Régimen de IVA: según las responsabilidades de tu RUT (48 responsable, 49 no responsable).',
+      'Si cargaste tu RUT y tu RIT, las listas de actividades muestran solo las registradas en cada documento.',
       'La tarifa por mil se calcula automáticamente.',
     ],
     contrato: [
@@ -642,6 +643,8 @@
         documento: soloDigitos(v.documento).slice(0, 15),
         direccion: texto500(v.direccion, 200),
         sinFijo: v.sinFijo === true,
+        actividades: (Array.isArray(v.actividades) ? v.actividades : []).slice(0, 20)
+          .map(String).filter((c, i, l) => l.indexOf(c) === i && buscarOpcion(CAMPO_ACTIVIDAD[k], c)),
         alternativas: (Array.isArray(v.alternativas) ? v.alternativas : []).slice(0, 15)
           .filter((a) => a && typeof a === 'object' && buscarOpcion('actividadRit', String(a.valor)))
           .map((a) => ({ valor: String(a.valor), texto: texto500(a.texto, 300) })),
@@ -817,6 +820,24 @@
 
   const textoOpcion = (o) => (o.codigo ? o.codigo + ' — ' + o.texto : o.texto);
 
+  // Actividad económica: si se leyó el RUT (o el RIT), solo se puede elegir entre las actividades registradas
+  // en ese documento. Sin documento (o si no trae ninguna del catálogo) se busca en el catálogo completo.
+  const CAMPO_ACTIVIDAD = { RUT: 'actividadRut', RIT: 'actividadRit' };
+  const DOC_DE_ACTIVIDAD = { actividadRut: 'RUT', actividadRit: 'RIT' };
+
+  /** Códigos de actividad registrados en el documento que alimenta ese campo, o [] si no hay. */
+  function actividadesDelDocumento(id) {
+    const doc = DOC_DE_ACTIVIDAD[id] && estado.meta.docs[DOC_DE_ACTIVIDAD[id]];
+    return doc && Array.isArray(doc.actividades) ? doc.actividades : [];
+  }
+
+  /** Opciones que la persona puede elegir en la lista (buscarOpcion sigue usando el catálogo completo). */
+  function opcionesElegibles(id) {
+    const codigos = actividadesDelDocumento(id);
+    if (!codigos.length) return opcionesDe(id);
+    return opcionesDe(id).filter((o) => codigos.includes(o.valor));
+  }
+
   function buscarOpcion(id, valor) {
     if (valor === '' || valor == null) return null;
     return opcionesDe(id).find((o) => o.valor === String(valor)) || null;
@@ -921,8 +942,26 @@
   function validar() {
     const v = validarCampos();
     const soportes = faltantesSoportes();
-    if (!soportes.length) return v;
-    return Object.assign({}, v, { completo: false, faltantes: v.faltantes.concat(soportes) });
+    const actividades = erroresActividades();
+    if (!soportes.length && !Object.keys(actividades).length) return v;
+    return Object.assign({}, v, {
+      completo: false,
+      faltantes: v.faltantes.concat(soportes),
+      errores: Object.assign({}, v.errores, actividades),
+    });
+  }
+
+  /** Actividad elegida que no está registrada en el documento leído (p. ej. escrita antes de cargarlo). */
+  function erroresActividades() {
+    const errores = {};
+    for (const [id, doc] of Object.entries(DOC_DE_ACTIVIDAD)) {
+      const v = estado.s[id];
+      const codigos = actividadesDelDocumento(id);
+      if (v && codigos.length && !codigos.includes(String(v))) {
+        errores[id] = 'Esta actividad no está registrada en tu ' + doc + '. Elige una de las de la lista.';
+      }
+    }
+    return errores;
   }
 
   function validarCampos() {
@@ -1363,7 +1402,7 @@
     };
 
     function filtrar(consulta) {
-      const ops = opcionesDe(id);
+      const ops = opcionesElegibles(id);
       const q = norm(consulta);
       if (!q) return ops;
       const palabras = q.split(' ');
@@ -1413,7 +1452,7 @@
     }
 
     function abrir(consulta, mostrarTodo) {
-      const todos = mostrarTodo ? opcionesDe(id) : filtrar(consulta);
+      const todos = mostrarTodo ? opcionesElegibles(id) : filtrar(consulta);
       let lote = todos.slice(0, MAX_OPCIONES_COMBO);
       const actual = estado.s[id];
       if (mostrarTodo && actual) {
@@ -1456,7 +1495,7 @@
       }
       if (texto === textoActual()) return;
       const q = norm(texto);
-      const ops = opcionesDe(id);
+      const ops = opcionesElegibles(id);
       // El código gana; un texto exacto solo se acepta si es de una sola opción (en ARL y RIT hay
       // descripciones repetidas con códigos distintos: nunca se elige una al azar).
       const porCodigo = ops.filter((o) => o.codigo && norm(o.codigo) === q);
@@ -2801,6 +2840,7 @@
     }
     const alternativas = tipo === 'RIT' ? alternativasRit(res.extra) : [];
     const extra = res.extra || {};
+    const actividades = actividadesLeidas(tipo, res, alternativas);
     sesion.resultados[tipo] = { tipo, res, archivo: archivoNombre, doc: o.doc || null };
     // Al cambiar de documento, los conflictos que dejó el anterior ya no aplican.
     for (const [k, c] of Object.entries(estado.meta.conflictos)) if (c.fuente === tipo) delete estado.meta.conflictos[k];
@@ -2813,6 +2853,7 @@
       documento: idDocumento(tipo),
       direccion: tipo === 'RIT' ? String(extra.direccion || '').trim().slice(0, 200) : '',
       sinFijo: tipo === 'RUT' && valorDe(res, 'telefono1') === '0',
+      actividades,
       alternativas: alternativas.length > 1 || (alternativas.length === 1 && !valores.actividadRit) ? alternativas.slice(0, 15) : [],
     };
     sesion.zonas[tipo] = { estado: 'idle' };
@@ -2824,6 +2865,24 @@
     if (tipo === 'RUT' && !o.sinReanalizar) reanalizarRit();
     pintarNavegacion();
     guardarPronto();
+  }
+
+  /**
+   * Códigos de actividad registrados en el documento que existen en el catálogo del formulario. RUT: casillas
+   * 46 (principal), 48 (secundaria) y 50 (otras). RIT: la principal y las demás actividades del certificado.
+   */
+  function actividadesLeidas(tipo, res, alternativas) {
+    const campo = CAMPO_ACTIVIDAD[tipo];
+    const codigos = [valorDe(res, campo)];
+    if (tipo === 'RUT') {
+      const act = (res.extra && res.extra.actividades) || {};
+      codigos.push(act.principal && act.principal.codigo, act.secundaria && act.secundaria.codigo);
+      for (const a of Array.isArray(act.otras) ? act.otras : []) codigos.push(a && a.codigo);
+    } else {
+      for (const a of alternativas) codigos.push(a.valor);
+    }
+    return codigos.map((c) => String(c == null ? '' : c).trim())
+      .filter((c, i, l) => c && l.indexOf(c) === i && buscarOpcion(campo, c)).slice(0, 20);
   }
 
   /** Con el RUT recién leído, vuelve a leer el RIT de esta sesión con su documento y su actividad. */
