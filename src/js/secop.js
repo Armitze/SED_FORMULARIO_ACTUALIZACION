@@ -218,7 +218,15 @@
       campos.areaFuncional = area;
       notas.areaFuncional = 'La tomamos del objeto de tu contrato en SECOP II. Verifícala.';
     }
-    if (c.referencia) notas.numeroContrato = 'En SECOP II tu contrato aparece como ' + c.referencia + '. Aquí va el número de contrato de la SED.';
+    // SECOP no publica otro número: el del contrato es la parte numérica de su referencia (CO1.PCCNTR.10018743 → 10018743),
+    // si cabe en los 8 caracteres de la celda del Excel.
+    const numero = (/(?:^|\.)(\d{1,8})$/.exec(c.referencia || '') || [])[1];
+    if (numero) {
+      campos.numeroContrato = numero;
+      notas.numeroContrato = 'Lo tomamos de tu contrato en SECOP II (' + c.referencia + '). Verifícalo.';
+    } else if (c.referencia) {
+      notas.numeroContrato = 'En SECOP II tu contrato aparece como ' + c.referencia + '. Escribe aquí el número del contrato.';
+    }
     return { campos, notas };
   }
 

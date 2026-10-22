@@ -118,11 +118,19 @@ describe('Secop.aCampos', () => {
     const { campos, notas } = Secop.aCampos(c);
     assert.deepEqual(campos, {
       anioContrato: '2026', valorTotal: '48000000', fechaInicio: '2026-02-02', fechaTerminacion: '2026-12-31', cesion: 'NO',
-      valorMensual: '6000000', areaFuncional: 'Oficina de Control Disciplinario de Juzgamiento',
+      valorMensual: '6000000', areaFuncional: 'Oficina de Control Disciplinario de Juzgamiento', numeroContrato: '1',
     });
     assert.match(notas.valorMensual, /\(8 meses\)/);
-    assert.match(notas.numeroContrato, /CO1\.PCCNTR\.1/);
+    assert.match(notas.numeroContrato, /CO1\.PCCNTR\.1\)/);
     assert.equal(c.url.startsWith('https://community.secop.gov.co/'), true);
+  });
+
+  test('número de contrato: la parte numérica de la referencia, si cabe en 8 caracteres', () => {
+    const numero = (ref) => Secop.aCampos(Secop.normalizar(fila(ref))).campos.numeroContrato;
+    assert.equal(numero('CO1.PCCNTR.10018743'), '10018743');
+    assert.equal(numero('CO1.PCCNTR.123456789'), undefined, 'más de 8 dígitos: se escribe a mano');
+    assert.equal(numero('CO1.PCCNTR.ABC'), undefined);
+    assert.match(Secop.aCampos(Secop.normalizar(fila('CO1.PCCNTR.123456789'))).notas.numeroContrato, /Escribe aquí/);
   });
 
   test('duración en días, cesión y supervisor definido', () => {
