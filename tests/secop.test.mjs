@@ -37,16 +37,57 @@ describe('Secop.consulta', () => {
 });
 
 describe('Secop.buscar', () => {
-  test('POST con la consulta en el cuerpo (la cédula no va en la URL)', async () => {
+  /** Ejecuta fn con CONFIG.secop.appToken = token y lo restaura. */
+  async function conToken(token, fn) {
+    const previo = globalThis.CONFIG.secop.appToken;
+    globalThis.CONFIG.secop.appToken = token;
+    try { return await fn(); } finally { globalThis.CONFIG.secop.appToken = previo; }
+  }
+
+  test('sin token: GET a la API abierta, sin encabezados propios', async () => {
     const registro = [];
-    const r = await Secop.buscar('52345678', { fetch: fetchFalso({ datos: [fila('CO1.PCCNTR.1')] }, registro), hoy: '2026-10-02' });
+    const r = await conToken('', () => Secop.buscar('52345678', { fetch: fetchFalso({ datos: [fila('CO1.PCCNTR.1')] }, registro), hoy: '2026-10-02' }));
+    assert.equal(registro.length, 1);
+    const u = new URL(registro[0].url);
+    assert.equal(u.origin + u.pathname, 'https://www.datos.gov.co/resource/jbjy-vk9h.json');
+    assert.equal(registro[0].init.method, 'GET');
+    assert.equal(registro[0].init.headers, undefined, 'sin encabezados: no hay verificación previa de CORS');
+    assert.equal(registro[0].init.referrerPolicy, 'no-referrer');
+    assert.equal(u.searchParams.get('$where'), "codigo_entidad='701321135' AND documento_proveedor='52345678'");
+    assert.equal(u.searchParams.get('$limit'), '100');
+    assert.match(u.searchParams.get('$select'), /^referencia_del_contrato,id_contrato,/);
+    assert.equal(r.vigentes.length, 1);
+    assert.equal(r.total, 1);
+  });
+
+  test('con token: POST a la API v3 con la consulta en el cuerpo (la cédula no va en la URL)', async () => {
+    const registro = [];
+    const r = await conToken('tok-ficticio', () => Secop.buscar('52345678', { fetch: fetchFalso({ datos: [fila('CO1.PCCNTR.1')] }, registro), hoy: '2026-10-02' }));
     assert.equal(registro.length, 1);
     assert.equal(registro[0].url, 'https://www.datos.gov.co/api/v3/views/jbjy-vk9h/query.json');
     assert.equal(registro[0].init.method, 'POST');
+    assert.equal(registro[0].init.headers['X-App-Token'], 'tok-ficticio');
     assert.ok(!registro[0].url.includes('52345678'));
     assert.match(JSON.parse(registro[0].init.body).query, /documento_proveedor='52345678'/);
     assert.equal(r.vigentes.length, 1);
-    assert.equal(r.total, 1);
+  });
+
+  test('con token rechazado (403): sigue con la API abierta', async () => {
+    const registro = [];
+    let n = 0;
+    const f = async (url, init) => {
+      registro.push({ url, init });
+      return n++ === 0 ? { ok: false, status: 403, json: async () => ({ code: 'authentication_required' }) }
+        : { ok: true, status: 200, json: async () => [fila('CO1.PCCNTR.1')] };
+    };
+    const r = await conToken('tok-vencido', () => Secop.buscar('52345678', { fetch: f, hoy: '2026-10-02' }));
+    assert.deepEqual(registro.map((x) => x.init.method), ['POST', 'GET']);
+    assert.equal(r.vigentes.length, 1);
+  });
+
+  test('urlAbierta valida el documento como la consulta', () => {
+    assert.throws(() => Secop.urlAbierta("1' OR '1'='1"), { codigo: 'DOCUMENTO_INVALIDO' });
+    assert.ok(Secop.urlAbierta('52.345.678').includes(encodeURIComponent("documento_proveedor='52345678'")));
   });
 
   test('descarta estados excluidos y vencidos; ordena por firma; sin repetidos', async () => {
@@ -77,11 +118,19 @@ describe('Secop.aCampos', () => {
     const { campos, notas } = Secop.aCampos(c);
     assert.deepEqual(campos, {
       anioContrato: '2026', valorTotal: '48000000', fechaInicio: '2026-02-02', fechaTerminacion: '2026-12-31', cesion: 'NO',
-      valorMensual: '6000000', areaFuncional: 'Oficina de Control Disciplinario de Juzgamiento',
+      valorMensual: '6000000', areaFuncional: 'Oficina de Control Disciplinario de Juzgamiento', numeroContrato: '1',
     });
     assert.match(notas.valorMensual, /\(8 meses\)/);
-    assert.match(notas.numeroContrato, /CO1\.PCCNTR\.1/);
+    assert.match(notas.numeroContrato, /CO1\.PCCNTR\.1\)/);
     assert.equal(c.url.startsWith('https://community.secop.gov.co/'), true);
+  });
+
+  test('número de contrato: la parte numérica de la referencia, si cabe en 8 caracteres', () => {
+    const numero = (ref) => Secop.aCampos(Secop.normalizar(fila(ref))).campos.numeroContrato;
+    assert.equal(numero('CO1.PCCNTR.10018743'), '10018743');
+    assert.equal(numero('CO1.PCCNTR.123456789'), undefined, 'más de 8 dígitos: se escribe a mano');
+    assert.equal(numero('CO1.PCCNTR.ABC'), undefined);
+    assert.match(Secop.aCampos(Secop.normalizar(fila('CO1.PCCNTR.123456789'))).notas.numeroContrato, /Escribe aquí/);
   });
 
   test('duración en días, cesión y supervisor definido', () => {

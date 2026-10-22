@@ -1117,7 +1117,8 @@ ${propios.map((p) => `<script src="${relativo(p)}"></script>`).join('\n')}
     assert.equal(d.guardado.estado, 'nuevo', 'con datos y sin archivo: Sin guardar');
     assert.match(d.guardado.texto, /Sin guardar/);
     assert.deepEqual(d.copia, { conWorker: true, pasoVacio: true, datos: true, doctype: true }, 'la copia guardada es el HTML original con los datos');
-    assert.deepEqual(d.revision, { interna: false, codificacion: false, nombrePendiente: true, resumenAntesDeDescargas: true,
+    // El número de contrato llega de SECOP (CO1.PCCNTR.2 → 2): el nombre del archivo ya se muestra.
+    assert.deepEqual(d.revision, { interna: false, codificacion: false, nombrePendiente: false, resumenAntesDeDescargas: true,
       renglonesPendientes: d.revision.renglonesPendientes, borrador: false });
     assert.ok(d.revision.renglonesPendientes > 0);
     assert.deepEqual(d.dialogo, { abierto: true, principal: 'Volver y completar', foco: 'Volver y completar', cerrado: true, paso: 1 });

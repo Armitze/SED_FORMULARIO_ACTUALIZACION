@@ -43,6 +43,19 @@
     }
   }
 
+  /** Datos guardados en el texto de un archivo HTML del formulario (o null): para leer formularios recibidos. */
+  function leerDeTexto(texto) {
+    const m = RE_BLOQUE.exec(String(texto || ''));
+    const contenido = m ? m[2].trim() : '';
+    if (!contenido) return null;
+    try {
+      const datos = JSON.parse(contenido);
+      return datos && typeof datos === 'object' && !Array.isArray(datos) ? datos : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
   /** JSON seguro dentro de <script>: '<' y los separadores de línea de Unicode van escapados. */
   const BARRA = String.fromCharCode(92);
   const SEPARADORES = [['<', 0x3c], [String.fromCharCode(0x2028), 0x2028], [String.fromCharCode(0x2029), 0x2029]];
@@ -227,7 +240,7 @@
   }
 
   const Guardado = {
-    ID_BLOQUE, capturar, leerEmbebido, html, jsonSeguro, versionMayor, esFormulario, soportaArchivos, archivoActual, elegirArchivo, permiso, escribir, descargar,
+    ID_BLOQUE, capturar, leerEmbebido, leerDeTexto, html, jsonSeguro, versionMayor, esFormulario, soportaArchivos, archivoActual, elegirArchivo, permiso, escribir, descargar,
     recordarArchivo, archivoRecordado, guardarPendiente, leerPendiente, borrarPendiente, nuevoId,
     _reiniciarPlantilla: () => { plantilla = null; },
   };

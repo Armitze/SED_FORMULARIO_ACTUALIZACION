@@ -40,6 +40,29 @@ Los documentos se leen en el navegador y **no se envían a ningún servidor**. L
 
 Si solo se carga el RUT, el formulario sugiere las actividades RIT compatibles con el código CIIU (por ejemplo 6920 → 69201 / 69202).
 
+## Para Tesorería: consolidar los formularios recibidos
+
+`consolidador-13-IF-016.html` mantiene un consolidado con una fila por contratista dentro de una **carpeta raíz** (por ejemplo, una carpeta compartida de Tesorería):
+
+```
+Carpeta raíz/
+  Consolidado_13-IF-016.xlsx
+  Consolidado_13-IF-016 (anterior).xlsx      respaldo de la versión antes del último guardado
+  Contratistas/
+    2026/
+      PEREZ_GOMEZ_ANA/                       Certificacion_bancaria.pdf, Soporte_dependiente_1.pdf, …, Formulario.html
+      PEREZ_GOMEZ_ANA_1234/                  el mismo nombre con otro contrato del mismo año
+```
+
+1. Ábrelo con doble clic en **Chrome o Edge** y elige la carpeta raíz (la próxima vez ofrece usar la misma; el navegador pide permiso de nuevo).
+2. Arrastra los `.html` que enviaron los contratistas, o elige la carpeta donde los guardaste.
+3. Revisa la lista: estado de cada formulario (completo o cuántos pendientes) y qué pasará en el consolidado: **Nuevo**, **Se actualiza** (el formulario es más reciente que la fila) o **Ya está** (sin cambios). Del mismo contratista y contrato se usa el guardado más reciente.
+4. Pulsa **Agregar al consolidado**: se guardan los archivos en `Contratistas/AÑO/NOMBRE/` y se reescribe el Excel con las filas nuevas y actualizadas. Al actualizar, los soportes anteriores de ese contratista se reemplazan por los del formulario nuevo.
+
+En el Excel se puede filtrar, ordenar y agregar columnas propias (observaciones…): se conservan, también en las filas que se actualizan. Las columnas de soportes y «Carpeta del contratista» enlazan a los archivos. Si el Excel está abierto, ciérralo antes de agregar formularios (Windows no deja reemplazarlo). Firefox y Safari no permiten trabajar sobre una carpeta: ahí se descarga un ZIP o solo el Excel.
+
+El Excel tiene los campos del formulario en el orden de los pasos, más los valores calculados (nombre completo, titular de la cuenta, descripciones de actividad y ARL, tarifa ICA, duración, valor sin IVA e IVA, valores mensuales a deducir y la codificación tributaria cuando el formulario está completo). Todo se lee en el equipo: nada se envía a un servidor.
+
 ## Para la SED: mantenimiento
 
 Requisitos para compilar: Node 20+ y, para regenerar catálogos, Python con `openpyxl`.
@@ -56,12 +79,13 @@ Edita `src/js/config.js`:
 - `anioGravable`: año de las preguntas C1 y C2.
 - `anioContratoMin` / `anioContratoMax`: rango permitido del año del contrato (validación de la celda F46).
 - Topes de deducciones si cambia la norma.
-- `secop`: dirección de la consulta, código de la entidad y estados de contrato que se descartan.
+- `secop`: dirección de la consulta, código de la entidad y estados de contrato que se descartan. Desde octubre de 2026 la API v3 de Datos Abiertos exige un token de aplicación: si se pone uno en `appToken` (gratuito, en datos.gov.co → Perfil → Configuración del desarrollador), la cédula viaja en el cuerpo de la petición; sin token se usa la API abierta (`urlAbierta`), donde la cédula va en la URL (cifrada por HTTPS, pero queda en los registros del servidor).
 
-Luego compila el archivo único:
+Luego compila el archivo único y el consolidador:
 
 ```bash
 npm run build
+npm run build:consolidador
 ```
 
 ### Publicar una versión nueva
@@ -109,8 +133,10 @@ src/js/export-excel.js  llena el Excel original editando solo las celdas de entr
 src/js/print.js         documento para imprimir / guardar como PDF
 src/js/secop.js         consulta del contrato en SECOP II (Datos Abiertos Colombia)
 src/js/guardado.js      guardado de los datos dentro del propio archivo HTML
+src/js/soportes.js      soportes adjuntos (certificación bancaria y deducciones) dentro del HTML
 src/js/app.js           asistente por pasos, carga de documentos, contrato SECOP, guardado
-tools/build.mjs         genera formulario-13-IF-016.html (todo incluido, sin red)
+src/consolidador.html   consolidador para Tesorería (js/consolidador.js: lectura y Excel; js/consolidador-ui.js: interfaz)
+tools/build.mjs         genera formulario-13-IF-016.html y consolidador-13-IF-016.html (todo incluido, sin red)
 tools/extract_catalogos.py
 tests/                  pruebas (node --test)
 ```

@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="es-CO">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="Consolida los formularios 13-IF-016 recibidos en un Excel con una fila por contratista y sus soportes adjuntos.">
+  <title>Consolidador de formularios · 13-IF-016</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .consolidado-intro { margin: 0 0 20px; color: var(--texto-2); }
+    .zona-envoltura--varios { margin-bottom: 32px; }
+    .zona-envoltura--varios .zona { min-height: 170px; }
+    .consolidado-acciones { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 18px; align-items: center; }
+    .consolidado-resumen { margin: 0 0 12px; font-weight: 600; }
+    .tabla-envoltura { overflow-x: auto; border: 1px solid var(--borde-suave); border-radius: var(--radio); }
+    .tabla { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .tabla th, .tabla td { padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--borde-suave); vertical-align: top; }
+    .tabla th { background: var(--superficie-suave); color: var(--texto-2); font-weight: 600; white-space: nowrap; }
+    .tabla tr:last-child td { border-bottom: 0; }
+    .tabla .estado-ok { color: var(--exito); font-weight: 550; }
+    .tabla .estado-pend { color: var(--aviso-texto); font-weight: 550; }
+    .tabla .tenue { color: var(--texto-3); font-size: 13px; overflow-wrap: anywhere; }
+    .problemas { margin: 14px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 14px; }
+    .problemas li { display: flex; gap: 8px; align-items: flex-start; color: var(--aviso-texto); }
+    .problemas .icono { flex: none; width: 17px; height: 17px; margin-top: 2px; color: var(--aviso); }
+    .progreso { margin: 12px 0 0; font-size: 14px; color: var(--texto-2); }
+    .carpeta-actual { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 0 0 8px; font-size: 16px; }
+    .carpeta-actual .icono { width: 20px; height: 20px; color: var(--acento); }
+    .carpeta-actual strong { overflow-wrap: anywhere; }
+    .resultado-ok { display: flex; gap: 10px; align-items: flex-start; margin: 0 0 24px; padding: 14px 16px; border-radius: 12px;
+      background: var(--exito-50); border: 1px solid var(--exito-borde); color: var(--exito); font-weight: 500; }
+    .resultado-ok .icono { flex: none; width: 18px; height: 18px; margin-top: 2px; }
+    .grupo + .grupo { margin-top: 32px; }
+  </style>
+</head>
+<body>
+  <div class="app" id="app">
+    <header class="encabezado contenedor">
+      <div class="marca">
+        <img class="marca-logo" src="img/logo.png" alt="Alcaldía Mayor de Bogotá · Secretaría de Educación" width="122" height="134" onerror="this.remove()">
+        <p class="marca-texto">Secretaría de Educación de Bogotá<span class="marca-sep" aria-hidden="true"> · </span><br class="marca-br">Oficina de Tesorería y Contabilidad</p>
+      </div>
+      <h1 class="titulo">Consolidador de formularios</h1>
+      <p class="subtitulo">Formato 13-IF-016 · Una fila por contratista, con sus soportes adjuntos</p>
+    </header>
+
+    <main class="contenedor" id="principal">
+      <div class="tarjeta" id="tarjeta">
+        <div id="consolidador"></div>
+        <noscript>
+          <p class="aviso-noscript">Esta herramienta necesita JavaScript. Actívalo en tu navegador para continuar.</p>
+        </noscript>
+      </div>
+    </main>
+
+    <footer class="pie contenedor">
+      <p>Los formularios se leen en este equipo: no se envían a ningún servidor.</p>
+      <p class="pie-version" id="pie-version"></p>
+    </footer>
+  </div>
+
+  <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+
+  <script src="../node_modules/jszip/dist/jszip.min.js"></script>
+  <script src="js/catalogos.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/schema.js"></script>
+  <script src="js/calc.js"></script>
+  <script src="js/guardado.js"></script>
+  <script src="js/soportes.js"></script>
+  <script src="js/export-excel.js"></script>
+  <script src="js/consolidador.js"></script>
+  <script src="js/consolidador-ui.js"></script>
+</body>
+</html>
