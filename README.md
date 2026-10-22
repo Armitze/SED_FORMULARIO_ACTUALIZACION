@@ -40,6 +40,19 @@ Los documentos se leen en el navegador y **no se envían a ningún servidor**. L
 
 Si solo se carga el RUT, el formulario sugiere las actividades RIT compatibles con el código CIIU (por ejemplo 6920 → 69201 / 69202).
 
+## Para Tesorería: consolidar los formularios recibidos
+
+`consolidador-13-IF-016.html` arma una tabla horizontal con todos los formularios recibidos, una fila por contratista:
+
+1. Ábrelo con doble clic (Chrome o Edge).
+2. Arrastra los `.html` que enviaron los contratistas, o elige la carpeta donde los guardaste.
+3. Revisa la lista: estado de cada formulario (completo o cuántos pendientes), archivos que no son formularios y versiones repetidas (del mismo contratista y contrato se usa la guardada más reciente).
+4. Descarga:
+   - **Excel con soportes (.zip)**: al descomprimirlo queda una carpeta con el Excel y `soportes/NOMBRE_CONTRATO_AÑO/` con la certificación bancaria y los soportes de deducciones. En el Excel, las columnas de soportes enlazan a esos archivos (abre el Excel desde la carpeta descomprimida, no desde dentro del ZIP).
+   - **Solo el Excel**: los mismos datos, sin archivos ni enlaces.
+
+El Excel tiene los campos del formulario en el orden de los pasos, más los valores calculados (nombre completo, titular de la cuenta, descripciones de actividad y ARL, tarifa ICA, duración, valor sin IVA e IVA, valores mensuales a deducir y la codificación tributaria cuando el formulario está completo). Todo se lee en el equipo: nada se envía a un servidor. Para compartirlo, sube la carpeta descomprimida a SharePoint, OneDrive o Drive.
+
 ## Para la SED: mantenimiento
 
 Requisitos para compilar: Node 20+ y, para regenerar catálogos, Python con `openpyxl`.
@@ -56,12 +69,13 @@ Edita `src/js/config.js`:
 - `anioGravable`: año de las preguntas C1 y C2.
 - `anioContratoMin` / `anioContratoMax`: rango permitido del año del contrato (validación de la celda F46).
 - Topes de deducciones si cambia la norma.
-- `secop`: dirección de la consulta, código de la entidad y estados de contrato que se descartan.
+- `secop`: dirección de la consulta, código de la entidad y estados de contrato que se descartan. Desde octubre de 2026 la API v3 de Datos Abiertos exige un token de aplicación: si se pone uno en `appToken` (gratuito, en datos.gov.co → Perfil → Configuración del desarrollador), la cédula viaja en el cuerpo de la petición; sin token se usa la API abierta (`urlAbierta`), donde la cédula va en la URL (cifrada por HTTPS, pero queda en los registros del servidor).
 
-Luego compila el archivo único:
+Luego compila el archivo único y el consolidador:
 
 ```bash
 npm run build
+npm run build:consolidador
 ```
 
 ### Publicar una versión nueva
@@ -109,8 +123,10 @@ src/js/export-excel.js  llena el Excel original editando solo las celdas de entr
 src/js/print.js         documento para imprimir / guardar como PDF
 src/js/secop.js         consulta del contrato en SECOP II (Datos Abiertos Colombia)
 src/js/guardado.js      guardado de los datos dentro del propio archivo HTML
+src/js/soportes.js      soportes adjuntos (certificación bancaria y deducciones) dentro del HTML
 src/js/app.js           asistente por pasos, carga de documentos, contrato SECOP, guardado
-tools/build.mjs         genera formulario-13-IF-016.html (todo incluido, sin red)
+src/consolidador.html   consolidador para Tesorería (js/consolidador.js: lectura y Excel; js/consolidador-ui.js: interfaz)
+tools/build.mjs         genera formulario-13-IF-016.html y consolidador-13-IF-016.html (todo incluido, sin red)
 tools/extract_catalogos.py
 tests/                  pruebas (node --test)
 ```

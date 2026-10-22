@@ -6,7 +6,8 @@
   "scripts": {
     "build": "node tools/build.mjs",
     "catalogos": "py -X utf8 tools/extract_catalogos.py",
-    "test": "node --test \"tests/*.test.mjs\""
+    "test": "node --test \"tests/*.test.mjs\"",
+    "build:consolidador": "node tools/build.mjs --entrada src/consolidador.html --salida consolidador-13-IF-016.html"
   },
   "devDependencies": {
     "jszip": "3.10.1",
