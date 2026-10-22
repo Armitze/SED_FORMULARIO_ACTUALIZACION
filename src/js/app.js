@@ -546,6 +546,42 @@
     if (r === 'principal') guardarComo();
   }
 
+  /**
+   * Botón «Guardar» de Revisión: escribe ya en el archivo y lo confirma. Sin archivo elegido, pide dónde guardarlo
+   * (Chrome/Edge) o descarga una copia (Firefox/Safari). Debe llamarse desde el clic (permiso del navegador).
+   */
+  async function guardarDesdeBoton(boton) {
+    guardarAhora();
+    if (!G) return;
+    if (!G.soportaArchivos()) { descargarCopia(); return; }
+    if (!archivo.manejador) { guardarConExplicacion(); return; }
+    if (archivo.estado === 'pausado' && (await G.permiso(archivo.manejador, true)) !== 'granted') {
+      pintarGuardado();
+      toast('Para guardar, el navegador necesita tu permiso. Pulsa de nuevo «Guardar» y elige «Permitir».', { tono: 'error' });
+      return;
+    }
+    boton.disabled = true;
+    archivo.sucio = true;
+    archivo.estado = 'nuevo';
+    await escribirArchivo();
+    boton.disabled = false;
+    if (archivo.estado !== 'guardado') {
+      toast('No pudimos guardar el formulario. Intenta de nuevo o usa «Guardar como…».', { tono: 'error' });
+      return;
+    }
+    toast('Listo, tu formulario quedó guardado' + (archivo.nombre ? ' en «' + archivo.nombre + '»' : '') + '.');
+    if (!boton.isConnected) return;
+    boton.textContent = '';
+    boton.append(icono('check'), h('span', null, 'Guardado'));
+    boton.classList.add('boton--hecho');
+    setTimeout(() => {
+      if (!boton.isConnected) return;
+      boton.textContent = '';
+      boton.append(icono('guardar'), h('span', null, 'Guardar'));
+      boton.classList.remove('boton--hecho');
+    }, 3000);
+  }
+
   /** El primer guardado se pide solo, apenas la persona avanza con algún dato (una vez por sesión). */
   function pedirPrimerGuardado() {
     if (!G || archivo.manejador || archivo.preguntado || !hayAlgo() || !G.soportaArchivos() || !hayGesto()) return;
@@ -1756,6 +1792,11 @@
     }
     if (i < PASOS.length - 1) {
       derecha.append(h('button', { type: 'button', class: 'boton boton--primario', id: 'btn-siguiente', onclick: () => intentarIr(i + 1) }));
+    } else {
+      // Al final: guardar a la vista (el formulario ya se autoguarda; esto confirma que quedó en el archivo).
+      const guardar = h('button', { type: 'button', class: 'boton boton--secundario', id: 'btn-guardar', onclick: () => guardarDesdeBoton(guardar) },
+        icono('guardar'), h('span', null, 'Guardar'));
+      derecha.append(guardar);
     }
     nav.append(izquierda, derecha);
     pintarNavegacion(nav);

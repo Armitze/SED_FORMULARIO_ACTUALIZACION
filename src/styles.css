@@ -821,6 +821,7 @@ input.sr-only:focus-visible + .soportes-pie .soportes-agregar { box-shadow: 0 0 
 .boton--peligro:hover { background: #912018; }
 
 .boton--grande { min-height: 52px; padding: 12px 24px; font-size: 16px; }
+.boton--hecho, .boton--hecho:hover:not([disabled]) { border-color: var(--exito-borde); background: var(--exito-50); color: var(--exito); }
 
 .boton-detalle { display: none; font-weight: 500; opacity: 0.85; }
 @media (min-width: 560px) { .boton-detalle { display: inline; } }
@@ -1113,7 +1114,7 @@ input.sr-only:focus-visible + .soportes-pie .soportes-agregar { box-shadow: 0 0 
 .descargas-botones { display: grid; gap: 12px; }
 @media (min-width: 640px) { .descargas-botones { grid-template-columns: 1fr 1fr; } }
 .descargas .ayuda-campo { margin-top: 10px; }
-.que-sigue { margin-top: 36px; padding: 20px 22px; border-radius: 14px; background: var(--acento-50); color: var(--texto-2); }
+.que-sigue { margin-top: 36px; padding: 20px 22px; border-radius: 14px; background: var(--acento-50); color: var(--texto-2); overflow-wrap: anywhere; }
 .que-sigue-titulo { font-size: 16px; font-weight: 650; color: var(--acento-hover); margin-bottom: 10px; }
 .que-sigue ol { padding-left: 20px; display: grid; gap: 8px; font-size: 14.5px; }
 .que-sigue li::marker { color: var(--acento); font-weight: 600; }
