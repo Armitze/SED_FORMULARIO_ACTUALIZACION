@@ -42,16 +42,26 @@ Si solo se carga el RUT, el formulario sugiere las actividades RIT compatibles c
 
 ## Para Tesorería: consolidar los formularios recibidos
 
-`consolidador-13-IF-016.html` arma una tabla horizontal con todos los formularios recibidos, una fila por contratista:
+`consolidador-13-IF-016.html` mantiene un consolidado con una fila por contratista dentro de una **carpeta raíz** (por ejemplo, una carpeta compartida de Tesorería):
 
-1. Ábrelo con doble clic (Chrome o Edge).
+```
+Carpeta raíz/
+  Consolidado_13-IF-016.xlsx
+  Consolidado_13-IF-016 (anterior).xlsx      respaldo de la versión antes del último guardado
+  Contratistas/
+    2026/
+      PEREZ_GOMEZ_ANA/                       Certificacion_bancaria.pdf, Soporte_dependiente_1.pdf, …, Formulario.html
+      PEREZ_GOMEZ_ANA_1234/                  el mismo nombre con otro contrato del mismo año
+```
+
+1. Ábrelo con doble clic en **Chrome o Edge** y elige la carpeta raíz (la próxima vez ofrece usar la misma; el navegador pide permiso de nuevo).
 2. Arrastra los `.html` que enviaron los contratistas, o elige la carpeta donde los guardaste.
-3. Revisa la lista: estado de cada formulario (completo o cuántos pendientes), archivos que no son formularios y versiones repetidas (del mismo contratista y contrato se usa la guardada más reciente).
-4. Descarga:
-   - **Excel con soportes (.zip)**: al descomprimirlo queda una carpeta con el Excel y `soportes/NOMBRE_CONTRATO_AÑO/` con la certificación bancaria y los soportes de deducciones. En el Excel, las columnas de soportes enlazan a esos archivos (abre el Excel desde la carpeta descomprimida, no desde dentro del ZIP).
-   - **Solo el Excel**: los mismos datos, sin archivos ni enlaces.
+3. Revisa la lista: estado de cada formulario (completo o cuántos pendientes) y qué pasará en el consolidado: **Nuevo**, **Se actualiza** (el formulario es más reciente que la fila) o **Ya está** (sin cambios). Del mismo contratista y contrato se usa el guardado más reciente.
+4. Pulsa **Agregar al consolidado**: se guardan los archivos en `Contratistas/AÑO/NOMBRE/` y se reescribe el Excel con las filas nuevas y actualizadas. Al actualizar, los soportes anteriores de ese contratista se reemplazan por los del formulario nuevo.
 
-El Excel tiene los campos del formulario en el orden de los pasos, más los valores calculados (nombre completo, titular de la cuenta, descripciones de actividad y ARL, tarifa ICA, duración, valor sin IVA e IVA, valores mensuales a deducir y la codificación tributaria cuando el formulario está completo). Todo se lee en el equipo: nada se envía a un servidor. Para compartirlo, sube la carpeta descomprimida a SharePoint, OneDrive o Drive.
+En el Excel se puede filtrar, ordenar y agregar columnas propias (observaciones…): se conservan, también en las filas que se actualizan. Las columnas de soportes y «Carpeta del contratista» enlazan a los archivos. Si el Excel está abierto, ciérralo antes de agregar formularios (Windows no deja reemplazarlo). Firefox y Safari no permiten trabajar sobre una carpeta: ahí se descarga un ZIP o solo el Excel.
+
+El Excel tiene los campos del formulario en el orden de los pasos, más los valores calculados (nombre completo, titular de la cuenta, descripciones de actividad y ARL, tarifa ICA, duración, valor sin IVA e IVA, valores mensuales a deducir y la codificación tributaria cuando el formulario está completo). Todo se lee en el equipo: nada se envía a un servidor.
 
 ## Para la SED: mantenimiento
 
