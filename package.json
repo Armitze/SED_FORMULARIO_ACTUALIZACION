@@ -1,6 +1,6 @@
 {
   "name": "sed-formulario-actualizacion",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "private": true,
   "description": "Formulario web 13-IF-016 de actualización de datos (personas naturales, honorarios y servicios personales art. 103 ET) con lectura automática de RUT y RIT en PDF.",
   "scripts": {
@@ -10,6 +10,8 @@
     "build:consolidador": "node tools/build.mjs --entrada src/consolidador.html --salida consolidador-13-IF-016.html"
   },
   "devDependencies": {
+    "html2canvas": "1.4.1",
+    "jspdf": "4.2.1",
     "jszip": "3.10.1",
     "pdfjs-dist": "3.11.174"
   }

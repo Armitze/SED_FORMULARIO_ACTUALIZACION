@@ -1121,7 +1121,8 @@ ${propios.map((p) => `<script src="${relativo(p)}"></script>`).join('\n')}
     assert.deepEqual(d.revision, { interna: false, codificacion: false, nombrePendiente: false, resumenAntesDeDescargas: true,
       renglonesPendientes: d.revision.renglonesPendientes, borrador: false });
     assert.ok(d.revision.renglonesPendientes > 0);
-    assert.deepEqual(d.dialogo, { abierto: true, principal: 'Volver y completar', foco: 'Volver y completar', cerrado: true, paso: 1 });
+    // Sin RIT (y con un RUT de hace más de 60 días) lo primero pendiente está en Documentos.
+    assert.deepEqual(d.dialogo, { abierto: true, principal: 'Volver y completar', foco: 'Volver y completar', cerrado: true, paso: 0 });
 
     const rutaCopia = path.join(TMP, 'copia-guardada.html');
     fs.writeFileSync(rutaCopia, d.htmlGuardado);

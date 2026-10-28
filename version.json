@@ -1,4 +1,4 @@
 {
-  "version": "1.2.2",
-  "notas": "El RUT y el RIT deben ser de los últimos 60 días, el régimen de IVA y el SIMPLE salen de tu RUT, y no se aceptan soportes con contraseña."
+  "version": "1.2.3",
+  "notas": "El RUT y el RIT ahora son obligatorios y el PDF para firmar se descarga directamente con tu nombre y número de contrato."
 }

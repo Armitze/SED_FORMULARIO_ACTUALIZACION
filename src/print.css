@@ -32,6 +32,9 @@
   }
 }
 
+/* «Descargar PDF» (Imprimir.pdf): el documento se dibuja fuera de la pantalla con el relleno de impresión. */
+#impresion.imp-captura .imp-hoja { padding: 9mm 10mm; background: #fff; }
+
 /* ───────────── Documento ───────────── */
 
 #impresion {

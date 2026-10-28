@@ -7,6 +7,10 @@
 //   imprimir(s, opts?) -> Promise<void>   calcula d = Calc.derivados(s), arma, pone el nombre de archivo
 //                                         (ExportExcel.nombreArchivo) como título, abre el diálogo de
 //                                         impresión y restaura el título al cerrarlo
+//   pdf(s, opts?) -> Promise<Blob>        el mismo documento como PDF carta, sin diálogo de impresión: cada
+//                                         hoja se dibuja como imagen (html2canvas) dentro de un PDF (jsPDF)
+//   puedeGenerarPdf() -> boolean          están html2canvas y jsPDF (si no, se usa imprimir())
+//   nombreArchivo(s) -> string            NOMBRE_CONTRATO_AÑO.pdf (ExportExcel.nombreArchivo)
 //   html(s, d?, opts?) -> string          el mismo documento como HTML (sin DOM; útil para pruebas)
 //   necesitaHojaDeducciones(s) -> boolean hoja 2 solo con dependientes / hipotecario / salud no POS
 // opts: { hoy?: Date } (fecha de diligenciamiento de la hoja de deducciones)
@@ -516,6 +520,66 @@
     });
   }
 
+  // ───────────────────────── PDF directo ─────────────────────────
+  // El documento es el mismo de la impresión: se arma en #impresion, se muestra fuera de la pantalla con el
+  // ancho de una hoja carta y el relleno de impresión (clase imp-captura en print.css) y cada hoja se dibuja
+  // en un lienzo. El texto queda como imagen (no se puede seleccionar), pero se ve igual que impreso.
+
+  const CARTA_MM = { ancho: 215.9, alto: 279.4 };
+  const ESCALA_CAPTURA = 2; // ~192 ppp: nítido al imprimir sin que el archivo pese demasiado
+
+  const libJsPdf = () => (root.jspdf && root.jspdf.jsPDF) || root.jsPDF || null;
+  const puedeGenerarPdf = () => typeof root.html2canvas === 'function' && typeof libJsPdf() === 'function';
+
+  function nombreArchivo(s) {
+    const E = root.ExportExcel;
+    const base = E && typeof E.nombreArchivo === 'function' ? E.nombreArchivo(s || {}) : 'FORMULARIO_13-IF-016';
+    return base + '.pdf';
+  }
+
+  function esperarImagenes(el) {
+    const pendientes = Array.from(el.querySelectorAll('img')).filter((img) => !img.complete);
+    return Promise.all(pendientes.map((img) => new Promise((listo) => {
+      img.addEventListener('load', listo, { once: true });
+      img.addEventListener('error', listo, { once: true });
+      setTimeout(listo, 1500);
+    })));
+  }
+
+  async function pdf(s, opts) {
+    if (!puedeGenerarPdf()) throw new Error('Falta html2canvas o jsPDF');
+    const o = opts || {};
+    const st = s || {};
+    const el = render(st, derivados(st, o.hoy), o);
+    const estiloPrevio = el.getAttribute('style');
+    const ocultoPrevio = el.hidden;
+    el.hidden = false;
+    el.classList.add('imp-captura');
+    el.setAttribute('style', `display:block !important;position:absolute !important;left:-10000px;top:0;width:${CARTA_MM.ancho}mm;`);
+    try {
+      await esperarImagenes(el);
+      if (document.fonts && document.fonts.ready) await document.fonts.ready;
+      const JsPdf = libJsPdf();
+      const doc = new JsPdf({ unit: 'mm', format: 'letter', orientation: 'portrait', compress: true });
+      const hojas = Array.from(el.querySelectorAll('.imp-hoja'));
+      for (let i = 0; i < hojas.length; i++) {
+        // eslint-disable-next-line no-await-in-loop
+        const lienzo = await root.html2canvas(hojas[i], { scale: ESCALA_CAPTURA, backgroundColor: '#ffffff', logging: false, useCORS: false });
+        let ancho = CARTA_MM.ancho;
+        let alto = (lienzo.height / lienzo.width) * ancho;
+        if (alto > CARTA_MM.alto) { ancho *= CARTA_MM.alto / alto; alto = CARTA_MM.alto; }
+        if (i > 0) doc.addPage('letter', 'portrait');
+        doc.addImage(lienzo.toDataURL('image/jpeg', 0.92), 'JPEG', (CARTA_MM.ancho - ancho) / 2, 0, ancho, alto, undefined, 'FAST');
+      }
+      doc.setProperties({ title: nombreArchivo(st).replace(/\.pdf$/, ''), subject: 'Formato 13-IF-016', creator: 'Formulario 13-IF-016' });
+      return doc.output('blob');
+    } finally {
+      el.classList.remove('imp-captura');
+      if (estiloPrevio == null) el.removeAttribute('style'); else el.setAttribute('style', estiloPrevio);
+      el.hidden = ocultoPrevio;
+    }
+  }
+
   // Ctrl+P o el menú del navegador (sin pasar por «Descargar PDF»): se arma el documento con el estado
   // actual del formulario, para que nunca salga una hoja en blanco ni con datos viejos.
   let tituloAntesDeImprimir = null;
@@ -546,7 +610,7 @@
     root.addEventListener('afterprint', despuesDeImprimir);
   }
 
-  const Imprimir = { render, imprimir, html, necesitaHojaDeducciones };
+  const Imprimir = { render, imprimir, pdf, puedeGenerarPdf, nombreArchivo, html, necesitaHojaDeducciones };
   root.Imprimir = Imprimir;
   if (typeof module !== 'undefined' && module.exports) module.exports = Imprimir;
 })(typeof window !== 'undefined' ? window : globalThis);

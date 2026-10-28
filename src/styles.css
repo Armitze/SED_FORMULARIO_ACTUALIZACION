@@ -965,6 +965,8 @@ input.sr-only:focus-visible + .soportes-pie .soportes-agregar { box-shadow: 0 0 
 .zona[data-estado="leyendo"] { cursor: progress; border-style: solid; border-color: var(--acento-100); background: var(--superficie); }
 .zona[data-estado="listo"], .zona[data-estado="aplicado"] { border-style: solid; border-color: var(--exito-borde); background: var(--exito-50); }
 .zona[data-estado="listo"] .zona-icono, .zona[data-estado="aplicado"] .zona-icono { color: var(--exito); }
+.zona[data-estado="falta"] { border-color: var(--error-borde); background: var(--error-50); }
+.zona[data-estado="falta"] .zona-error { color: var(--error); }
 .zona[data-estado="error"], .zona[data-estado="vencido"] { border-style: solid; border-color: var(--error-borde); background: var(--error-50); }
 .zona[data-estado="error"] .zona-icono, .zona[data-estado="vencido"] .zona-icono { color: var(--error); }
 .zona[data-estado="vencido"] .zona-error { color: var(--error); }
