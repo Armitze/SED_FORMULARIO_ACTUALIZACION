@@ -13,7 +13,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '1.2.1';
+  const VERSION = '1.2.2';
   const MAX_OPCIONES_COMBO = 50;
 
   const SCHEMA = window.SCHEMA;
@@ -675,6 +675,7 @@
         archivo: texto500(v.archivo, 200),
         aplicados: Number.isInteger(v.aplicados) && v.aplicados >= 0 ? v.aplicados : 0,
         fecha: fechaValida(v.fecha),
+        fechaDocumento: fechaValida(v.fechaDocumento),
         avisos: (Array.isArray(v.avisos) ? v.avisos : []).slice(0, 8).map((a) => texto500(a)).filter(Boolean),
         documento: soloDigitos(v.documento).slice(0, 15),
         direccion: texto500(v.direccion, 200),
@@ -751,6 +752,10 @@
    * conflicto ("Tu RUT dice: X · Usar este"). Lo que vino de otro documento, de SECOP o de una sugerencia
    * sí se reemplaza. dudosos: valores de confianza baja, que solo se ofrecen. Devuelve cuántos se usaron.
    */
+  // Campos que el RUT fija: lo leído reemplaza lo escrito a mano y el campo queda bloqueado (ver fijadoPorRut).
+  // Régimen de IVA (casilla 53, 48/49) y C3, Régimen SIMPLE (responsabilidad 47).
+  const FIJOS_DEL_RUT = new Set(['regimenIva', 'c3']);
+
   function aplicarValores(valores, fuente, dudosos) {
     let n = 0;
     const ids = Object.keys(valores || {}).filter((id) => CAMPOS[id]).sort((a, b) => ORDEN[a] - ORDEN[b]);
@@ -759,7 +764,8 @@
       if (!v) continue;
       const actual = estado.s[id] == null ? '' : String(estado.s[id]);
       const porDefecto = String(CAMPOS[id].porDefecto == null ? '' : CAMPOS[id].porDefecto);
-      const escritoAMano = actual !== '' && actual !== v && actual !== porDefecto && !estado.meta.fuentes[id];
+      const fijo = fuente === 'RUT' && FIJOS_DEL_RUT.has(id);
+      const escritoAMano = !fijo && actual !== '' && actual !== v && actual !== porDefecto && !estado.meta.fuentes[id];
       if (escritoAMano) {
         estado.meta.conflictos[id] = { valor: v, fuente, dudoso: false };
         continue;
@@ -833,7 +839,7 @@
     switch (clave) {
       case 'ciiu': ops = lista.map((o) => opcion(o.codigo, o.descripcion, o.codigo)); break;
       case 'rit': ops = lista.map((o) => opcion(String(o.codigo), o.descripcion, String(o.codigo), { tarifa: o.tarifa })); break;
-      case 'arl': ops = lista.map((o) => opcion(o.codigo, o.descripcion, o.codigo)); break;
+      case 'arl': ops = arlActivas().map((o) => opcion(o.codigo, o.descripcion, o.codigo)); break;
       // Diferencia deliberada con el Excel (A31 ofrece 76): se ocultan 4 entradas internas o de prueba
       // ('BANCO GENERAL TRANSITORIAS TRM', 'DUMY1', 'BANCO DUMMY MULTAS SED', 'DUMMY SSF'); ver README.
       case 'bancos': ops = lista.filter((b) => !b.interno).map((b) => opcion(b.nombre, b.nombre)); break;
@@ -977,7 +983,7 @@
   /** Validación de los campos más los soportes obligatorios que falten (cuentan como un dato pendiente más). */
   function validar() {
     const v = validarCampos();
-    const soportes = faltantesSoportes();
+    const soportes = faltantesSoportes().concat(documentosVencidos());
     const actividades = erroresActividades();
     if (!soportes.length && !Object.keys(actividades).length) return v;
     return Object.assign({}, v, {
@@ -1642,7 +1648,7 @@
   }
 
   function estadoPaso(idPaso, pendientes) {
-    if (idPaso === 'documentos') return estado.meta.docs.RUT || estado.meta.docs.RIT ? 'completo' : '';
+    if (idPaso === 'documentos') return pendientes[idPaso] ? 'pendiente' : estado.meta.docs.RUT || estado.meta.docs.RIT ? 'completo' : '';
     if (idPaso === 'revision') return '';
     const n = pendientes[idPaso] || 0;
     if (!n) return 'completo';
@@ -1680,8 +1686,9 @@
     }
   }
 
-  // Pasos que no impiden avanzar: Documentos (el RUT y el RIT son una ayuda) y, por ahora, Contrato.
-  const PASOS_SIN_BLOQUEO = new Set(['documentos', 'contrato', 'revision']);
+  // Pasos que no impiden avanzar: Contrato (por ahora) y Revisión. Documentos solo bloquea con un RUT o un RIT
+  // impreso hace más de CONFIG.diasVigenciaDocumentos (sin documento se puede seguir a mano).
+  const PASOS_SIN_BLOQUEO = new Set(['contrato', 'revision']);
 
   /**
    * Avanzar desde la barra de pasos o con "Siguiente". Hacia atrás siempre se puede; hacia adelante, cada
@@ -1717,6 +1724,11 @@
       if (f && f.opcionalPlegable) { abrirPlegableHasta(primero.campo); actualizarUI(); }
       c.cont.scrollIntoView({ block: 'center', behavior: movimientoReducido() ? 'auto' : 'smooth' });
       c.enfocar();
+    } else if (idPaso === 'documentos') {
+      const zona = document.querySelector('.zona[data-estado="vencido"]');
+      if (zona) zona.scrollIntoView({ block: 'center', behavior: movimientoReducido() ? 'auto' : 'smooth' });
+      anunciar(propios[0].mensaje);
+      return;
     } else {
       const soporte = propios.find((p) => claveSoporte(p.campo));
       if (soporte) enfocarSoporte(claveSoporte(soporte.campo));
@@ -1977,7 +1989,7 @@
     banco: { paso: 'pagos', titulo: 'Certificación bancaria', falta: 'certificación bancaria',
       descripcion: 'Expedida por tu banco a tu nombre, con el mismo número y tipo de cuenta que escribiste arriba.' },
     dependientes: { paso: 'retencion', titulo: 'Soportes del dependiente', falta: 'soportes del dependiente',
-      descripcion: 'Registro civil, certificado de estudio o de dependencia económica, según el motivo.' },
+      descripcion: 'Certificado de Medicina Legal o de la EPS, o del contador público (ingresos menores a 260 UVT), según el motivo.' },
     hipotecario: { paso: 'retencion', titulo: 'Certificado de intereses', falta: 'certificado de intereses del crédito hipotecario',
       descripcion: 'Certificado de la entidad financiera con los intereses pagados.' },
     saludNoPos: { paso: 'retencion', titulo: 'Certificado de salud no POS', falta: 'certificado de salud no POS',
@@ -1991,7 +2003,14 @@
 
   function soportesRequeridos() {
     if (!S) return [];
-    return ['banco'].concat(Object.keys(SOPORTE_DE_CHECK).filter((c) => estado.s[c] === 'SI').map((c) => SOPORTE_DE_CHECK[c]));
+    return ['banco'].concat(Object.keys(SOPORTE_DE_CHECK).filter((c) => estado.s[c] === 'SI').map((c) => SOPORTE_DE_CHECK[c]))
+      .filter((clave) => clave !== 'dependientes' || !dependienteSinSoporte());
+  }
+
+  /** Hijos menores de 18 y de 18 a 23 que estudian: el formato dice «No se requiere» anexo (motivos 1 y 2). */
+  function dependienteSinSoporte() {
+    const m = (CAT.motivosDependientes || []).find((x) => x.texto === estado.s.depMotivo);
+    return !!m && /no se requiere/i.test(String(m.anexo || ''));
   }
 
   const faltaSoporte = (clave) => soportesRequeridos().includes(clave) && !(estado.soportes[clave] || []).length;
@@ -2094,6 +2113,12 @@
     actualizarUI();
   }
 
+  /** ¿El PDF pide contraseña para abrirlo? Si no se puede saber (sin pdf.js), se deja pasar. */
+  async function pdfConClave(archivo) {
+    if (!modulo('PdfText', 'tieneClave')) return false;
+    try { return (await window.PdfText.tieneClave(archivo)) === true; } catch (e) { avisarUnaVez('PdfText.tieneClave', e); return false; }
+  }
+
   async function agregarSoportes(clave, archivos) {
     if (!S) return;
     const lim = limitesSoportes();
@@ -2103,6 +2128,11 @@
       try {
         // eslint-disable-next-line no-await-in-loop
         const item = await S.leer(f, lim);
+        // eslint-disable-next-line no-await-in-loop
+        if (item.tipo === 'application/pdf' && await pdfConClave(f)) {
+          throw errorCodigo('PROTEGIDO', '«' + item.nombre + '» tiene contraseña. Sube los documentos sin contraseña: ' +
+            'descárgalo de nuevo sin clave (o ábrelo con la clave y guárdalo como PDF sin ella) y adjúntalo otra vez.');
+        }
         const error = S.comprobar(estado.soportes, clave, item, lim);
         if (error) throw error;
         estado.soportes = Object.assign({}, estado.soportes, { [clave]: (estado.soportes[clave] || []).concat(item) });
@@ -2200,7 +2230,10 @@
     actualizarSugerencias();
     actualizarPlegables();
     actualizarGrupos();
-    document.querySelectorAll('.soportes[data-soporte]').forEach((b) => pintarFaltaSoporte(b.dataset.soporte, b));
+    document.querySelectorAll('.soportes[data-soporte]').forEach((b) => {
+      b.hidden = b.dataset.soporte === 'dependientes' && dependienteSinSoporte();
+      pintarFaltaSoporte(b.dataset.soporte, b);
+    });
     actualizarResumenPaso(v, paso, d);
     pintarStepper(v);
     pintarGuardado();
@@ -2302,6 +2335,13 @@
     if (!partes) { caja.hidden = true; return; }
     agregarHijos(caja, conIcono(partes));
     caja.hidden = false;
+  }
+
+  /** Actividades ARL que se pueden elegir (CONFIG.arlActivas; vacío = toda la tabla). */
+  function arlActivas() {
+    const activas = new Set((CFG.arlActivas || []).map(String));
+    const lista = CAT.arl || [];
+    return activas.size ? lista.filter((o) => activas.has(String(o.codigo))) : lista;
   }
 
   let arlIndice = null;
@@ -2423,7 +2463,8 @@
     // Código ARL que existe en la tabla del Excel pero no en su lista desplegable (AX50): se acepta, con una nota.
     if (sesion.controles.codigoArl) {
       const arl = s.codigoArl ? arlPorCodigo(s.codigoArl) : null;
-      ponerSugerencia('codigoArl', arl && arl.enListaExcel === false
+      const activa = (CFG.arlActivas || []).map(String).includes(String(s.codigoArl));
+      ponerSugerencia('codigoArl', arl && arl.enListaExcel === false && !activa
         ? [icono('info', 'icono-mini'), ' Este código no aparece en la lista desplegable del Excel original. Confírmalo con tu certificado de afiliación a la ARL.']
         : null);
     }
@@ -2434,16 +2475,40 @@
       ponerSugerencia('depMotivo', o && o.detalle ? [h('span', { class: 'sugerencia-detalle' }, 'En el formato: «' + o.detalle + '»')] : null);
     }
 
-    // C3 leído del RUT (responsabilidad 47): la nota reemplaza la ayuda general.
+    bloquearFijosDelRut();
+    const actualizaRut = ' Si cambió, actualiza tu RUT y cárgalo de nuevo.';
+
+    // C3 leído del RUT (responsabilidad 47): queda fijo y la nota reemplaza la ayuda general.
     if (sesion.controles.c3) {
-      const desdeRut = estado.meta.fuentes.c3 === 'RUT' && !!s.c3;
+      const desdeRut = fijadoPorRut('c3');
       const ayudaC3 = sesion.controles.c3.cont.querySelector(':scope > .ayuda-campo');
       if (ayudaC3) ayudaC3.hidden = desdeRut;
       if (desdeRut) {
         ponerSugerencia('c3', [icono('archivoOk', 'icono-mini'), s.c3 === 'SI'
-          ? ' Según tu RUT tienes la responsabilidad 47 (Régimen Simple de Tributación).'
-          : ' Según tu RUT no tienes la responsabilidad 47 (Régimen Simple de Tributación).']);
+          ? ' Según tu RUT tienes la responsabilidad 47 (Régimen Simple de Tributación).' + actualizaRut
+          : ' Según tu RUT no tienes la responsabilidad 47 (Régimen Simple de Tributación).' + actualizaRut]);
       } else ponerSugerencia('c3', null);
+    }
+
+    // Régimen de IVA leído del RUT (casilla 53): queda fijo; para cambiarlo hay que actualizar el RUT.
+    if (sesion.controles.regimenIva) {
+      ponerSugerencia('regimenIva', fijadoPorRut('regimenIva') ? [icono('archivoOk', 'icono-mini'), s.regimenIva === 'RESPONSABLE IVA'
+        ? ' Según tu RUT eres responsable de IVA (responsabilidad 48).' + actualizaRut
+        : ' Según tu RUT no eres responsable de IVA (responsabilidad 49).' + actualizaRut] : null);
+    }
+  }
+
+  /** ¿El dato viene del RUT (régimen de IVA, C3)? Entonces no se puede cambiar a mano: hay que actualizar el RUT. */
+  const fijadoPorRut = (id) => FIJOS_DEL_RUT.has(id) && estado.meta.fuentes[id] === 'RUT' && !!estado.s[id];
+
+  /** Bloquea (o libera) los controles de los datos que fija el RUT. */
+  function bloquearFijosDelRut() {
+    for (const id of FIJOS_DEL_RUT) {
+      const c = sesion.controles[id];
+      if (!c) continue;
+      const fijo = fijadoPorRut(id);
+      c.cont.classList.toggle('campo-fijo', fijo);
+      c.cont.querySelectorAll('select, input').forEach((el) => { el.disabled = fijo; });
     }
   }
 
@@ -2579,7 +2644,7 @@
     const z = sesion.zonas[tipo];
     const doc = estado.meta.docs[tipo];
     let est = z.estado;
-    if (est === 'idle' && doc) est = 'aplicado';
+    if (est === 'idle' && doc) est = documentoVencido(tipo) ? 'vencido' : 'aplicado';
     zona.dataset.estado = est;
     zona.textContent = '';
     pintarPieZona(tipo, zona.parentElement, est);
@@ -2603,6 +2668,12 @@
           h('span', { class: 'zona-accion' }, 'Cargar otro archivo'));
         break;
       }
+      case 'vencido':
+        zona.append(h('span', { class: 'zona-icono', html: svgIcono('alerta') }), titulo,
+          h('span', { class: 'zona-error' }, mensajeVencido(tipo, documentoVencido(tipo))),
+          h('span', { class: 'zona-sub zona-archivo' }, doc.archivo || ''),
+          h('span', { class: 'zona-accion' }, 'Cargar el ' + tipo + ' actualizado'));
+        break;
       case 'error': {
         // Si había un documento leído antes, se dice que sigue en uso: un error nuevo no borra nada.
         zona.append(h('span', { class: 'zona-icono', html: svgIcono('alerta') }), titulo,
@@ -2847,6 +2918,13 @@
       for (const x of encontrados) recibirResultado(x.tipo, x.res, nombre, { doc, sinReanalizar: ambos, silencioso: true });
       const total = encontrados.reduce((n, x) => n + ((estado.meta.docs[x.tipo] && estado.meta.docs[x.tipo].aplicados) || 0), 0);
       const tiposTexto = encontrados.map((x) => 'tu ' + x.tipo).join(' y ');
+      const vencido = encontrados.find((x) => documentoVencido(x.tipo));
+      if (vencido) {
+        const mensaje = mensajeVencido(vencido.tipo, documentoVencido(vencido.tipo));
+        toast(mensaje, { tono: 'error' });
+        anunciar(mensaje);
+        return;
+      }
       if (encontrados.length === 1 && encontrados[0].tipo !== tipoEsperado) {
         toast('Ese archivo es tu ' + encontrados[0].tipo + '; lo ubicamos en su lugar y llenamos ' + plural(total, 'dato', 'datos') + '.');
       } else if (total) {
@@ -2885,11 +2963,14 @@
     sesion.resultados[tipo] = { tipo, res, archivo: archivoNombre, doc: o.doc || null };
     // Al cambiar de documento, los conflictos que dejó el anterior ya no aplican.
     for (const [k, c] of Object.entries(estado.meta.conflictos)) if (c.fuente === tipo) delete estado.meta.conflictos[k];
+    // Un RUT nuevo que no dice el régimen de IVA o el SIMPLE (o lo dice con dudas) libera lo que fijó el anterior.
+    if (tipo === 'RUT') for (const id of FIJOS_DEL_RUT) if (!valores[id] && estado.meta.fuentes[id] === 'RUT') delete estado.meta.fuentes[id];
     const n = aplicarValores(valores, tipo, dudosos);
     estado.meta.docs[tipo] = {
       archivo: archivoNombre,
       aplicados: n,
       fecha: hoyLocal(),
+      fechaDocumento: fechaDelDocumento(tipo, res),
       avisos: avisosDe(res).slice(0, 8),
       documento: idDocumento(tipo),
       direccion: tipo === 'RIT' ? String(extra.direccion || '').trim().slice(0, 200) : '',
@@ -2932,6 +3013,37 @@
     if (!r || !r.doc) return;
     const nuevo = analizar('RIT', r.doc);
     if (nuevo.res) recibirResultado('RIT', nuevo.res, r.archivo, { doc: r.doc, silencioso: true, sinReanalizar: true });
+  }
+
+  /** Fecha de impresión del documento (aaaa-mm-dd): generación del PDF del RUT o «Fecha:» del certificado RIT. */
+  function fechaDelDocumento(tipo, res) {
+    const e = (res && res.extra) || {};
+    return fechaValida(tipo === 'RUT' ? e.fechaGeneracion : e.fechaCertificado);
+  }
+
+  const diasVigencia = () => (Number(CFG.diasVigenciaDocumentos) > 0 ? Number(CFG.diasVigenciaDocumentos) : 60);
+
+  /** { fecha, dias } si el RUT o el RIT cargado se imprimió hace más de los días permitidos; si no, null. */
+  function documentoVencido(tipo) {
+    const doc = estado.meta.docs[tipo];
+    const fecha = doc && doc.fechaDocumento;
+    if (!fecha) return null;
+    const dia = (iso) => Date.UTC(Number(iso.slice(0, 4)), Number(iso.slice(5, 7)) - 1, Number(iso.slice(8, 10)));
+    const dias = Math.round((dia(hoyLocal()) - dia(fecha)) / 86400000);
+    return dias > diasVigencia() ? { fecha, dias } : null;
+  }
+
+  function mensajeVencido(tipo, v) {
+    return 'Tu ' + tipo + ' se imprimió el ' + fmtFecha(v.fecha) + ' (hace ' + v.dias + ' días). Para continuar, carga un ' + tipo +
+      ' impreso en los últimos ' + diasVigencia() + ' días' + (tipo === 'RUT'
+      ? ': descárgalo de nuevo desde los servicios en línea de la DIAN (MUISCA).'
+      : ': descarga el certificado en la Oficina Virtual de la Secretaría Distrital de Hacienda (Mi RIT → Certificado RIT).');
+  }
+
+  /** Pendientes del paso Documentos: el RUT o el RIT impresos hace demasiado tiempo. */
+  function documentosVencidos() {
+    return ['RUT', 'RIT'].map((tipo) => ({ tipo, v: documentoVencido(tipo) })).filter((x) => x.v)
+      .map((x) => ({ campo: 'documento:' + x.tipo, step: 'documentos', mensaje: mensajeVencido(x.tipo, x.v) }));
   }
 
   /** Documento (solo dígitos) del RUT o del RIT leídos en esta sesión. */

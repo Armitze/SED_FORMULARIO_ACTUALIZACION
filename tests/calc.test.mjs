@@ -40,7 +40,7 @@ function base(extra) {
     banco: 'Banco Davivienda S.A.', sucursal: 'CHAPINERO', tipoCuenta: 'Ahorros', numeroCuenta: '008800123456',
     actividadRut: '8559', actividadRit: '8559', regimenIva: 'NO RESPONSABLE IVA',
     numeroContrato: '1234', anioContrato: '2026', valorTotal: '30000000', valorMensual: '5000000',
-    fechaInicio: '2026-02-01', fechaTerminacion: '2026-07-31', cesion: 'NO', codigoArl: '114001',
+    fechaInicio: '2026-02-01', fechaTerminacion: '2026-07-31', cesion: 'NO', codigoArl: '1620101',
     crp1: '4567', fechaCrp1: '2026-01-25', rpVigenciaFutura: 'NO',
     areaFuncional: 'Despacho Del Secretario', interventorNombre: 'ANA RUIZ', interventorCargo: 'DIRECTORA',
     operativoNombre: 'LUIS GÓMEZ', operativoId: '79123456',

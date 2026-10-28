@@ -16,6 +16,8 @@
 //   de control (ratioControl). En el navegador fija GlobalWorkerOptions.workerSrc =
 //   window.PDFJS_WORKER_SRC || '../node_modules/pdfjs-dist/build/pdf.worker.min.js' solo si no estaba fijado.
 //
+//   await PdfText.tieneClave(entrada, opts?) -> true | false | null (null = no se pudo saber)
+//
 //   DocDetect.tipo(doc)    -> 'RUT' | 'RIT' | 'RIT_SOLICITUD' | 'DESCONOCIDO'
 //   DocDetect.tipos(doc)   -> tipos presentes en orden de aparición (un paquete puede traer RUT y RIT)
 //   DocDetect.paginas(doc) -> [{ numero, tipo, principal, hoja, sinTexto, ilegible }]
@@ -499,8 +501,35 @@
     }
   }
 
+  /**
+   * ¿El PDF pide contraseña para abrirlo? true / false, o null si no se pudo saber (no es PDF, está dañado o
+   * no hay pdf.js). Solo abre el documento, sin leer páginas. Para los soportes adjuntos.
+   */
+  async function tieneClave(entrada, opts) {
+    const o = opts || {};
+    const lib = obtenerLib(o);
+    if (!lib || typeof lib.getDocument !== 'function') return null;
+    configurarWorker(lib);
+    let datos;
+    try { datos = await aBytes(entrada); } catch (e) { return null; }
+    if (!datos || datos.length < 5 || !pareceUnPdf(datos)) return null;
+    let tarea = null;
+    try {
+      tarea = lib.getDocument({ data: datos, disableFontFace: true, isEvalSupported: false, useSystemFonts: false, verbosity: 0 });
+      await tarea.promise;
+      return false;
+    } catch (e) {
+      return esErrorContrasena(e) ? true : null;
+    } finally {
+      if (tarea) {
+        try { await tarea.destroy(); } catch (e) { /* ya destruido */ }
+      }
+    }
+  }
+
   const PdfText = {
     leer,
+    tieneClave,
     armarDoc,
     fold,
     compactar,

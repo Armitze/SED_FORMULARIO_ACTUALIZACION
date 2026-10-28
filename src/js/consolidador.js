@@ -60,9 +60,16 @@
 
   const SOPORTE_DE_CHECK = { dedDependientes: 'dependientes', dedHipotecario: 'hipotecario', dedSaludNoPos: 'saludNoPos' };
 
+  /** Hijos menores de 18 y de 18 a 23 que estudian: el formato dice «No se requiere» anexo (motivos 1 y 2). */
+  function dependienteSinSoporte(s) {
+    const m = (CAT().motivosDependientes || []).find((x) => x.texto === s.depMotivo);
+    return !!m && /no se requiere/i.test(String(m.anexo || ''));
+  }
+
   /** Soportes obligatorios que faltan (la certificación bancaria siempre; el de cada deducción marcada). */
   function soportesFaltantes(s, soportes) {
-    const requeridos = ['banco'].concat(Object.keys(SOPORTE_DE_CHECK).filter((c) => s[c] === 'SI').map((c) => SOPORTE_DE_CHECK[c]));
+    const requeridos = ['banco'].concat(Object.keys(SOPORTE_DE_CHECK).filter((c) => s[c] === 'SI').map((c) => SOPORTE_DE_CHECK[c]))
+      .filter((c) => c !== 'dependientes' || !dependienteSinSoporte(s));
     return requeridos.filter((c) => !((soportes || {})[c] || []).length);
   }
 

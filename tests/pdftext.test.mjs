@@ -521,6 +521,14 @@ describe('leer() con pdf.js', () => {
     await assert.rejects(PdfText.leer(pdf, OPC), (e) => e.codigo === 'PROTEGIDO' && /contraseña/.test(e.message) && e.causa.name === 'PasswordException');
   });
 
+  test('tieneClave: distingue el PDF con contraseña de apertura', async () => {
+    const paginas = [{ textos: [{ x: 20, y: 700, texto: 'Certificado de prueba' }] }];
+    assert.equal(await PdfText.tieneClave(construirPdf({ cifrado: true, paginas }), OPC), true);
+    assert.equal(await PdfText.tieneClave(construirPdf({ paginas }), OPC), false);
+    assert.equal(await PdfText.tieneClave(new TextEncoder().encode('no soy un PDF'), OPC), null);
+    assert.equal(await PdfText.tieneClave(construirPdf({ paginas }), { pdfjsLib: null }), null);
+  });
+
   test('SIN_TEXTO: PDF de solo imagen/dibujo', async () => {
     await assert.rejects(PdfText.leer(PDF_IMAGEN(), { ...OPC, documento: 'RUT' }), (e) => e.codigo === 'SIN_TEXTO' && /MUISCA/.test(e.message));
     const doc = await PdfText.leer(PDF_IMAGEN(), { ...OPC, tolerante: true });
