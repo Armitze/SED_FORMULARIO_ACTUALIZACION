@@ -397,6 +397,9 @@ fieldset.campo > legend + * { clear: both; }
   appearance: none;
 }
 .control::placeholder { color: #98a2b3; }
+/* Dato fijado por un documento (régimen de IVA del RUT): gris y sin cambios. */
+.control:disabled { background-color: var(--fondo); border-color: var(--borde); color: var(--texto-3); cursor: not-allowed; opacity: 1; }
+.control--select:disabled { background-image: none; }
 .control:hover { border-color: var(--borde-hover); }
 .control:focus { outline: none; border-color: var(--acento); box-shadow: 0 0 0 4px var(--anillo-suave); }
 .control[aria-invalid="true"] { border-color: #e5484d; }
@@ -509,6 +512,12 @@ input[type="date"].control.vacio:not(:focus)::-webkit-datetime-edit { color: #98
 }
 .opcion input:focus-visible + span { outline: 2px solid var(--acento); outline-offset: 2px; }
 .con-error .opcion span { border-color: #f3a7a4; }
+/* Respuesta fijada por el RUT (C3): gris y sin cambios. */
+.opcion input:disabled + span,
+.pregunta .opcion input:disabled + span { cursor: not-allowed; background: var(--fondo); border-color: var(--borde); color: var(--texto-3); }
+.opcion input:disabled:checked + span,
+.pregunta .opcion input:disabled:checked + span { background: var(--borde); border-color: var(--borde); color: var(--texto-2); }
+.opcion:hover input:disabled:not(:checked) + span { border-color: var(--borde); color: var(--texto-3); }
 
 /* Opciones largas (motivo del dependiente) */
 .opciones-filas { display: grid; gap: 4px; }
@@ -956,8 +965,11 @@ input.sr-only:focus-visible + .soportes-pie .soportes-agregar { box-shadow: 0 0 
 .zona[data-estado="leyendo"] { cursor: progress; border-style: solid; border-color: var(--acento-100); background: var(--superficie); }
 .zona[data-estado="listo"], .zona[data-estado="aplicado"] { border-style: solid; border-color: var(--exito-borde); background: var(--exito-50); }
 .zona[data-estado="listo"] .zona-icono, .zona[data-estado="aplicado"] .zona-icono { color: var(--exito); }
-.zona[data-estado="error"] { border-style: solid; border-color: var(--error-borde); background: var(--error-50); }
-.zona[data-estado="error"] .zona-icono { color: var(--error); }
+.zona[data-estado="falta"] { border-color: var(--error-borde); background: var(--error-50); }
+.zona[data-estado="falta"] .zona-error { color: var(--error); }
+.zona[data-estado="error"], .zona[data-estado="vencido"] { border-style: solid; border-color: var(--error-borde); background: var(--error-50); }
+.zona[data-estado="error"] .zona-icono, .zona[data-estado="vencido"] .zona-icono { color: var(--error); }
+.zona[data-estado="vencido"] .zona-error { color: var(--error); }
 .zona[data-estado="listo"]:hover, .zona[data-estado="aplicado"]:hover { border-color: #75e0a7; }
 .zona[data-estado="error"]:hover { border-color: #fda29b; }
 

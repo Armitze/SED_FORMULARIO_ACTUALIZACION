@@ -915,6 +915,13 @@
   const estaEn = (lista, valorBuscado, prop) =>
     (lista || []).some((x) => clave(prop ? x[prop] : x) === clave(valorBuscado));
 
+  /** Actividades ARL que se pueden elegir: las de CONFIG.arlActivas (si la lista está vacía, toda la tabla). */
+  function arlActivas(cat, cfg) {
+    const activas = new Set(((cfg && cfg.arlActivas) || []).map(String));
+    const lista = (cat && cat.arl) || [];
+    return activas.size ? lista.filter((x) => activas.has(String(x.codigo))) : lista;
+  }
+
   function validar(s, hoy) {
     s = s || {};
     const SCH = root.SCHEMA || { fields: {} };
@@ -1059,7 +1066,7 @@
       const f = fechaValida(id);
       if (f && (f < fMin || f > fMax)) err(id, 'La fecha del CRP debe estar ' + rangoFechas + '.');
     });
-    if (tiene('codigoArl') && !estaEn(cat.arl, val('codigoArl'), 'codigo')) err('codigoArl', 'Selecciona un código ARL de la lista.');
+    if (tiene('codigoArl') && !estaEn(arlActivas(cat, cfg), val('codigoArl'), 'codigo')) err('codigoArl', 'Selecciona un código ARL de la lista.');
     if (tiene('areaFuncional') && !estaEn(cat.areas, val('areaFuncional'), 'nombre')) err('areaFuncional', 'Selecciona un área de la lista.');
     digitos('operativoId', 'La identificación del operativo');
 

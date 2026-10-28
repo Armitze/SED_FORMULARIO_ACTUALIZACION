@@ -23,7 +23,7 @@
 
   const steps = [
     { id: 'documentos', titulo: 'Documentos', corto: 'Documentos',
-      descripcion: 'Carga tu RUT y tu RIT en PDF y llenamos por ti la mayor parte del formulario.' },
+      descripcion: 'Carga tu RUT y tu RIT en PDF (los dos son obligatorios) y llenamos por ti la mayor parte del formulario.' },
     { id: 'personales', titulo: 'Datos personales', corto: 'Personales',
       descripcion: 'Tal como aparecen en tu RUT.' },
     { id: 'contacto', titulo: 'Dirección y contacto', corto: 'Contacto',

@@ -57,6 +57,13 @@ describe('Consolidador.leer', () => {
     assert.equal(sin.pendientes, con.pendientes + 1);
   });
 
+  test('el soporte del dependiente no se pide para hijos menores de 23 (motivos 1 y 2)', () => {
+    const motivos = globalThis.CATALOGOS.motivosDependientes;
+    const pendientes = (n) => registro(Object.assign({}, PERSONA, { dedDependientes: 'SI', depMotivo: motivos[n].texto })).pendientes;
+    assert.equal(pendientes(0), pendientes(1));
+    assert.equal(pendientes(3), pendientes(0) + 1, 'cónyuge: falta su soporte');
+  });
+
   test('rechaza lo que no es un formulario con datos', () => {
     assert.equal(C.leer('<html><body>hola</body></html>', 'x.html').error, 'NO_FORMULARIO');
     assert.equal(C.leer(BASE, 'limpio.html').error, 'NO_FORMULARIO');

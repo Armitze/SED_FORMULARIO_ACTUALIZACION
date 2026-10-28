@@ -1,4 +1,4 @@
 {
-  "version": "1.2.1",
-  "notas": "Ahora adjuntas tus soportes en el formulario y la consulta del contrato en SECOP II vuelve a funcionar."
+  "version": "1.2.3",
+  "notas": "El RUT y el RIT ahora son obligatorios y el PDF para firmar se descarga directamente con tu nombre y número de contrato."
 }

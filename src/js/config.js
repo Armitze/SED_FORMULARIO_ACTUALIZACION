@@ -29,7 +29,19 @@ window.CONFIG = {
   // Antes del 1 de abril se usan certificados de dos años atrás; desde el 1 de abril, del año anterior.
   mesDiaCorteCertificados: '04-01',
 
-  correoRadicacion: 'actualizarterceros@educacionbogota.gov.co',
+  // El RUT y el RIT deben estar impresos hace máximo estos días (fecha de generación del PDF del RUT y
+  // «Fecha:» del certificado RIT); si no, el formulario no deja avanzar hasta cargar uno reciente.
+  diasVigenciaDocumentos: 60,
+
+  // Códigos de actividad ARL que se pueden elegir (la tabla completa del Excel tiene 1.670). Vacío = todos.
+  arlActivas: [
+    '1464901', '1511201', '1582001', '1620101', '1620202', '1620901', '1661901', '1691001', '1692001', '1701001',
+    '1702001', '1711001', '1722001', '1724001', '1729001', '1741101', '1749001', '1749101', '1751301', '1804201',
+    '1829902', '1841101', '1841201', '1841202', '1841204', '1841205', '1841301', '1851201', '1852201', '1854201',
+    '1856001', '1900101', '1900401', '1949902', '3581301', '3612001', '3642201', '5711001',
+  ],
+
+  correoRadicacion:'actualizarterceros@educacionbogota.gov.co',
 
   // Soportes que se guardan dentro del archivo (certificación bancaria y certificados de deducciones).
   // Van codificados en el HTML (ocupan un 33 % más), así que el total se limita para que guardar siga siendo rápido.
