@@ -13,7 +13,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '1.2.3';
+  const VERSION = '1.2.4';
   const MAX_OPCIONES_COMBO = 50;
 
   const SCHEMA = window.SCHEMA;

@@ -1,4 +1,4 @@
 {
-  "version": "1.2.3",
-  "notas": "El RUT y el RIT ahora son obligatorios y el PDF para firmar se descarga directamente con tu nombre y número de contrato."
+  "version": "1.2.4",
+  "notas": "El PDF para firmar ahora trae tus soportes en las páginas siguientes al formato (todo en un solo PDF) y se llama NOMBRE_APELLIDO_CONTRATO_AÑO."
 }
