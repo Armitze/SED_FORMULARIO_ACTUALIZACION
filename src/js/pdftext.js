@@ -17,6 +17,7 @@
 //   window.PDFJS_WORKER_SRC || '../node_modules/pdfjs-dist/build/pdf.worker.min.js' solo si no estaba fijado.
 //
 //   await PdfText.tieneClave(entrada, opts?) -> true | false | null (null = no se pudo saber)
+//   await PdfText.comoImagenes(entrada, opts?) -> [{ ancho, alto, jpeg }]  cada página como JPEG (navegador)
 //
 //   DocDetect.tipo(doc)    -> 'RUT' | 'RIT' | 'RIT_SOLICITUD' | 'DESCONOCIDO'
 //   DocDetect.tipos(doc)   -> tipos presentes en orden de aparición (un paquete puede traer RUT y RIT)
@@ -527,9 +528,56 @@
     }
   }
 
+  /**
+   * Dibuja cada página como JPEG (solo navegador): para anexar al PDF para firmar un soporte que no se puede
+   * copiar tal cual (p. ej. protegido contra edición). -> [{ ancho, alto (puntos PDF), jpeg: Uint8Array }]
+   * opts.escala (2 por defecto, ~144 ppp) · opts.maxPaginas (MAX_PAGINAS) · opts.calidad (0.85)
+   */
+  async function comoImagenes(entrada, opts) {
+    const o = opts || {};
+    const lib = obtenerLib(o);
+    if (!lib || typeof lib.getDocument !== 'function' || typeof document === 'undefined') throw crearError('LIB_NO_DISPONIBLE');
+    configurarWorker(lib);
+    const datos = await aBytes(entrada);
+    if (!datos || datos.length < 5 || !pareceUnPdf(datos)) throw crearError('NO_PDF');
+    const escala = Number(o.escala) > 0 ? Number(o.escala) : 2;
+    let tarea = null;
+    try {
+      tarea = lib.getDocument({ data: datos, isEvalSupported: false, verbosity: 0 });
+      const pdf = await tarea.promise.catch((e) => { throw traducirError(e); });
+      const total = Math.min(pdf.numPages, Math.max(1, Number(o.maxPaginas) || MAX_PAGINAS));
+      const salida = [];
+      for (let n = 1; n <= total; n++) {
+        const page = await pdf.getPage(n);
+        const base = page.getViewport({ scale: 1 });
+        const vp = page.getViewport({ scale: escala });
+        const lienzo = document.createElement('canvas');
+        lienzo.width = Math.ceil(vp.width);
+        lienzo.height = Math.ceil(vp.height);
+        const ctx = lienzo.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, lienzo.width, lienzo.height);
+        await page.render({ canvasContext: ctx, viewport: vp }).promise;
+        const url = lienzo.toDataURL('image/jpeg', o.calidad || 0.85);
+        const bin = root.atob(url.slice(url.indexOf(',') + 1));
+        const jpeg = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) jpeg[i] = bin.charCodeAt(i);
+        salida.push({ ancho: base.width, alto: base.height, jpeg });
+        lienzo.width = lienzo.height = 0;
+        try { page.cleanup(); } catch (e) { /* no importa */ }
+      }
+      return salida;
+    } finally {
+      if (tarea) {
+        try { await tarea.destroy(); } catch (e) { /* ya destruido */ }
+      }
+    }
+  }
+
   const PdfText = {
     leer,
     tieneClave,
+    comoImagenes,
     armarDoc,
     fold,
     compactar,
