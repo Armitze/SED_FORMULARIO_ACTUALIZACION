@@ -5,15 +5,19 @@
 //                                         si d no se pasa usa Calc.derivados(s). Si una hoja no cabe en
 //                                         una página carta la reduce (CSS zoom) para que la firma no se separe.
 //   imprimir(s, opts?) -> Promise<void>   calcula d = Calc.derivados(s), arma, pone el nombre de archivo
-//                                         (ExportExcel.nombreArchivo) como título, abre el diálogo de
-//                                         impresión y restaura el título al cerrarlo
+//                                         (nombreArchivo, sin .pdf) como título, abre el diálogo de
+//                                         impresión y restaura el título al cerrarlo (sin soportes)
 //   pdf(s, opts?) -> Promise<Blob>        el mismo documento como PDF carta, sin diálogo de impresión: cada
-//                                         hoja se dibuja como imagen (html2canvas) dentro de un PDF (jsPDF)
+//                                         hoja se dibuja como imagen (html2canvas) dentro de un PDF (jsPDF).
+//                                         Con opts.anexos, los soportes van en las páginas siguientes (pdf-lib)
 //   puedeGenerarPdf() -> boolean          están html2canvas y jsPDF (si no, se usa imprimir())
-//   nombreArchivo(s) -> string            NOMBRE_CONTRATO_AÑO.pdf (ExportExcel.nombreArchivo)
+//   puedeAnexar() -> boolean              está pdf-lib (si no, pdf() no puede agregar los soportes)
+//   nombreArchivo(s) -> string            NOMBRE_APELLIDO_CONTRATO_AÑO.pdf (ExportExcel.nombrePdf)
 //   html(s, d?, opts?) -> string          el mismo documento como HTML (sin DOM; útil para pruebas)
 //   necesitaHojaDeducciones(s) -> boolean hoja 2 solo con dependientes / hipotecario / salud no POS
-// opts: { hoy?: Date } (fecha de diligenciamiento de la hoja de deducciones)
+// opts: { hoy?: Date (fecha de diligenciamiento de la hoja de deducciones),
+//         anexos?: [item de Soportes] (en ese orden; PDF tal cual, JPG/PNG en una hoja carta cada uno),
+//         alOmitir?(item, error) (un soporte que no se pudo agregar; el PDF sale sin él) }
 // El logo sale de window.LOGO_SRC (data URI que inyecta el build) o de 'img/logo.png' en desarrollo.
 //
 // #impresion está oculto en pantalla (atributo hidden + print.css) y al imprimir se muestra solo él.
@@ -482,8 +486,7 @@
     const d = derivados(st, o.hoy);
     render(st, d, o);
     const tituloAnterior = document.title;
-    const E = root.ExportExcel;
-    if (E && typeof E.nombreArchivo === 'function') document.title = E.nombreArchivo(st);
+    document.title = nombreArchivo(st).replace(/\.pdf$/, '');
     let restaurado = false;
     const restaurar = () => {
       if (restaurado) return;
@@ -533,7 +536,7 @@
 
   function nombreArchivo(s) {
     const E = root.ExportExcel;
-    const base = E && typeof E.nombreArchivo === 'function' ? E.nombreArchivo(s || {}) : 'FORMULARIO_13-IF-016';
+    const base = E && typeof E.nombrePdf === 'function' ? E.nombrePdf(s || {}) : 'FORMULARIO_13-IF-016';
     return base + '.pdf';
   }
 
@@ -544,6 +547,103 @@
       img.addEventListener('error', listo, { once: true });
       setTimeout(listo, 1500);
     })));
+  }
+
+  // ───────────────────────── Soportes anexos ─────────────────────────
+  // Después del formato, en el orden recibido: las páginas de cada PDF se copian tal cual (pdf-lib), y si no se
+  // puede (protegido contra edición, dañado) se dibujan como imagen con pdf.js. Cada JPG/PNG va en una hoja
+  // carta, girada si la imagen es horizontal.
+
+  const CARTA_PT = { ancho: 612, alto: 792 };
+  const MARGEN_IMAGEN_PT = 28; // ~1 cm
+  const MAX_LADO_IMAGEN = 2400; // px: legible en carta sin que una foto de celular dispare el peso del PDF
+
+  const libPdf = () => root.PDFLib || null;
+  const puedeAnexar = () => !!(libPdf() && libPdf().PDFDocument);
+
+  function bytesDe(item) {
+    const s = root.atob(item.datos);
+    const b = new Uint8Array(s.length);
+    for (let i = 0; i < s.length; i++) b[i] = s.charCodeAt(i);
+    return b;
+  }
+
+  /** La imagen como la ve la persona (con la orientación EXIF de las fotos de celular), en JPEG y tamaño razonable. */
+  async function imagenNormalizada(item) {
+    if (typeof root.createImageBitmap !== 'function') return null;
+    const bmp = await root.createImageBitmap(new Blob([bytesDe(item)], { type: item.tipo }), { imageOrientation: 'from-image' });
+    try {
+      const k = Math.min(1, MAX_LADO_IMAGEN / Math.max(bmp.width, bmp.height));
+      const lienzo = document.createElement('canvas');
+      lienzo.width = Math.max(1, Math.round(bmp.width * k));
+      lienzo.height = Math.max(1, Math.round(bmp.height * k));
+      const ctx = lienzo.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, lienzo.width, lienzo.height);
+      ctx.drawImage(bmp, 0, 0, lienzo.width, lienzo.height);
+      const url = lienzo.toDataURL('image/jpeg', 0.88);
+      lienzo.width = lienzo.height = 0;
+      return bytesDe({ datos: url.slice(url.indexOf(',') + 1) });
+    } finally {
+      if (bmp.close) bmp.close();
+    }
+  }
+
+  function hojaConImagen(destino, img, tamano) {
+    const horizontal = img.width > img.height;
+    const ancho = tamano ? tamano.ancho : horizontal ? CARTA_PT.alto : CARTA_PT.ancho;
+    const alto = tamano ? tamano.alto : horizontal ? CARTA_PT.ancho : CARTA_PT.alto;
+    const margen = tamano ? 0 : MARGEN_IMAGEN_PT;
+    const k = Math.min((ancho - 2 * margen) / img.width, (alto - 2 * margen) / img.height);
+    const w = img.width * k;
+    const h = img.height * k;
+    destino.addPage([ancho, alto]).drawImage(img, { x: (ancho - w) / 2, y: (alto - h) / 2, width: w, height: h });
+  }
+
+  async function anexarImagen(destino, item) {
+    let jpeg = null;
+    try { jpeg = await imagenNormalizada(item); } catch (e) { jpeg = null; }
+    const img = jpeg ? await destino.embedJpg(jpeg)
+      : item.tipo === 'image/png' ? await destino.embedPng(bytesDe(item)) : await destino.embedJpg(bytesDe(item));
+    hojaConImagen(destino, img);
+  }
+
+  async function anexarPdf(destino, item) {
+    const { PDFDocument } = libPdf();
+    try {
+      const origen = await PDFDocument.load(bytesDe(item), { updateMetadata: false });
+      const paginas = await destino.copyPages(origen, origen.getPageIndices());
+      paginas.forEach((p) => destino.addPage(p));
+    } catch (e) {
+      // Cifrado (aunque abra sin contraseña) o con una estructura que pdf-lib no copia: como imagen.
+      const P = root.PdfText;
+      if (!P || typeof P.comoImagenes !== 'function') throw e;
+      const imagenes = await P.comoImagenes(bytesDe(item));
+      for (const x of imagenes) hojaConImagen(destino, await destino.embedJpg(x.jpeg), { ancho: x.ancho, alto: x.alto });
+    }
+  }
+
+  async function anexar(formato, anexos, titulo, alOmitir) {
+    const omitir = (item, e) => { if (typeof alOmitir === 'function') { try { alOmitir(item, e); } catch (x) { /* no importa */ } } };
+    if (!puedeAnexar()) {
+      anexos.forEach((item) => omitir(item, new Error('Falta pdf-lib')));
+      return new Blob([formato], { type: 'application/pdf' });
+    }
+    const destino = await libPdf().PDFDocument.load(formato);
+    for (const item of anexos) {
+      const antes = destino.getPageCount();
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        if (item.tipo === 'application/pdf') await anexarPdf(destino, item); else await anexarImagen(destino, item);
+      } catch (e) {
+        while (destino.getPageCount() > antes) destino.removePage(destino.getPageCount() - 1);
+        omitir(item, e);
+      }
+    }
+    destino.setTitle(titulo);
+    destino.setSubject('Formato 13-IF-016 y soportes');
+    destino.setCreator('Formulario 13-IF-016');
+    return new Blob([await destino.save()], { type: 'application/pdf' });
   }
 
   async function pdf(s, opts) {
@@ -571,8 +671,11 @@
         if (i > 0) doc.addPage('letter', 'portrait');
         doc.addImage(lienzo.toDataURL('image/jpeg', 0.92), 'JPEG', (CARTA_MM.ancho - ancho) / 2, 0, ancho, alto, undefined, 'FAST');
       }
-      doc.setProperties({ title: nombreArchivo(st).replace(/\.pdf$/, ''), subject: 'Formato 13-IF-016', creator: 'Formulario 13-IF-016' });
-      return doc.output('blob');
+      const titulo = nombreArchivo(st).replace(/\.pdf$/, '');
+      doc.setProperties({ title: titulo, subject: 'Formato 13-IF-016', creator: 'Formulario 13-IF-016' });
+      const anexos = (o.anexos || []).filter((x) => x && x.datos);
+      if (!anexos.length) return doc.output('blob');
+      return await anexar(doc.output('arraybuffer'), anexos, titulo, o.alOmitir);
     } finally {
       el.classList.remove('imp-captura');
       if (estiloPrevio == null) el.removeAttribute('style'); else el.setAttribute('style', estiloPrevio);
@@ -590,11 +693,8 @@
     try {
       const s = App.estadoLimpio();
       render(s, derivados(s));
-      const E = root.ExportExcel;
-      if (E && typeof E.nombreArchivo === 'function') {
-        tituloAntesDeImprimir = document.title;
-        document.title = E.nombreArchivo(s);
-      }
+      tituloAntesDeImprimir = document.title;
+      document.title = nombreArchivo(s).replace(/\.pdf$/, '');
     } catch (e) {
       if (root.console) console.error('No se pudo preparar la impresión', e);
     }
@@ -610,7 +710,7 @@
     root.addEventListener('afterprint', despuesDeImprimir);
   }
 
-  const Imprimir = { render, imprimir, pdf, puedeGenerarPdf, nombreArchivo, html, necesitaHojaDeducciones };
+  const Imprimir = { render, imprimir, pdf, puedeGenerarPdf, puedeAnexar, nombreArchivo, html, necesitaHojaDeducciones };
   root.Imprimir = Imprimir;
   if (typeof module !== 'undefined' && module.exports) module.exports = Imprimir;
 })(typeof window !== 'undefined' ? window : globalThis);

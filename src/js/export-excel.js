@@ -13,6 +13,7 @@
 //   generarBytes(s, opts?)   -> Promise<Uint8Array>  igual, en bytes (útil en Node)
 //   descargar(s, opts?)      -> Promise<string>      genera y descarga; devuelve el nombre
 //   nombreArchivo(s)         -> string               NOMBRE_CONTRATO_AÑOCONTRATO (sin extensión)
+//   nombrePdf(s)             -> string               NOMBRE_APELLIDO_CONTRATO_AÑO (sin extensión; el PDF para firmar)
 //   escrituras(s)            -> { celdas: [{hoja, celda, tipo:'n'|'s'|'', valor, campo}], avisos: [string] }
 //   serialFecha(iso)         -> number | null        'aaaa-mm-dd' -> número de serie de Excel
 //   editarHoja(xml, cambios, nombreHoja?) -> string  (bajo nivel; cambios: Map ref -> {tipo, valor})
@@ -643,12 +644,9 @@
     return new Blob([bytes], { type: MIME_XLSX });
   }
 
-  // NOMBRE_CONTRATO_AÑOCONTRATO (instructivo), apto para cualquier sistema de archivos.
-  function nombreArchivo(s) {
-    const st = s || {};
-    const val = (k) => (st[k] == null ? '' : String(st[k]).trim());
-    const nombre = ['primerApellido', 'segundoApellido', 'primerNombre', 'otrosNombres'].map(val).filter(Boolean).join(' ');
-    let base = [nombre, val('numeroContrato'), val('anioContrato')].filter(Boolean).join('_');
+  /** Base de nombre de archivo segura en Windows: mayúsculas, espacios -> _, sin caracteres prohibidos. */
+  function limpiarNombre(partes) {
+    let base = partes.filter(Boolean).join('_');
     base = base.toLocaleUpperCase('es-CO')
       .replace(/[\u0000-\u001F<>:"/\\|?*]+/g, '')
       .replace(/\s+/g, '_')
@@ -657,6 +655,21 @@
     if (!base) base = 'FORMULARIO_13-IF-016';
     if (/^(CON|PRN|AUX|NUL|COM\d|LPT\d)$/i.test(base)) base = '_' + base;
     return base.slice(0, 150).replace(/[_.\s]+$/, '');
+  }
+
+  const valorDe = (s) => (k) => (s[k] == null ? '' : String(s[k]).trim());
+
+  // NOMBRE_CONTRATO_AÑOCONTRATO (instructivo), apto para cualquier sistema de archivos.
+  function nombreArchivo(s) {
+    const val = valorDe(s || {});
+    const nombre = ['primerApellido', 'segundoApellido', 'primerNombre', 'otrosNombres'].map(val).filter(Boolean).join(' ');
+    return limpiarNombre([nombre, val('numeroContrato'), val('anioContrato')]);
+  }
+
+  /** Nombre del PDF para firmar: primer nombre, primer apellido, número y año del contrato. */
+  function nombrePdf(s) {
+    const val = valorDe(s || {});
+    return limpiarNombre([val('primerNombre'), val('primerApellido'), val('numeroContrato'), val('anioContrato')]);
   }
 
   async function descargar(s, opts) {
@@ -679,6 +692,7 @@
     generarBytes,
     descargar,
     nombreArchivo,
+    nombrePdf,
     escrituras,
     serialFecha,
     editarHoja,

@@ -13,7 +13,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '1.2.3';
+  const VERSION = '1.2.4';
   const MAX_OPCIONES_COMBO = 50;
 
   const SCHEMA = window.SCHEMA;
@@ -2204,14 +2204,21 @@
     }
   }
 
+  /** Los soportes de lo que aplica, en el orden en que van después del formato en el PDF para firmar. */
+  function soportesParaPdf() {
+    return soportesRequeridos().flatMap((c) => estado.soportes[c] || []);
+  }
+
   /** Revisión: los soportes adjuntos de lo que aplica, para descargarlos (los que faltan van en Pendientes). */
-  function construirSoportesRevision() {
+  function construirSoportesRevision(enElPdf) {
     if (!S) return null;
     const claves = soportesRequeridos().filter((c) => (estado.soportes[c] || []).length);
     if (!claves.length) return null;
     return h('section', { class: 'grupo', 'aria-labelledby': 'rev-soportes' },
       h('h3', { class: 'grupo-titulo', id: 'rev-soportes' }, 'Soportes adjuntos'),
-      h('p', { class: 'grupo-intro' }, 'Quedan guardados en este archivo. Descárgalos para enviarlos junto con el PDF firmado.'),
+      h('p', { class: 'grupo-intro' }, enElPdf
+        ? 'Quedan guardados en este archivo y van dentro del PDF para firmar, en este orden, después del formato.'
+        : 'Quedan guardados en este archivo. Descárgalos para enviarlos junto con el PDF firmado.'),
       h('ul', { class: 'soportes-lista soportes-lista--revision' }, claves.flatMap((c) => estado.soportes[c].map((item) =>
         h('li', { class: 'soporte' },
           icono('archivoOk', 'icono soporte-icono'),
@@ -3338,28 +3345,32 @@
     const botonPdf = h('button', { type: 'button', class: 'boton boton--primario boton--grande', onclick: () => descargarPdf(botonPdf) },
       icono('firma'), h('span', null, 'Descargar PDF para firmar'));
     // Botón de Excel oculto por ahora; descargarExcel() se conserva para reactivarlo.
+    const I = window.Imprimir;
+    const pdfDirecto = !!I && typeof I.puedeGenerarPdf === 'function' && I.puedeGenerarPdf();
+    const conSoportes = pdfDirecto && typeof I.puedeAnexar === 'function' && I.puedeAnexar() && soportesParaPdf().length > 0;
     cuerpo.append(h('section', { class: 'grupo descargas', 'aria-labelledby': 'rev-desc' },
       h('h3', { class: 'grupo-titulo', id: 'rev-desc' }, 'Descargas'),
       h('div', { class: 'descargas-botones' }, botonPdf),
-      h('p', { class: 'ayuda-campo' }, window.Imprimir && typeof window.Imprimir.puedeGenerarPdf === 'function' && window.Imprimir.puedeGenerarPdf()
-        ? 'Se descarga como ' + window.Imprimir.nombreArchivo(estadoLimpio()) + '.'
+      h('p', { class: 'ayuda-campo' }, pdfDirecto
+        ? 'Se descarga como ' + I.nombreArchivo(estadoLimpio()) + (conSoportes ? ': el formato en la primera hoja y tus soportes en las siguientes, todo en un solo PDF.' : '.')
         : 'El PDF se genera con la ventana de impresión de tu navegador: elige «Guardar como PDF».')));
-    const soportes = construirSoportesRevision();
+    const soportes = construirSoportesRevision(conSoportes);
     if (soportes) cuerpo.append(soportes);
 
-    // El nombre solo se muestra cuando ya cumple la regla NOMBRE_CONTRATO_AÑOCONTRATO.
+    // El nombre solo se muestra cuando ya cumple la regla NOMBRE_APELLIDO_CONTRATO_AÑO.
     const limpio = estadoLimpio();
-    const nombre = (limpio.primerApellido || limpio.primerNombre) && limpio.numeroContrato && limpio.anioContrato ? nombreArchivo() : '';
+    const nombre = I && limpio.primerNombre && limpio.primerApellido && limpio.numeroContrato && limpio.anioContrato ? I.nombreArchivo(limpio) : '';
     cuerpo.append(h('section', { class: 'que-sigue', 'aria-labelledby': 'rev-sigue' },
       h('h3', { class: 'que-sigue-titulo', id: 'rev-sigue' }, '¿Qué sigue?'),
       h('ol', null,
-        h('li', null, 'Firma el PDF.'),
+        h('li', null, 'Firma el PDF (en la primera hoja, la del formato).'),
         h('li', null, 'Envíalo a tu operativo o jefe de área. Esa persona lo remite a ',
           h('a', { href: 'mailto:' + (CFG.correoRadicacion || '') }, CFG.correoRadicacion || 'el buzón de Tesorería'),
-          ' en un solo PDF, junto con tu certificación bancaria y los soportes de deducciones, si aplican.'),
-        h('li', null, 'El archivo debe llamarse NOMBRE_CONTRATO_AÑOCONTRATO',
-          nombre ? ['; el tuyo: ', h('strong', { class: 'nombre-archivo' }, nombre + '.pdf')]
-            : ' (te lo mostramos cuando llenes tu nombre, el número y el año del contrato).'))));
+          conSoportes ? '. Ya lleva dentro tu certificación bancaria y los soportes de deducciones.'
+            : ' en un solo PDF, junto con tu certificación bancaria y los soportes de deducciones, si aplican.'),
+        h('li', null, 'El archivo debe llamarse NOMBRE_APELLIDO_CONTRATO_AÑO',
+          nombre ? ['; el tuyo: ', h('strong', { class: 'nombre-archivo' }, nombre)]
+            : ' (te lo mostramos cuando llenes tu primer nombre, tu primer apellido, el número y el año del contrato).'))));
 
     // Uso interno de Tesorería: solo con el formulario completo (mientras tanto el Excel dice "REVISE…").
     if (completo && d.codificacion && !/^REVISE/i.test(String(d.codificacion))) {
@@ -3455,8 +3466,16 @@
       const limpio = estadoLimpio();
       if (typeof window.Imprimir.puedeGenerarPdf === 'function' && window.Imprimir.puedeGenerarPdf()) {
         const nombre = window.Imprimir.nombreArchivo(limpio);
-        descargarBlob(await window.Imprimir.pdf(limpio), nombre);
-        toast('Descargamos ' + nombre + '. Fírmalo y envíalo con tus soportes.');
+        const anexos = soportesParaPdf();
+        const omitidos = [];
+        if (anexos.length && boton && boton.lastChild) boton.lastChild.textContent = 'Uniendo tus soportes…';
+        descargarBlob(await window.Imprimir.pdf(limpio, { anexos, alOmitir: (item) => omitidos.push(item.nombre) }), nombre);
+        if (omitidos.length) {
+          toast('Descargamos ' + nombre + ', pero no pudimos agregarle ' + omitidos.map((n) => '«' + n + '»').join(', ') +
+            '. Envía ese soporte aparte o adjúntalo en otro formato (PDF, JPG o PNG).', { tono: 'error' });
+        } else {
+          toast('Descargamos ' + nombre + (anexos.length ? ', con tus soportes en las páginas siguientes' : '') + '. Fírmalo y envíalo.');
+        }
       } else {
         await window.Imprimir.imprimir(limpio);
       }

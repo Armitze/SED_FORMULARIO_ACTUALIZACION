@@ -21,7 +21,7 @@ Los documentos se leen en el navegador y **no se envían a ningún servidor**. L
 4. La primera vez que avanzas, el navegador pregunta dónde guardar tu formulario (nombre sugerido `13-IF-016_APELLIDOS_NOMBRES.html`). Desde ahí se guarda solo en ese archivo; arriba se ve "Guardado".
 5. En **Contrato** se buscan tus contratos con la SED en SECOP II: si hay uno vigente se llenan sus datos; si hay varios, eliges cuál es. El número de contrato de la SED y los CRP se escriben a mano.
 6. Completa lo que falte (cuenta bancaria, CRP, ARL, supervisión, preguntas de retención, deducciones).
-7. En **Revisión** descarga el PDF, fírmalo y envíalo con la certificación bancaria y los soportes de deducciones a tu operativo o jefe de área, quien lo remite a `actualizarterceros@educacionbogota.gov.co`. El archivo se nombra solo como `NOMBRE_CONTRATO_AÑO`.
+7. En **Revisión** descarga el PDF, fírmalo y envíalo a tu operativo o jefe de área, quien lo remite a `actualizarterceros@educacionbogota.gov.co`. Es un solo PDF: el formato en la primera hoja y, en las siguientes, la certificación bancaria y los soportes de deducciones que adjuntaste (los PDF tal cual; cada foto JPG/PNG en una hoja carta). El archivo se nombra solo como `NOMBRE_APELLIDO_CONTRATO_AÑO` (primer nombre y primer apellido, por ejemplo `ANA_PÉREZ_1234_2026.pdf`).
 
 ### Guardado
 

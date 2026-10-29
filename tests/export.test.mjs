@@ -319,6 +319,12 @@ describe('nombreArchivo', () => {
     assert.equal(ExportExcel.nombreArchivo({ primerApellido: 'de la peña', primerNombre: 'josé', numeroContrato: 'CO/12:3', anioContrato: '2026' }), 'DE_LA_PEÑA_JOSÉ_CO123_2026');
     assert.equal(ExportExcel.nombreArchivo({}), 'FORMULARIO_13-IF-016');
   });
+
+  test('PDF para firmar: NOMBRE_APELLIDO_CONTRATO_AÑO', () => {
+    assert.equal(ExportExcel.nombrePdf(COMPLETO), 'ANA_PRUEBA_1234_2026');
+    assert.equal(ExportExcel.nombrePdf({ primerApellido: 'de la peña', segundoApellido: 'ruiz', primerNombre: 'josé', otrosNombres: 'luis', numeroContrato: 'CO/12:3', anioContrato: '2026' }), 'JOSÉ_DE_LA_PEÑA_CO123_2026');
+    assert.equal(ExportExcel.nombrePdf({}), 'FORMULARIO_13-IF-016');
+  });
 });
 
 // ───────────────────────── 2. Integración con la plantilla ─────────────────────────
