@@ -13,7 +13,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '1.2.4';
+  const VERSION = '1.2.5';
   const MAX_OPCIONES_COMBO = 50;
 
   const SCHEMA = window.SCHEMA;
@@ -305,9 +305,16 @@
     zonas: { RUT: { estado: 'idle' }, RIT: { estado: 'idle' } },
     secop: { estado: 'idle', mensaje: '' },
     bloqueo: '',            // paso que se intentó dejar con obligatorios pendientes
+    tramite: null,          // null = pantalla inicial · 'creacion' · 'actualizacion' (el formulario por pasos)
+    creacion: creacionVacia(),
     validacion: null,
     derivados: {},
   };
+
+  /** docs: { rit, rut, banco } (items de Soportes) · datosRut: para nombrar el PDF · pdf: { blob, nombre } ya generado. */
+  function creacionVacia() {
+    return { docs: {}, errores: {}, faltan: false, datosRut: null, pdf: null };
+  }
 
   function estadoInicial() {
     const s = {};
@@ -1760,9 +1767,271 @@
     c.cont.scrollIntoView({ block: 'center', behavior: movimientoReducido() ? 'auto' : 'smooth' });
   }
 
+  // ─────────────────────────── Trámite: inicio y creación de tercero ───────────────────────────
+  //
+  // Al abrir un formulario en limpio se elige el trámite. Un archivo que ya trae datos entra directo a la actualización.
+  // La creación no usa el autoguardado: sus archivos viven en memoria hasta que se descarga el PDF.
+
+  const CT = window.CreacionTercero || null;
+  const TEXTOS_TRAMITE = {
+    inicio: { titulo: 'Creación y actualización de terceros', subtitulo: 'Elige el trámite que vas a hacer' },
+    creacion: { titulo: 'Creación de tercero', subtitulo: 'Adjunta RIT, RUT y certificación bancaria' },
+  };
+  const TEXTOS_FORMULARIO = {};
+
+  /** Título, barra de pasos y pie según el trámite (la actualización conserva los textos del HTML). */
+  function pintarMarcoTramite() {
+    const titulo = document.getElementById('titulo-app');
+    const subtitulo = document.getElementById('subtitulo-app');
+    if (titulo && TEXTOS_FORMULARIO.titulo == null) {
+      TEXTOS_FORMULARIO.titulo = titulo.textContent;
+      TEXTOS_FORMULARIO.subtitulo = subtitulo ? subtitulo.textContent : '';
+      TEXTOS_FORMULARIO.documento = document.title;
+    }
+    const enFormulario = sesion.tramite === 'actualizacion';
+    const t = enFormulario ? TEXTOS_FORMULARIO : TEXTOS_TRAMITE[sesion.tramite || 'inicio'];
+    if (titulo) titulo.textContent = t.titulo;
+    if (subtitulo) subtitulo.textContent = t.subtitulo;
+    document.title = enFormulario ? TEXTOS_FORMULARIO.documento : t.titulo;
+    const stepper = document.getElementById('stepper');
+    if (stepper) stepper.hidden = !enFormulario;
+    const pie = document.getElementById('pie-datos');
+    if (pie) pie.hidden = !enFormulario;
+  }
+
+  function elegirTramite(tramite) {
+    sesion.tramite = tramite;
+    renderPaso();
+    window.scrollTo({ top: 0 });
+    const titulo = document.getElementById('paso-titulo');
+    if (titulo) titulo.focus({ preventScroll: true });
+  }
+
+  function renderTramite() {
+    const destino = document.getElementById('paso');
+    sesion.controles = {};
+    destino.textContent = '';
+    destino.append(sesion.tramite === 'creacion' && CT ? construirCreacion() : construirInicio());
+  }
+
+  function construirInicio() {
+    const opcion = (tramite, titulo, descripcion) => h('button', { type: 'button', class: 'tramite-opcion', 'data-tramite': tramite, onclick: () => elegirTramite(tramite) },
+      h('span', { class: 'tramite-textos' },
+        h('span', { class: 'tramite-titulo' }, titulo),
+        h('span', { class: 'tramite-desc' }, descripcion)),
+      icono('flechaDer'));
+    return h('div', { class: 'paso-contenido', 'data-paso': 'inicio' },
+      h('header', { class: 'paso-cabecera' },
+        h('h2', { class: 'paso-titulo', id: 'paso-titulo', tabindex: '-1' }, '¿Qué trámite vas a hacer?')),
+      h('div', { class: 'tramite-opciones' },
+        CT ? opcion('creacion', 'Creación de tercero', 'Es la primera vez. Solo adjuntas RIT, RUT y certificación bancaria.') : null,
+        opcion('actualizacion', 'Actualización de tercero', 'Ya estás creado. Diligencias el formulario 13-IF-016.')));
+  }
+
+  function construirCreacion() {
+    const contenido = h('div', { class: 'paso-contenido', 'data-paso': 'creacion' },
+      h('header', { class: 'paso-cabecera' },
+        h('h2', { class: 'paso-titulo', id: 'paso-titulo', tabindex: '-1' }, 'Adjunta tus documentos'),
+        h('p', { class: 'paso-descripcion' }, 'Al guardar los unimos en un solo PDF, en este orden, y lo descargamos.')));
+    for (const doc of CT.DOCUMENTOS) contenido.append(crearDocumentoCreacion(doc));
+    const guardar = h('button', { type: 'button', class: 'boton boton--primario', id: 'btn-guardar-creacion', onclick: () => guardarCreacion(guardar) },
+      icono('guardar'), h('span', null, 'Guardar'));
+    contenido.append(h('div', { class: 'navegacion' },
+      h('div', { class: 'navegacion-izq' },
+        h('button', { type: 'button', class: 'boton boton--fantasma', onclick: () => elegirTramite(null) }, icono('flechaIzq'), h('span', null, 'Cambiar de trámite'))),
+      h('div', { class: 'navegacion-der' }, guardar)));
+    const envio = h('div', { id: 'creacion-envio' });
+    contenido.append(envio);
+    pintarEnvioCreacion(envio);
+    return contenido;
+  }
+
+  function crearDocumentoCreacion(doc) {
+    const inputId = 'creacion-' + doc.id;
+    const bloque = h('div', { class: 'soportes', 'data-creacion': doc.id, role: 'group', 'aria-labelledby': inputId + '-titulo' });
+    const input = h('input', { type: 'file', id: inputId, class: 'sr-only', accept: ACEPTA_SOPORTES });
+    input.addEventListener('change', () => {
+      const archivos = Array.from(input.files || []);
+      input.value = '';
+      if (archivos.length) adjuntarCreacion(doc, archivos);
+    });
+    bloque.addEventListener('dragover', (e) => { e.preventDefault(); bloque.classList.add('arrastrando'); });
+    bloque.addEventListener('dragleave', (e) => { if (!bloque.contains(e.relatedTarget)) bloque.classList.remove('arrastrando'); });
+    bloque.addEventListener('drop', (e) => {
+      e.preventDefault();
+      bloque.classList.remove('arrastrando');
+      const archivos = Array.from((e.dataTransfer && e.dataTransfer.files) || []);
+      if (archivos.length) adjuntarCreacion(doc, archivos);
+    });
+    agregarHijos(bloque, [
+      h('p', { class: 'soportes-titulo', id: inputId + '-titulo' }, doc.titulo),
+      h('p', { class: 'soportes-desc' }, doc.descripcion),
+      h('ul', { class: 'soportes-lista' }),
+      h('p', { class: 'soportes-error', role: 'alert', hidden: true }),
+      h('p', { class: 'soportes-falta', hidden: true }, icono('alerta'), h('span', null, 'Adjunta este documento para continuar.')),
+      input,
+      h('div', { class: 'soportes-pie' },
+        h('label', { class: 'boton-agregar soportes-agregar', for: inputId }, icono('subir'), h('span', null)),
+        h('span', { class: 'soportes-limite' }, 'PDF, JPG o PNG · hasta ' + S.tamanoTexto(CT.limites(CFG).maxArchivo))),
+    ]);
+    pintarDocumentoCreacion(doc, bloque);
+    return bloque;
+  }
+
+  function pintarDocumentoCreacion(doc, bloqueEl) {
+    const bloque = bloqueEl || document.querySelector('.soportes[data-creacion="' + doc.id + '"]');
+    if (!bloque) return;
+    const c = sesion.creacion;
+    const item = c.docs[doc.id];
+    const ul = bloque.querySelector('.soportes-lista');
+    ul.textContent = '';
+    if (item) {
+      ul.append(h('li', { class: 'soporte' },
+        icono('archivoOk', 'icono soporte-icono'),
+        h('span', { class: 'soporte-datos' },
+          h('span', { class: 'soporte-nombre', title: item.nombre }, item.nombre),
+          h('span', { class: 'soporte-meta' }, extensionDe(item.tipo) + ' · ' + S.tamanoTexto(item.bytes))),
+        h('span', { class: 'soporte-acciones' },
+          h('button', { type: 'button', class: 'enlace', onclick: () => verSoporte(item), 'aria-label': 'Ver ' + item.nombre }, 'Ver'),
+          h('button', { type: 'button', class: 'enlace enlace--discreto', onclick: () => quitarCreacion(doc), 'aria-label': 'Quitar ' + item.nombre }, 'Quitar'))));
+    }
+    ul.hidden = !item;
+    const error = bloque.querySelector('.soportes-error');
+    error.textContent = '';
+    if (c.errores[doc.id]) error.append(icono('alerta'), h('span', null, c.errores[doc.id]));
+    error.hidden = !c.errores[doc.id];
+    bloque.querySelector('.soportes-agregar span').textContent = item ? 'Cambiar archivo' : 'Adjuntar archivo';
+    const falta = c.faltan && !item;
+    bloque.classList.toggle('con-falta', falta);
+    bloque.querySelector('.soportes-falta').hidden = !falta;
+  }
+
+  /** Lee el PDF para detectar si es otro documento y, en el RUT, tomar el NIT y el nombre. Si no se puede leer, sigue. */
+  async function leerDocumentoCreacion(doc, archivoPdf) {
+    if (!modulo('PdfText', 'leer')) return null;
+    let leido = null;
+    try {
+      leido = await window.PdfText.leer(archivoPdf, { documento: doc.tipo || 'RUT' });
+    } catch (e) {
+      return null; // Escaneado, foto o texto ilegible: igual sirve para el PDF.
+    }
+    if (!leido || leido.tieneTexto === false) return null;
+    const tipos = detectarTipos(leido);
+    const equivocado = CT.documentoEquivocado(doc.id, tipos);
+    if (equivocado) throw errorCodigo('DOCUMENTO', equivocado);
+    if (doc.tipo !== 'RUT' || !tipos.includes('RUT') || !modulo('RutParser', 'parse')) return null;
+    try {
+      return CT.datosDelRut(window.RutParser.parse(leido, { hoy: hoyLocal() }));
+    } catch (e) {
+      avisarUnaVez('RutParser.parse', e);
+      return null;
+    }
+  }
+
+  async function adjuntarCreacion(doc, archivos) {
+    const c = sesion.creacion;
+    c.errores[doc.id] = '';
+    try {
+      if (archivos.length > 1) throw errorCodigo('VARIOS', 'Adjunta un solo archivo en ' + doc.titulo + '. Si tiene varias hojas, únelas primero en un PDF.');
+      const f = archivos[0];
+      const item = await S.leer(f, CT.limites(CFG));
+      if (item.tipo === 'application/pdf' && await pdfConClave(f)) {
+        throw errorCodigo('PROTEGIDO', '«' + item.nombre + '» tiene contraseña. Descárgalo de nuevo sin clave (o ábrelo con la clave y guárdalo como PDF sin ella) y adjúntalo otra vez.');
+      }
+      const datos = item.tipo === 'application/pdf' ? await leerDocumentoCreacion(doc, f) : null;
+      c.docs[doc.id] = item;
+      if (doc.tipo === 'RUT') c.datosRut = datos;
+      c.pdf = null;
+      anunciar('Adjuntamos ' + item.nombre + '.');
+    } catch (e) {
+      if (!e || !e.codigo) avisarUnaVez('CreacionTercero.adjuntar', e);
+      c.errores[doc.id] = e && e.codigo ? e.message : 'No pudimos adjuntar este archivo. Intenta de nuevo.';
+    }
+    pintarDocumentoCreacion(doc);
+    pintarEnvioCreacion();
+  }
+
+  function quitarCreacion(doc) {
+    const c = sesion.creacion;
+    delete c.docs[doc.id];
+    if (doc.tipo === 'RUT') c.datosRut = null;
+    c.errores[doc.id] = '';
+    c.pdf = null;
+    pintarDocumentoCreacion(doc);
+    pintarEnvioCreacion();
+  }
+
+  async function guardarCreacion(boton) {
+    const c = sesion.creacion;
+    const faltan = CT.faltantes(c.docs);
+    c.faltan = faltan.length > 0;
+    CT.DOCUMENTOS.forEach((d) => pintarDocumentoCreacion(d));
+    if (faltan.length) {
+      const bloque = document.querySelector('.soportes[data-creacion="' + faltan[0].id + '"]');
+      if (bloque) {
+        bloque.scrollIntoView({ block: 'center', behavior: movimientoReducido() ? 'auto' : 'smooth' });
+        const input = bloque.querySelector('input[type="file"]');
+        if (input) input.focus({ preventScroll: true });
+      }
+      return;
+    }
+    if (!modulo('Imprimir', 'unir') || !window.Imprimir.puedeAnexar()) {
+      toast('La unión de documentos no está disponible en esta versión del formulario.', { tono: 'error' });
+      return;
+    }
+    ocupado(boton, true, 'Uniendo tus documentos…');
+    try {
+      const nombre = CT.nombrePdf(c.datosRut);
+      const blob = await window.Imprimir.unir(CT.enOrden(c.docs), { titulo: nombre.replace(/\.pdf$/, ''), asunto: 'Creación de tercero: RIT, RUT y certificación bancaria' });
+      c.pdf = { blob, nombre };
+      descargarBlob(blob, nombre);
+      toast('Descargamos ' + nombre + '. Ahora envíalo.');
+    } catch (e) {
+      avisarUnaVez('Imprimir.unir', e);
+      const malo = e && e.item ? '«' + e.item.nombre + '»' : 'uno de los archivos';
+      toast('No pudimos agregar ' + malo + ' al PDF. Adjúntalo en otro formato (PDF, JPG o PNG) e intenta de nuevo.', { tono: 'error' });
+    } finally {
+      ocupado(boton, false);
+    }
+    pintarEnvioCreacion();
+    const panel = document.getElementById('creacion-envio-titulo');
+    if (panel) {
+      panel.scrollIntoView({ block: 'center', behavior: movimientoReducido() ? 'auto' : 'smooth' });
+      panel.focus({ preventScroll: true });
+    }
+  }
+
+  /** Paso final: aparece solo con el PDF generado y se retira si cambia algún documento. */
+  function pintarEnvioCreacion(destinoEl) {
+    const destino = destinoEl || document.getElementById('creacion-envio');
+    if (!destino) return;
+    destino.textContent = '';
+    const pdf = sesion.creacion.pdf;
+    if (!pdf) return;
+    const enlace = (CFG.creacionTercero && CFG.creacionTercero.enlaceEnvio) || '';
+    destino.append(h('section', { class: 'que-sigue envio-creacion', 'aria-labelledby': 'creacion-envio-titulo' },
+      h('h3', { class: 'que-sigue-titulo', id: 'creacion-envio-titulo', tabindex: '-1' }, 'Envía tu PDF'),
+      h('p', { class: 'envio-archivo' }, 'Ya lo descargamos: ', h('strong', { class: 'nombre-archivo' }, pdf.nombre), ' (' + S.tamanoTexto(pdf.blob.size) + ').'),
+      h('div', { class: 'envio-botones' },
+        h('a', { class: 'boton boton--primario', id: 'btn-enviar-creacion', href: enlace, target: '_blank', rel: 'noopener noreferrer' }, icono('subir'), h('span', null, 'Abrir enlace de envío')),
+        h('button', { type: 'button', class: 'boton boton--secundario', onclick: () => descargarBlob(pdf.blob, pdf.nombre) }, h('span', null, 'Descargar de nuevo'))),
+      h('ol', null,
+        h('li', null, 'Pulsa «Abrir enlace de envío»: se abre en otra pestaña.'),
+        h('li', null, 'Allí selecciona o arrastra el PDF desde tu carpeta de Descargas.'),
+        h('li', null, 'Espera a que el sitio confirme el envío antes de cerrarlo.')),
+      h('button', { type: 'button', class: 'enlace', onclick: otraCreacion }, 'Crear otro tercero')));
+  }
+
+  function otraCreacion() {
+    sesion.creacion = creacionVacia();
+    elegirTramite('creacion');
+  }
+
   // ─────────────────────────── Render de pasos ───────────────────────────
 
   function renderPaso() {
+    pintarMarcoTramite();
+    if (sesion.tramite !== 'actualizacion') { renderTramite(); return; }
     const destino = document.getElementById('paso');
     const paso = PASOS[estado.meta.paso];
     sesion.controles = {};
@@ -1807,6 +2076,9 @@
     if (i > 0) {
       izquierda.append(h('button', { type: 'button', class: 'boton boton--fantasma', onclick: () => irA(i - 1) },
         icono('flechaIzq'), h('span', null, 'Anterior')));
+    } else {
+      izquierda.append(h('button', { type: 'button', class: 'boton boton--fantasma', onclick: () => elegirTramite(null) },
+        icono('flechaIzq'), h('span', null, 'Cambiar de trámite')));
     }
     if (i < PASOS.length - 1) {
       derecha.append(h('button', { type: 'button', class: 'boton boton--primario', id: 'btn-siguiente', onclick: () => intentarIr(i + 1) }));
@@ -3544,6 +3816,8 @@
     sesion.resultados = { RUT: null, RIT: null };
     sesion.zonas = { RUT: { estado: 'idle' }, RIT: { estado: 'idle' } };
     sesion.secop = { estado: 'idle', mensaje: '' };
+    sesion.tramite = null;
+    sesion.creacion = creacionVacia();
     mostrarDueno(null);
     renderPaso();
     window.scrollTo({ top: 0 });
@@ -3662,6 +3936,7 @@
       cargarDatos(embebido);
       archivo.id = typeof embebido.id === 'string' && embebido.id ? embebido.id.slice(0, 80) : null;
       archivo.estado = hayAlgo() ? 'leido' : 'nuevo';
+      if (hayAlgo()) sesion.tramite = 'actualizacion';
     }
 
     construirStepper();
@@ -3744,6 +4019,7 @@
     cargarDatos(pendiente);
     estado.soportes = soportesRespaldo || soportesArchivo;
     estado.meta.paso = paso;
+    sesion.tramite = 'actualizacion';
     sesion.tocados.clear();
     renderPaso();
     guardarPronto();
@@ -3863,6 +4139,8 @@
       actualizarUI();
     },
     irA: (paso) => irA(paso),
+    /** Pantalla inicial: null, 'creacion' o 'actualizacion'. */
+    elegirTramite,
     /** Procesa archivos PDF como si se hubieran soltado en la zona del tipo indicado. */
     procesarArchivos: (archivos, tipo) => procesarArchivos(Array.from(archivos || []), tipo === 'RIT' ? 'RIT' : 'RUT'),
     /** Usa un Resultado de parser como si se hubiera leído ese documento. */

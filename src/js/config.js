@@ -47,6 +47,13 @@ window.CONFIG = {
   // Van codificados en el HTML (ocupan un 33 % más), así que el total se limita para que guardar siga siendo rápido.
   soportes: { maxArchivoMb: 4, maxTotalMb: 12, maxPorTipo: 5 },
 
+  // Creación de tercero: el PDF con RIT, RUT y certificación bancaria se envía por este enlace.
+  // Estos archivos no se guardan en el HTML, así que su límite por archivo puede ser mayor que el de los soportes.
+  creacionTercero: {
+    enlaceEnvio: 'https://educacionbogota-my.sharepoint.com/:f:/g/personal/jcampos_educacionbogota_gov_co/IgACT4OcReb9S4153gs6kekjAcd-DIBOGb_OhOvTws4yhlA',
+    maxArchivoMb: 15,
+  },
+
   // Consulta del contrato en SECOP II (Datos Abiertos Colombia, conjunto jbjy-vk9h "Contratos Electrónicos").
   // La API v3 (url) exige un token de aplicación gratuito de datos.gov.co (Perfil → Configuración del desarrollador →
   // Crear nuevo token de aplicación). Con appToken la cédula va en el cuerpo de la petición; sin él se usa urlAbierta,

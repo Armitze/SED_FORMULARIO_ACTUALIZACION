@@ -1,4 +1,4 @@
 {
-  "version": "1.2.4",
-  "notas": "El PDF para firmar ahora trae tus soportes en las páginas siguientes al formato (todo en un solo PDF) y se llama NOMBRE_APELLIDO_CONTRATO_AÑO."
+  "version": "1.2.5",
+  "notas": "Ahora al abrir eliges el trámite: creación de tercero (adjuntas RIT, RUT y certificación bancaria, se unen en un solo PDF y lo envías) o actualización de tercero (el formulario de siempre)."
 }

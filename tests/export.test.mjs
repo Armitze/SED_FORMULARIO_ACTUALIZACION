@@ -866,6 +866,7 @@ const PRUEBA_DOCUMENTOS = String.raw`(async () => {
   const espera = (ms) => new Promise((res) => setTimeout(res, ms));
   const r = {};
   App.reiniciar();
+  App.elegirTramite('actualizacion');
   App.irA('documentos');
   App.establecer({ departamento: 'Antioquia', municipio: 'MEDELLÍN' }, 'usuario');
   const nit = '52345678';

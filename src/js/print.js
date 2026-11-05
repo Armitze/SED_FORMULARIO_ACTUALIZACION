@@ -646,6 +646,29 @@
     return new Blob([await destino.save()], { type: 'application/pdf' });
   }
 
+  /**
+   * Une archivos en un PDF nuevo, en el orden dado. A diferencia de anexar(), si uno no se puede agregar no
+   * entrega un PDF incompleto: lanza el error con .item (el archivo que falló).
+   */
+  async function unir(items, opts) {
+    if (!puedeAnexar()) throw new Error('Falta pdf-lib');
+    const o = opts || {};
+    const destino = await libPdf().PDFDocument.create();
+    for (const item of items || []) {
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        if (item.tipo === 'application/pdf') await anexarPdf(destino, item); else await anexarImagen(destino, item);
+      } catch (e) {
+        e.item = item;
+        throw e;
+      }
+    }
+    if (o.titulo) destino.setTitle(o.titulo);
+    if (o.asunto) destino.setSubject(o.asunto);
+    destino.setCreator('Formulario 13-IF-016');
+    return new Blob([await destino.save()], { type: 'application/pdf' });
+  }
+
   async function pdf(s, opts) {
     if (!puedeGenerarPdf()) throw new Error('Falta html2canvas o jsPDF');
     const o = opts || {};
@@ -710,7 +733,7 @@
     root.addEventListener('afterprint', despuesDeImprimir);
   }
 
-  const Imprimir = { render, imprimir, pdf, puedeGenerarPdf, puedeAnexar, nombreArchivo, html, necesitaHojaDeducciones };
+  const Imprimir = { render, imprimir, pdf, unir, puedeGenerarPdf, puedeAnexar, nombreArchivo, html, necesitaHojaDeducciones };
   root.Imprimir = Imprimir;
   if (typeof module !== 'undefined' && module.exports) module.exports = Imprimir;
 })(typeof window !== 'undefined' ? window : globalThis);
