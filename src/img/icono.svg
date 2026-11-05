@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Creación o actualización de terceros">
+  <!-- Una persona (el tercero), flechas en círculo (actualización) y un signo más (creación). -->
+  <rect width="64" height="64" rx="14" fill="#1f3c88"/>
+  <g fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round">
+    <path d="M9.35 28A23 23 0 0 1 49.6 17.2"/>
+    <path d="M48.3 48.3A23 23 0 0 1 14.4 46.8"/>
+  </g>
+  <path d="M54.1 22.6 55 12.7 44.2 21.7zM9.9 41.4 9 51.3 19.8 42.3z" fill="#fff"/>
+  <circle cx="32" cy="24" r="7" fill="#fff"/>
+  <path d="M19.5 45c0-7.5 5.6-11.5 12.5-11.5S44.500 37.500 44.500 45z" fill="#fff"/>
+  <circle cx="50" cy="50" r="13" fill="#12a150" stroke="#1f3c88" stroke-width="3"/>
+  <path d="M50 43v14M43 50h14" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+</svg>

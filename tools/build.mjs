@@ -1,7 +1,10 @@
 #!/usr/bin/env node
 // Construye UN solo archivo HTML autocontenido del formulario 13-IF-016 (funciona con file:// y sin red).
 //
-//   node tools/build.mjs [--entrada src/index.html] [--salida formulario-13-IF-016.html]
+//   node tools/build.mjs [--entrada src/index.html] [--salida "Creacion o actualizacion de terceros.html"]
+//
+// Sin --salida también escribe formulario-13-IF-016.html, idéntico: los formularios anteriores a la 1.2.8
+// descargan su actualización de esa dirección (git guarda el mismo contenido una sola vez).
 //
 // - Incrusta cada <link rel="stylesheet" href="…"> local como <style> (con sus url() como data URI).
 // - Incrusta cada <script src="…"> local (incluidas las librerías de ../node_modules/…).
@@ -16,11 +19,13 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const RAIZ = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const SALIDA = path.join(RAIZ, 'Creacion o actualizacion de terceros.html');
+const SALIDA_ANTERIOR = path.join(RAIZ, 'formulario-13-IF-016.html');
 
 // ───────────────────────── Argumentos ─────────────────────────
 
 function leerArgs(argv) {
-  const r = { entrada: path.join(RAIZ, 'src', 'index.html'), salida: path.join(RAIZ, 'formulario-13-IF-016.html') };
+  const r = { entrada: path.join(RAIZ, 'src', 'index.html'), salida: SALIDA };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--entrada' || a === '-e') r.entrada = path.resolve(argv[++i]);
@@ -117,7 +122,7 @@ function leerVersion() {
 
 export function construir(opciones = {}) {
   const entrada = opciones.entrada || path.join(RAIZ, 'src', 'index.html');
-  const salida = opciones.salida || path.join(RAIZ, 'formulario-13-IF-016.html');
+  const salida = opciones.salida || SALIDA;
   const base = path.dirname(entrada);
   const rel = (p) => path.relative(RAIZ, p).replace(/\\/g, '/');
   let html = leerObligatorio(entrada, 'la línea de comandos').toString('utf8');
@@ -309,10 +314,11 @@ if (esPrincipal) {
   try {
     const args = leerArgs(process.argv.slice(2));
     if (args.ayuda) {
-      console.log('Uso: node tools/build.mjs [--entrada src/index.html] [--salida formulario-13-IF-016.html] [--plantilla x.xlsx] [--logo x.png]');
+      console.log('Uso: node tools/build.mjs [--entrada src/index.html] [--salida "Creacion o actualizacion de terceros.html"] [--plantilla x.xlsx] [--logo x.png]');
       process.exit(0);
     }
     const r = construir(args);
+    if (path.resolve(r.salida) === SALIDA) fs.copyFileSync(SALIDA, SALIDA_ANTERIOR);
     const v = escribirVersionJson();
     console.log(`version.json: ${v.version}${v.notas ? ' · ' + v.notas : ''}`);
     console.log(`Listo: ${path.relative(process.cwd(), r.salida) || r.salida} (${(r.bytes / 1024 / 1024).toFixed(2)} MB)`);

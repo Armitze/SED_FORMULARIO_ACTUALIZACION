@@ -131,7 +131,7 @@
    */
   function elegirArchivo(nombreSugerido, carpeta) {
     const opciones = {
-      suggestedName: nombreSugerido || 'formulario-13-IF-016.html',
+      suggestedName: nombreSugerido || 'Creacion o actualizacion de terceros.html',
       types: [{ description: 'Formulario 13-IF-016', accept: { 'text/html': ['.html', '.htm'] } }],
     };
     if (carpeta) opciones.startIn = carpeta;
@@ -168,7 +168,7 @@
     const url = URL.createObjectURL(new Blob([texto], { type: 'text/html' }));
     const a = root.document.createElement('a');
     a.href = url;
-    a.download = nombre || 'formulario-13-IF-016.html';
+    a.download = nombre || 'Creacion o actualizacion de terceros.html';
     a.hidden = true;
     root.document.body.append(a);
     a.click();

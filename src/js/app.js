@@ -13,7 +13,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '1.2.7';
+  const VERSION = '1.2.8';
   const MAX_OPCIONES_COMBO = 50;
 
   const SCHEMA = window.SCHEMA;
@@ -445,7 +445,7 @@
   /** '13-IF-016_ABRIL_ALDANA_DANIEL_FELIPE.html' (o el nombre genérico si aún no hay nombre). */
   function nombreArchivoHtml() {
     const base = nombrePersona().normalize('NFC').replace(/[\\/:*?"<>|]+/g, '').replace(/\s+/g, '_');
-    return (base ? '13-IF-016_' + base : 'formulario-13-IF-016') + '.html';
+    return (base ? '13-IF-016_' + base : 'Creacion o actualizacion de terceros') + '.html';
   }
 
   async function escribirArchivo() {
@@ -1774,7 +1774,7 @@
 
   const CT = window.CreacionTercero || null;
   const TEXTOS_TRAMITE = {
-    inicio: { titulo: 'Creación y actualización de terceros', subtitulo: 'Elige el trámite que vas a hacer' },
+    inicio: { titulo: 'Creación o actualización de terceros', subtitulo: 'Elige el trámite que vas a hacer' },
     creacion: { titulo: 'Creación de tercero', subtitulo: 'Adjunta RIT, RUT y certificación bancaria' },
   };
   const TEXTOS_FORMULARIO = {};
@@ -1786,13 +1786,11 @@
     if (titulo && TEXTOS_FORMULARIO.titulo == null) {
       TEXTOS_FORMULARIO.titulo = titulo.textContent;
       TEXTOS_FORMULARIO.subtitulo = subtitulo ? subtitulo.textContent : '';
-      TEXTOS_FORMULARIO.documento = document.title;
     }
     const enFormulario = sesion.tramite === 'actualizacion';
     const t = enFormulario ? TEXTOS_FORMULARIO : TEXTOS_TRAMITE[sesion.tramite || 'inicio'];
     if (titulo) titulo.textContent = t.titulo;
     if (subtitulo) subtitulo.textContent = t.subtitulo;
-    document.title = enFormulario ? TEXTOS_FORMULARIO.documento : t.titulo;
     const stepper = document.getElementById('stepper');
     if (stepper) stepper.hidden = !enFormulario;
     for (const id of ['pie-formato', 'pie-datos']) {

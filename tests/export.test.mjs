@@ -1095,6 +1095,7 @@ ${propios.map((p) => `<script src="${relativo(p)}"></script>`).join('\n')}
     if (r.status !== 0 && /No existe /.test(r.stderr)) return t.skip('faltan archivos de otros módulos: ' + r.stderr.trim());
     assert.equal(r.status, 0, r.stdout + r.stderr);
     verificarHtmlConstruido(fs.readFileSync(salida, 'utf8'));
+    assert.match(fs.readFileSync(salida, 'utf8'), /<link rel="icon" type="image\/svg\+xml" href="data:image\/svg\+xml;base64,/, 'el icono va dentro del archivo');
     if (!NAVEGADOR) return t.skip('No hay Edge/Chrome para probar en navegador');
     const res = await enNavegador(pathToFileURL(salida).href, PRUEBA_EN_PAGINA, (evaluar) => evaluar(PRUEBA_DOCUMENTOS));
     verificarEnNavegador(res);

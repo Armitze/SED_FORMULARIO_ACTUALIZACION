@@ -2,7 +2,7 @@
 
 Servidor de desarrollo: `py -m http.server 8765 --bind 127.0.0.1` desde la raíz del repo y abrir
 <http://127.0.0.1:8765/src/index.html>. Repetir lo esencial con el archivo construido
-(`node tools/build.mjs`, abrir `formulario-13-IF-016.html` con doble clic, sin red). Lo que sigue a "Trámite inicial" es
+(`node tools/build.mjs`, abrir `Creacion o actualizacion de terceros.html` con doble clic, sin red). Lo que sigue a "Trámite inicial" es
 del trámite de actualización (`App.elegirTramite('actualizacion')`).
 
 Desde la consola del navegador, `App` expone: `obtenerEstado()`, `establecer(valores, origen?)`,
@@ -10,6 +10,7 @@ Desde la consola del navegador, `App` expone: `obtenerEstado()`, `establecer(val
 `validar()`, `derivar()`, `estadoLimpio()`, `reiniciar()`.
 
 ## Trámite inicial y creación de tercero
+- [ ] La pestaña dice "Creación o actualización de terceros" y muestra su icono en todos los trámites.
 - [ ] Un formulario en limpio abre en "¿Qué trámite vas a hacer?", sin barra de pasos; un archivo con datos entra
       directo a la actualización. "Empezar de nuevo" vuelve a esta pantalla.
 - [ ] "Cambiar de trámite" (en Documentos y en Creación) vuelve al inicio sin perder lo diligenciado.

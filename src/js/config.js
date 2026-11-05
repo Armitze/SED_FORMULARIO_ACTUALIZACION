@@ -68,9 +68,10 @@ window.CONFIG = {
   },
   // Aviso de nueva versión: al abrir, el formulario consulta version.json (lo escribe tools/build.mjs).
   // Las dos direcciones deben poder leerse sin iniciar sesión (repositorio público).
+  // Los formularios anteriores a la 1.2.8 descargan formulario-13-IF-016.html: tools/build.mjs mantiene esa copia.
   actualizaciones: {
     versionUrl: 'https://raw.githubusercontent.com/Armitze/SED_FORMULARIO_ACTUALIZACION/main/version.json',
-    htmlUrl: 'https://raw.githubusercontent.com/Armitze/SED_FORMULARIO_ACTUALIZACION/main/formulario-13-IF-016.html',
+    htmlUrl: 'https://raw.githubusercontent.com/Armitze/SED_FORMULARIO_ACTUALIZACION/main/Creacion%20o%20actualizacion%20de%20terceros.html',
     tiempoMaximoMs: 8000,
   },
   textoBancos: 'Bancos autorizados por la Superintendencia Financiera',
