@@ -16,6 +16,7 @@ Desde la consola del navegador, `App` expone: `obtenerEstado()`, `establecer(val
 - [ ] Creación: "Guardar" sin archivos marca los tres documentos que faltan y no descarga nada.
 - [ ] Un RUT en el espacio del RIT (o al revés) se rechaza con un mensaje; un escaneo o una foto se acepta.
 - [ ] Con los tres: descarga un PDF con RIT, RUT y certificación, en ese orden, y aparece "Envía tu PDF" con el enlace.
+- [ ] "Envía tu PDF" indica guardar en PDF la página de "Carga finalizada" y enviar ese soporte con los demás documentos.
 - [ ] Cambiar o quitar un documento retira "Envía tu PDF" hasta volver a guardar. "Crear otro tercero" deja todo vacío.
 
 ## RIT y RUT en el PDF y en el consolidado

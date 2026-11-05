@@ -24,6 +24,7 @@ Al abrir un formulario en limpio se elige el trámite (un archivo que ya trae da
 2. Adjunta **RIT**, **RUT** y **certificación bancaria** (PDF, JPG o PNG, un archivo por documento, sin contraseña).
 3. Pulsa **Guardar**: los tres se unen en un solo PDF, en ese orden, y se descarga como `CREACION_TERCERO_NIT_NOMBRE.pdf` (NIT y nombre salen del RUT; si no se pueden leer, por ejemplo en un escaneo, el nombre lleva la fecha y la hora).
 4. Pulsa **Abrir enlace de envío** y, en la pestaña que se abre, selecciona o arrastra el PDF.
+5. Cuando la página diga **Carga finalizada**, guárdala en PDF (Ctrl + P → *Guardar como PDF*). Ese es el soporte del envío: se envía junto con los demás documentos.
 
 El navegador no deja que un archivo HTML cargue el PDF por su cuenta en otro sitio, así que ese último paso lo hace la persona; la aplicación no puede confirmar si el envío terminó. El enlace y el límite por archivo están en `CONFIG.creacionTercero` (`src/js/config.js`). Estos documentos no se guardan dentro del HTML: si se cierra antes de descargar el PDF, hay que adjuntarlos de nuevo.
 

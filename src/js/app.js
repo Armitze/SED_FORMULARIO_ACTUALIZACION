@@ -13,7 +13,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '1.2.6';
+  const VERSION = '1.2.7';
   const MAX_OPCIONES_COMBO = 50;
 
   const SCHEMA = window.SCHEMA;
@@ -2020,7 +2020,8 @@
       h('ol', null,
         h('li', null, 'Pulsa «Abrir enlace de envío»: se abre en otra pestaña.'),
         h('li', null, 'Allí selecciona o arrastra el PDF desde tu carpeta de Descargas.'),
-        h('li', null, 'Espera a que el sitio confirme el envío antes de cerrarlo.')),
+        h('li', null, 'Cuando veas «Carga finalizada», no cierres: pulsa Ctrl + P y elige «Guardar como PDF». Ese es tu soporte.'),
+        h('li', null, 'Envía ese soporte junto con los demás documentos.')),
       h('button', { type: 'button', class: 'enlace', onclick: otraCreacion }, 'Crear otro tercero')));
   }
 
