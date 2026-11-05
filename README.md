@@ -1,4 +1,4 @@
-# Formulario 13-IF-016 — Actualización de datos de contratistas (versión web)
+# Creación o actualización de terceros — formulario 13-IF-016 (versión web)
 
 Versión web del formato **13-IF-016 "Formulario de actualización de datos para personas naturales — honorarios y servicios personales (art. 103 ET)"** de la Secretaría de Educación de Bogotá, Oficina de Tesorería y Contabilidad.
 
@@ -7,13 +7,30 @@ El contratista carga su **RUT** (DIAN) y su **RIT** (Secretaría Distrital de Ha
 1. **El PDF para firmar**, con la misma información y estructura del formato oficial (y la hoja de deducciones cuando aplica).
 2. **El Excel original diligenciado** (`13-IF-016…xlsx`), con sus fórmulas, validaciones, hoja oculta y protección intactas, para que el proceso de Tesorería no cambie.
 
-Los documentos se leen en el navegador y **no se envían a ningún servidor**. Lo único que sale del equipo es la consulta del contrato a Datos Abiertos Colombia (SECOP II), con el número de identificación. Sin internet, todo lo demás funciona y el contrato se llena a mano.
+Los documentos se leen en el navegador y **la aplicación no los envía a ningún servidor** (en la creación de tercero, el PDF lo carga la persona en el enlace de envío). Lo único más que sale del equipo es la consulta del contrato a Datos Abiertos Colombia (SECOP II), con el número de identificación. Sin internet, todo lo demás funciona y el contrato se llena a mano.
 
 **Como un Excel:** cada contratista usa una copia en limpio del archivo y sus datos quedan guardados **dentro de ese mismo archivo HTML**. Al cerrarlo y volverlo a abrir, sus datos siguen ahí.
 
+## Trámites
+
+Al abrir un formulario en limpio se elige el trámite (un archivo que ya trae datos entra directo a la actualización):
+
+- **Creación de tercero:** ver abajo.
+- **Actualización de tercero:** el formulario 13-IF-016 por pasos (*Para el contratista*).
+
+## Creación de tercero
+
+1. Abre `Creacion o actualizacion de terceros.html` y elige **Creación de tercero**.
+2. Adjunta **RIT**, **RUT** y **certificación bancaria** (PDF, JPG o PNG, un archivo por documento, sin contraseña).
+3. Pulsa **Guardar**: los tres se unen en un solo PDF, en ese orden, y se descarga como `CREACION_TERCERO_NIT_NOMBRE.pdf` (NIT y nombre salen del RUT; si no se pueden leer, por ejemplo en un escaneo, el nombre lleva la fecha y la hora).
+4. Pulsa **Abrir enlace de envío** y, en la pestaña que se abre, selecciona o arrastra el PDF.
+5. Cuando la página diga **Carga finalizada**, guárdala en PDF (Ctrl + P → *Guardar como PDF*). Ese es el soporte del envío: se envía junto con los demás documentos.
+
+El navegador no deja que un archivo HTML cargue el PDF por su cuenta en otro sitio, así que ese último paso lo hace la persona; la aplicación no puede confirmar si el envío terminó. El enlace y el límite por archivo están en `CONFIG.creacionTercero` (`src/js/config.js`). Estos documentos no se guardan dentro del HTML: si se cierra antes de descargar el PDF, hay que adjuntarlos de nuevo.
+
 ## Para el contratista
 
-1. Abre `formulario-13-IF-016.html` (doble clic; Chrome o Edge).
+1. Abre `Creacion o actualizacion de terceros.html` (doble clic; Chrome o Edge) y elige **Actualización de tercero**.
 2. En **Documentos** arrastra tu RUT y tu RIT. Deben ser los PDF descargados de los portales, no escaneados:
    - RUT: DIAN → MUISCA → *Copia del RUT*.
    - RIT: Oficina Virtual de Hacienda → *Mi RIT → Certificado RIT*.
@@ -94,7 +111,7 @@ Los formularios ya entregados consultan al abrir `version.json` en GitHub (`actu
 
 1. Sube `version` en `package.json` (se compara parte por parte como número: `1.02` > `1.01`, `1.10` > `1.9`).
 2. Opcional: escribe en `"notas"` de `version.json` una frase corta para el contratista.
-3. `npm run build` (actualiza `formulario-13-IF-016.html` y `version.json`) y sube ambos archivos a `main`.
+3. `npm run build` (actualiza `Creacion o actualizacion de terceros.html`, su copia `formulario-13-IF-016.html` y `version.json`) y sube los tres a `main`. Esa copia es solo para que los formularios anteriores a la 1.2.8 sigan actualizándose: no se entrega a nadie.
 
 El repositorio debe ser público: sin eso GitHub responde 404 y el aviso nunca aparece (el formulario sigue funcionando igual).
 
@@ -133,10 +150,11 @@ src/js/export-excel.js  llena el Excel original editando solo las celdas de entr
 src/js/print.js         documento para imprimir / guardar como PDF
 src/js/secop.js         consulta del contrato en SECOP II (Datos Abiertos Colombia)
 src/js/guardado.js      guardado de los datos dentro del propio archivo HTML
-src/js/soportes.js      soportes adjuntos (certificación bancaria y deducciones) dentro del HTML
-src/js/app.js           asistente por pasos, carga de documentos, contrato SECOP, guardado
+src/js/soportes.js      soportes adjuntos (RIT, RUT, certificación bancaria y deducciones) dentro del HTML
+src/js/creacion.js      creación de tercero: documentos, orden y nombre del PDF
+src/js/app.js           pantalla inicial, creación de tercero, asistente por pasos, carga de documentos, contrato SECOP, guardado
 src/consolidador.html   consolidador para Tesorería (js/consolidador.js: lectura y Excel; js/consolidador-ui.js: interfaz)
-tools/build.mjs         genera formulario-13-IF-016.html y consolidador-13-IF-016.html (todo incluido, sin red)
+tools/build.mjs         genera Creacion o actualizacion de terceros.html y consolidador-13-IF-016.html (todo incluido, sin red)
 tools/extract_catalogos.py
 tests/                  pruebas (node --test)
 ```

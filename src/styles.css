@@ -1136,6 +1136,37 @@ input.sr-only:focus-visible + .soportes-pie .soportes-agregar { box-shadow: 0 0 
 .codificacion { margin-top: 24px; font-size: 12.5px; color: var(--texto-3); text-align: center; }
 .codificacion-valor { font-weight: 600; color: var(--texto-2); }
 
+/* ───────── Trámite: inicio y creación de tercero ───────── */
+
+.tramite-opciones { display: grid; gap: 12px; }
+.tramite-opcion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  padding: 18px 20px;
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  background: var(--superficie);
+  color: var(--texto);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--transicion), background-color var(--transicion), box-shadow var(--transicion);
+}
+.tramite-opcion:hover { border-color: var(--acento); background: var(--acento-50); }
+.tramite-opcion:focus-visible { outline: none; box-shadow: 0 0 0 4px var(--anillo); }
+.tramite-opcion .icono { flex: none; color: var(--acento); }
+.tramite-textos { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.tramite-titulo { font-size: 16.5px; font-weight: 650; }
+.tramite-desc { font-size: 14.5px; color: var(--texto-3); }
+
+.envio-creacion .que-sigue-titulo:focus { outline: none; }
+.envio-archivo { margin: 0 0 14px; font-size: 14.5px; }
+.envio-botones { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+.envio-creacion > .enlace { margin-top: 14px; font-size: 14.5px; }
+
 /* ───────── Pie ───────── */
 
 .pie { padding-top: 28px; padding-bottom: 96px; text-align: center; font-size: 13px; color: var(--texto-3); display: grid; gap: 4px; }

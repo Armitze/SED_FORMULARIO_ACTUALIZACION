@@ -2,11 +2,29 @@
 
 Servidor de desarrollo: `py -m http.server 8765 --bind 127.0.0.1` desde la raíz del repo y abrir
 <http://127.0.0.1:8765/src/index.html>. Repetir lo esencial con el archivo construido
-(`node tools/build.mjs`, abrir `formulario-13-IF-016.html` con doble clic, sin red).
+(`node tools/build.mjs`, abrir `Creacion o actualizacion de terceros.html` con doble clic, sin red). Lo que sigue a "Trámite inicial" es
+del trámite de actualización (`App.elegirTramite('actualizacion')`).
 
 Desde la consola del navegador, `App` expone: `obtenerEstado()`, `establecer(valores, origen?)`,
 `irA(paso)`, `procesarArchivos(files, 'RUT'|'RIT')`, `recibirResultado(tipo, resultado, archivo?)`,
 `validar()`, `derivar()`, `estadoLimpio()`, `reiniciar()`.
+
+## Trámite inicial y creación de tercero
+- [ ] La pestaña dice "Creación o actualización de terceros" y muestra su icono en todos los trámites.
+- [ ] Un formulario en limpio abre en "¿Qué trámite vas a hacer?", sin barra de pasos; un archivo con datos entra
+      directo a la actualización. "Empezar de nuevo" vuelve a esta pantalla.
+- [ ] "Cambiar de trámite" (en Documentos y en Creación) vuelve al inicio sin perder lo diligenciado.
+- [ ] Creación: "Guardar" sin archivos marca los tres documentos que faltan y no descarga nada.
+- [ ] Un RUT en el espacio del RIT (o al revés) se rechaza con un mensaje; un escaneo o una foto se acepta.
+- [ ] Con los tres: descarga un PDF con RIT, RUT y certificación, en ese orden, y aparece "Envía tu PDF" con el enlace.
+- [ ] "Envía tu PDF" indica guardar en PDF la página de "Carga finalizada" y enviar ese soporte con los demás documentos.
+- [ ] Cambiar o quitar un documento retira "Envía tu PDF" hasta volver a guardar. "Crear otro tercero" deja todo vacío.
+
+## RIT y RUT en el PDF y en el consolidado
+- [ ] Al leer el RUT y el RIT quedan en "Soportes adjuntos" de Revisión; el PDF trae formato, RIT, RUT y demás soportes.
+- [ ] Un PDF que trae los dos documentos entra una sola vez al PDF para firmar.
+- [ ] Un formulario de una versión anterior (datos leídos, sin archivo) pide cargarlos de nuevo en Documentos.
+- [ ] En el consolidado: columnas RIT y RUT con enlace, y RIT.pdf y RUT.pdf en la carpeta del contratista.
 
 ## General
 - [ ] La consola no muestra errores al cargar ni al recorrer los 8 pasos.

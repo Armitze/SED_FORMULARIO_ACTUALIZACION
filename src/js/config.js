@@ -43,9 +43,16 @@ window.CONFIG = {
 
   correoRadicacion:'actualizarterceros@educacionbogota.gov.co',
 
-  // Soportes que se guardan dentro del archivo (certificación bancaria y certificados de deducciones).
+  // Soportes que se guardan dentro del archivo (RIT, RUT, certificación bancaria y certificados de deducciones).
   // Van codificados en el HTML (ocupan un 33 % más), así que el total se limita para que guardar siga siendo rápido.
-  soportes: { maxArchivoMb: 4, maxTotalMb: 12, maxPorTipo: 5 },
+  soportes: { maxArchivoMb: 4, maxTotalMb: 16, maxPorTipo: 5 },
+
+  // Creación de tercero: el PDF con RIT, RUT y certificación bancaria se envía por este enlace.
+  // Estos archivos no se guardan en el HTML, así que su límite por archivo puede ser mayor que el de los soportes.
+  creacionTercero: {
+    enlaceEnvio: 'https://educacionbogota-my.sharepoint.com/:f:/g/personal/jcampos_educacionbogota_gov_co/IgACT4OcReb9S4153gs6kekjAcd-DIBOGb_OhOvTws4yhlA',
+    maxArchivoMb: 15,
+  },
 
   // Consulta del contrato en SECOP II (Datos Abiertos Colombia, conjunto jbjy-vk9h "Contratos Electrónicos").
   // La API v3 (url) exige un token de aplicación gratuito de datos.gov.co (Perfil → Configuración del desarrollador →
@@ -61,9 +68,10 @@ window.CONFIG = {
   },
   // Aviso de nueva versión: al abrir, el formulario consulta version.json (lo escribe tools/build.mjs).
   // Las dos direcciones deben poder leerse sin iniciar sesión (repositorio público).
+  // Los formularios anteriores a la 1.2.8 descargan formulario-13-IF-016.html: tools/build.mjs mantiene esa copia.
   actualizaciones: {
     versionUrl: 'https://raw.githubusercontent.com/Armitze/SED_FORMULARIO_ACTUALIZACION/main/version.json',
-    htmlUrl: 'https://raw.githubusercontent.com/Armitze/SED_FORMULARIO_ACTUALIZACION/main/formulario-13-IF-016.html',
+    htmlUrl: 'https://raw.githubusercontent.com/Armitze/SED_FORMULARIO_ACTUALIZACION/main/Creacion%20o%20actualizacion%20de%20terceros.html',
     tiempoMaximoMs: 8000,
   },
   textoBancos: 'Bancos autorizados por la Superintendencia Financiera',

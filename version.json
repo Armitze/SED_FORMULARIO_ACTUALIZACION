@@ -1,4 +1,4 @@
 {
-  "version": "1.2.4",
-  "notas": "El PDF para firmar ahora trae tus soportes en las páginas siguientes al formato (todo en un solo PDF) y se llama NOMBRE_APELLIDO_CONTRATO_AÑO."
+  "version": "1.2.8",
+  "notas": "Tu RIT y tu RUT ahora quedan guardados en el formulario y van dentro del PDF para firmar. Si ya los habías cargado, el formulario te pedirá cargarlos de nuevo."
 }

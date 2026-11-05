@@ -866,6 +866,7 @@ const PRUEBA_DOCUMENTOS = String.raw`(async () => {
   const espera = (ms) => new Promise((res) => setTimeout(res, ms));
   const r = {};
   App.reiniciar();
+  App.elegirTramite('actualizacion');
   App.irA('documentos');
   App.establecer({ departamento: 'Antioquia', municipio: 'MEDELLÍN' }, 'usuario');
   const nit = '52345678';
@@ -877,6 +878,8 @@ const PRUEBA_DOCUMENTOS = String.raw`(async () => {
       primerNombre: c('ANA'), otrosNombres: c('MARÍA'), departamento: c('Bogotá D.C'), municipio: c('BOGOTÁ'),
       telefono1: { valor: '0', confianza: 'media', origen: 'Casilla 44/45 (sin teléfono fijo)', etiqueta: '0 — tu RUT no registra teléfono fijo' },
       email: { valor: 'dudoso@ejemplo.co', confianza: 'baja', origen: 'Casilla 42' } } }, 'rut.pdf');
+  r.sinArchivoRut = document.querySelector('.zona[data-tipo="RUT"] .zona-error').textContent;
+  r.rutGuardado = await App.guardarDocumentoLeido('RUT', new File(['%PDF-1.4\n%ficticio\n%%EOF'], 'rut.pdf'));
   await espera(50);
   const e1 = App.obtenerEstado();
   r.aplicado = { nit: e1.s.nit === nit, numeroId: e1.s.numeroId === nit, apellido: e1.s.primerApellido, tel1: e1.s.telefono1,
@@ -1092,6 +1095,7 @@ ${propios.map((p) => `<script src="${relativo(p)}"></script>`).join('\n')}
     if (r.status !== 0 && /No existe /.test(r.stderr)) return t.skip('faltan archivos de otros módulos: ' + r.stderr.trim());
     assert.equal(r.status, 0, r.stdout + r.stderr);
     verificarHtmlConstruido(fs.readFileSync(salida, 'utf8'));
+    assert.match(fs.readFileSync(salida, 'utf8'), /<link rel="icon" type="image\/svg\+xml" href="data:image\/svg\+xml;base64,/, 'el icono va dentro del archivo');
     if (!NAVEGADOR) return t.skip('No hay Edge/Chrome para probar en navegador');
     const res = await enNavegador(pathToFileURL(salida).href, PRUEBA_EN_PAGINA, (evaluar) => evaluar(PRUEBA_DOCUMENTOS));
     verificarEnNavegador(res);
@@ -1102,6 +1106,8 @@ ${propios.map((p) => `<script src="${relativo(p)}"></script>`).join('\n')}
     assert.deepEqual(d.aplicado, { nit: true, numeroId: true, apellido: 'PRUEBA', tel1: '0', depto: 'Antioquia', mun: 'MEDELLÍN', email: '',
       conflictos: ['departamento', 'email', 'municipio'] }, 'lo leído se usa de inmediato; lo escrito a mano y lo dudoso solo se ofrecen');
     assert.equal(d.documentos.lista, 0, 'sin lista de revisión ni casillas en Documentos');
+    assert.match(d.sinArchivoRut, /Vuelve a cargar tu RUT/, 'sin el archivo se pide de nuevo: debe ir en el PDF');
+    assert.equal(d.rutGuardado, true);
     assert.equal(d.documentos.zona, 'aplicado');
     assert.equal(d.documentos.estadoZona, 'Usamos 8 datos en el formulario');
     assert.deepEqual(d.documentos.notas, ['Tu RUT fue generado hace más de un año. Verifica que esté actualizado.'],
