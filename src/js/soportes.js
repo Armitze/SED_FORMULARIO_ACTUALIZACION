@@ -1,8 +1,8 @@
-// Soportes adjuntos (certificación bancaria y certificados de deducciones) guardados dentro del propio
+// Soportes adjuntos (RIT, RUT, certificación bancaria y certificados de deducciones) guardados dentro del propio
 // archivo HTML, junto con los datos del formulario (guardado.js). Cada archivo va en base64.
 //
 // API (window.Soportes):
-//   CLAVES                         tipos de soporte: banco, dependientes, hipotecario, saludNoPos
+//   CLAVES                         tipos de soporte: banco, dependientes, hipotecario, saludNoPos, rit, rut
 //   limites(cfg?)                  { maxArchivo, maxTotal, maxPorTipo } en bytes (de CONFIG.soportes)
 //   leer(file, lim?) -> Promise<item>         valida tamaño y contenido (PDF, JPG o PNG) y lo codifica
 //   comprobar(soportes, clave, item, lim?)    error (con .codigo) si no cabe, o null
@@ -15,7 +15,7 @@
 (function (root) {
   'use strict';
 
-  const CLAVES = ['banco', 'dependientes', 'hipotecario', 'saludNoPos'];
+  const CLAVES = ['banco', 'dependientes', 'hipotecario', 'saludNoPos', 'rit', 'rut'];
   const MB = 1024 * 1024;
   const BASE_DATOS = 'sed-13-IF-016-soportes';
   const ALMACEN = 'soportes';

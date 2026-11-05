@@ -13,7 +13,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '1.2.5';
+  const VERSION = '1.2.6';
   const MAX_OPCIONES_COMBO = 50;
 
   const SCHEMA = window.SCHEMA;
@@ -1795,8 +1795,10 @@
     document.title = enFormulario ? TEXTOS_FORMULARIO.documento : t.titulo;
     const stepper = document.getElementById('stepper');
     if (stepper) stepper.hidden = !enFormulario;
-    const pie = document.getElementById('pie-datos');
-    if (pie) pie.hidden = !enFormulario;
+    for (const id of ['pie-formato', 'pie-datos']) {
+      const pie = document.getElementById(id);
+      if (pie) pie.hidden = !enFormulario;
+    }
   }
 
   function elegirTramite(tramite) {
@@ -2272,7 +2274,12 @@
       descripcion: 'Certificado de la entidad financiera con los intereses pagados.' },
     saludNoPos: { paso: 'retencion', titulo: 'Certificado de salud no POS', falta: 'certificado de salud no POS',
       descripcion: 'Certificado de la medicina prepagada o del plan complementario con lo que pagaste.' },
+    // Se guardan al leerlos en Documentos (guardarDocumentoLeido); sus pendientes están en pendientesDocumentos.
+    rit: { titulo: 'RIT' },
+    rut: { titulo: 'RUT' },
   };
+  /** RIT y RUT adjuntos al formulario, primero en el PDF (el mismo orden de la creación de tercero). */
+  const DOCUMENTOS_EN_PDF = ['rit', 'rut'];
   const SOPORTE_DE_CHECK = { dedDependientes: 'dependientes', dedHipotecario: 'hipotecario', dedSaludNoPos: 'saludNoPos' };
 
   // En la validación cada soporte es un "campo" 'soporte:clave' de su paso (sin control en sesion.controles).
@@ -2478,13 +2485,19 @@
 
   /** Los soportes de lo que aplica, en el orden en que van después del formato en el PDF para firmar. */
   function soportesParaPdf() {
-    return soportesRequeridos().flatMap((c) => estado.soportes[c] || []);
+    const vistos = new Set();
+    // Un mismo PDF puede traer el RUT y el RIT: se guarda en los dos, pero entra una sola vez.
+    return DOCUMENTOS_EN_PDF.concat(soportesRequeridos()).flatMap((c) => estado.soportes[c] || []).filter((item) => {
+      if (vistos.has(item.datos)) return false;
+      vistos.add(item.datos);
+      return true;
+    });
   }
 
   /** Revisión: los soportes adjuntos de lo que aplica, para descargarlos (los que faltan van en Pendientes). */
   function construirSoportesRevision(enElPdf) {
     if (!S) return null;
-    const claves = soportesRequeridos().filter((c) => (estado.soportes[c] || []).length);
+    const claves = DOCUMENTOS_EN_PDF.concat(soportesRequeridos()).filter((c) => (estado.soportes[c] || []).length);
     if (!claves.length) return null;
     return h('section', { class: 'grupo', 'aria-labelledby': 'rev-soportes' },
       h('h3', { class: 'grupo-titulo', id: 'rev-soportes' }, 'Soportes adjuntos'),
@@ -2929,7 +2942,7 @@
     const z = sesion.zonas[tipo];
     const doc = estado.meta.docs[tipo];
     let est = z.estado;
-    if (est === 'idle' && doc) est = documentoVencido(tipo) ? 'vencido' : 'aplicado';
+    if (est === 'idle' && doc) est = documentoVencido(tipo) ? 'vencido' : faltaArchivoDocumento(tipo) ? 'sinArchivo' : 'aplicado';
     zona.dataset.estado = est;
     zona.textContent = '';
     pintarPieZona(tipo, zona.parentElement, est);
@@ -2958,6 +2971,13 @@
           h('span', { class: 'zona-error' }, mensajeVencido(tipo, documentoVencido(tipo))),
           h('span', { class: 'zona-sub zona-archivo' }, doc.archivo || ''),
           h('span', { class: 'zona-accion' }, 'Cargar el ' + tipo + ' actualizado'));
+        break;
+      case 'sinArchivo':
+        zona.dataset.estado = 'vencido';
+        zona.append(h('span', { class: 'zona-icono', html: svgIcono('alerta') }), titulo,
+          h('span', { class: 'zona-error' }, mensajeSinArchivo(tipo)),
+          h('span', { class: 'zona-sub zona-archivo' }, doc.archivo || ''),
+          h('span', { class: 'zona-accion' }, 'Cargar el ' + tipo + ' de nuevo'));
         break;
       case 'error': {
         // Si había un documento leído antes, se dice que sigue en uso: un error nuevo no borra nada.
@@ -3216,6 +3236,10 @@
       }
       const ambos = encontrados.length > 1;
       for (const x of encontrados) recibirResultado(x.tipo, x.res, nombre, { doc, sinReanalizar: ambos, silencioso: true });
+      for (const x of encontrados) {
+        // eslint-disable-next-line no-await-in-loop
+        await guardarDocumentoLeido(x.tipo, archivoPdf);
+      }
       const total = encontrados.reduce((n, x) => n + ((estado.meta.docs[x.tipo] && estado.meta.docs[x.tipo].aplicados) || 0), 0);
       const tiposTexto = encontrados.map((x) => 'tu ' + x.tipo).join(' y ');
       const vencido = encontrados.find((x) => documentoVencido(x.tipo));
@@ -3238,6 +3262,36 @@
       anunciar(mensaje);
     }
   }
+
+  /** Guarda en el formulario el PDF del RUT o del RIT ya leído, reemplazando el anterior. Devuelve si quedó guardado. */
+  async function guardarDocumentoLeido(tipo, archivoPdf) {
+    if (!S) return false;
+    const clave = tipo.toLowerCase();
+    const lim = limitesSoportes();
+    let error;
+    try {
+      const item = await S.leer(archivoPdf, lim);
+      const sinAnterior = Object.assign({}, estado.soportes);
+      delete sinAnterior[clave];
+      error = S.comprobar(sinAnterior, clave, item, lim);
+      if (!error) {
+        estado.soportes = Object.assign(sinAnterior, { [clave]: [item] });
+        await respaldarSoportes();
+        guardarPronto();
+      }
+    } catch (e) {
+      if (!e || !e.codigo) avisarUnaVez('Soportes.leer', e);
+      error = e;
+    }
+    pintarZona(tipo);
+    actualizarUI();
+    if (!error) return true;
+    toast('Leímos tu ' + tipo + ', pero no pudimos guardarlo para tu PDF. ' + (error.codigo ? error.message : 'Intenta cargarlo de nuevo.'), { tono: 'error' });
+    return false;
+  }
+
+  /** Datos leídos sin el archivo: formularios de versiones anteriores, que no lo guardaban. */
+  const faltaArchivoDocumento = (tipo) => !!S && !!estado.meta.docs[tipo] && !(estado.soportes[tipo.toLowerCase()] || []).length;
 
   /**
    * Usa en el formulario lo leído de un documento. Lo escrito a mano no se reemplaza (queda como
@@ -3340,6 +3394,8 @@
       : ': descarga el certificado en la Oficina Virtual de la Secretaría Distrital de Hacienda (Mi RIT → Certificado RIT).');
   }
 
+  const mensajeSinArchivo = (tipo) => 'Vuelve a cargar tu ' + tipo + ': debe ir dentro de tu PDF y este formulario no tiene el archivo.';
+
   /** Pendientes del paso Documentos: el RUT y el RIT son obligatorios y deben estar impresos hace poco. */
   function pendientesDocumentos() {
     const out = [];
@@ -3351,6 +3407,7 @@
       }
       const v = documentoVencido(tipo);
       if (v) out.push({ campo, step: 'documentos', mensaje: mensajeVencido(tipo, v) });
+      else if (faltaArchivoDocumento(tipo)) out.push({ campo, step: 'documentos', mensaje: mensajeSinArchivo(tipo) });
     }
     return out;
   }
@@ -3624,7 +3681,7 @@
       h('h3', { class: 'grupo-titulo', id: 'rev-desc' }, 'Descargas'),
       h('div', { class: 'descargas-botones' }, botonPdf),
       h('p', { class: 'ayuda-campo' }, pdfDirecto
-        ? 'Se descarga como ' + I.nombreArchivo(estadoLimpio()) + (conSoportes ? ': el formato en la primera hoja y tus soportes en las siguientes, todo en un solo PDF.' : '.')
+        ? 'Se descarga como ' + I.nombreArchivo(estadoLimpio()) + (conSoportes ? ': el formato en la primera hoja y, en las siguientes, tu RIT, tu RUT y tus soportes, todo en un solo PDF.' : '.')
         : 'El PDF se genera con la ventana de impresión de tu navegador: elige «Guardar como PDF».')));
     const soportes = construirSoportesRevision(conSoportes);
     if (soportes) cuerpo.append(soportes);
@@ -3638,8 +3695,8 @@
         h('li', null, 'Firma el PDF (en la primera hoja, la del formato).'),
         h('li', null, 'Envíalo a tu operativo o jefe de área. Esa persona lo remite a ',
           h('a', { href: 'mailto:' + (CFG.correoRadicacion || '') }, CFG.correoRadicacion || 'el buzón de Tesorería'),
-          conSoportes ? '. Ya lleva dentro tu certificación bancaria y los soportes de deducciones.'
-            : ' en un solo PDF, junto con tu certificación bancaria y los soportes de deducciones, si aplican.'),
+          conSoportes ? '. Ya lleva dentro tu RIT, tu RUT, tu certificación bancaria y los soportes de deducciones.'
+            : ' en un solo PDF, junto con tu RIT, tu RUT, tu certificación bancaria y los soportes de deducciones, si aplican.'),
         h('li', null, 'El archivo debe llamarse NOMBRE_APELLIDO_CONTRATO_AÑO',
           nombre ? ['; el tuyo: ', h('strong', { class: 'nombre-archivo' }, nombre)]
             : ' (te lo mostramos cuando llenes tu primer nombre, tu primer apellido, el número y el año del contrato).'))));
@@ -4145,6 +4202,8 @@
     procesarArchivos: (archivos, tipo) => procesarArchivos(Array.from(archivos || []), tipo === 'RIT' ? 'RIT' : 'RUT'),
     /** Usa un Resultado de parser como si se hubiera leído ese documento. */
     recibirResultado: (tipo, resultado, nombre) => { recibirResultado(tipo, resultado, nombre || tipo + '.pdf'); },
+    /** Guarda el archivo de un documento ya leído (recibirResultado no lo tiene). */
+    guardarDocumentoLeido,
     /** Usa un contrato de SECOP ya normalizado (pruebas): contratos = [Secop.normalizar(...)], vigentes. */
     usarContratosSecop(contratos, vigentes) {
       estado.meta.secop = { consulta: documentoParaSecop(), fecha: new Date().toISOString(), contratos: contratos || [], vigentes: vigentes !== false, elegido: '' };

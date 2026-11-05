@@ -4,7 +4,7 @@
 //
 // Carpeta raíz del consolidado (consolidador-ui.js la escribe):
 //   Consolidado_13-IF-016.xlsx
-//   Contratistas/AÑO/NOMBRE/Certificacion_bancaria.pdf, Soporte_dependiente_1.pdf, …, Formulario.html
+//   Contratistas/AÑO/NOMBRE/RIT.pdf, RUT.pdf, Certificacion_bancaria.pdf, Soporte_dependiente_1.pdf, …, Formulario.html
 //   (si el mismo nombre ya tiene carpeta ese año: AÑO/NOMBRE_NUMEROCONTRATO)
 //
 // API (window.Consolidador):
@@ -66,9 +66,9 @@
     return !!m && /no se requiere/i.test(String(m.anexo || ''));
   }
 
-  /** Soportes obligatorios que faltan (la certificación bancaria siempre; el de cada deducción marcada). */
+  /** Soportes obligatorios que faltan (RIT, RUT y certificación bancaria siempre; el de cada deducción marcada). */
   function soportesFaltantes(s, soportes) {
-    const requeridos = ['banco'].concat(Object.keys(SOPORTE_DE_CHECK).filter((c) => s[c] === 'SI').map((c) => SOPORTE_DE_CHECK[c]))
+    const requeridos = ['rit', 'rut', 'banco'].concat(Object.keys(SOPORTE_DE_CHECK).filter((c) => s[c] === 'SI').map((c) => SOPORTE_DE_CHECK[c]))
       .filter((c) => c !== 'dependientes' || !dependienteSinSoporte(s));
     return requeridos.filter((c) => !((soportes || {})[c] || []).length);
   }
@@ -221,6 +221,8 @@
   };
 
   const SOPORTES = [
+    { clave: 'rit', titulo: 'RIT', archivo: 'RIT' },
+    { clave: 'rut', titulo: 'RUT', archivo: 'RUT' },
     { clave: 'banco', titulo: 'Certificación bancaria', archivo: 'Certificacion_bancaria' },
     { clave: 'dependientes', titulo: 'Soportes del dependiente', archivo: 'Soporte_dependiente' },
     { clave: 'hipotecario', titulo: 'Certificado de intereses', archivo: 'Certificado_intereses' },

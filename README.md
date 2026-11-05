@@ -149,7 +149,7 @@ src/js/export-excel.js  llena el Excel original editando solo las celdas de entr
 src/js/print.js         documento para imprimir / guardar como PDF
 src/js/secop.js         consulta del contrato en SECOP II (Datos Abiertos Colombia)
 src/js/guardado.js      guardado de los datos dentro del propio archivo HTML
-src/js/soportes.js      soportes adjuntos (certificación bancaria y deducciones) dentro del HTML
+src/js/soportes.js      soportes adjuntos (RIT, RUT, certificación bancaria y deducciones) dentro del HTML
 src/js/creacion.js      creación de tercero: documentos, orden y nombre del PDF
 src/js/app.js           pantalla inicial, creación de tercero, asistente por pasos, carga de documentos, contrato SECOP, guardado
 src/consolidador.html   consolidador para Tesorería (js/consolidador.js: lectura y Excel; js/consolidador-ui.js: interfaz)

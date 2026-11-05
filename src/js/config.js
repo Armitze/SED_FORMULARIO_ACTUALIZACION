@@ -43,9 +43,9 @@ window.CONFIG = {
 
   correoRadicacion:'actualizarterceros@educacionbogota.gov.co',
 
-  // Soportes que se guardan dentro del archivo (certificación bancaria y certificados de deducciones).
+  // Soportes que se guardan dentro del archivo (RIT, RUT, certificación bancaria y certificados de deducciones).
   // Van codificados en el HTML (ocupan un 33 % más), así que el total se limita para que guardar siga siendo rápido.
-  soportes: { maxArchivoMb: 4, maxTotalMb: 12, maxPorTipo: 5 },
+  soportes: { maxArchivoMb: 4, maxTotalMb: 16, maxPorTipo: 5 },
 
   // Creación de tercero: el PDF con RIT, RUT y certificación bancaria se envía por este enlace.
   // Estos archivos no se guardan en el HTML, así que su límite por archivo puede ser mayor que el de los soportes.

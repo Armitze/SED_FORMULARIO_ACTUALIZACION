@@ -1,4 +1,4 @@
 {
-  "version": "1.2.5",
-  "notas": "Ahora al abrir eliges el trámite: creación de tercero (adjuntas RIT, RUT y certificación bancaria, se unen en un solo PDF y lo envías) o actualización de tercero (el formulario de siempre)."
+  "version": "1.2.6",
+  "notas": "Tu RIT y tu RUT ahora quedan guardados en el formulario y van dentro del PDF para firmar. Si ya los habías cargado, el formulario te pedirá cargarlos de nuevo."
 }

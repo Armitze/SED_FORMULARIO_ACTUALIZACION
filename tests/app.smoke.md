@@ -18,6 +18,12 @@ Desde la consola del navegador, `App` expone: `obtenerEstado()`, `establecer(val
 - [ ] Con los tres: descarga un PDF con RIT, RUT y certificación, en ese orden, y aparece "Envía tu PDF" con el enlace.
 - [ ] Cambiar o quitar un documento retira "Envía tu PDF" hasta volver a guardar. "Crear otro tercero" deja todo vacío.
 
+## RIT y RUT en el PDF y en el consolidado
+- [ ] Al leer el RUT y el RIT quedan en "Soportes adjuntos" de Revisión; el PDF trae formato, RIT, RUT y demás soportes.
+- [ ] Un PDF que trae los dos documentos entra una sola vez al PDF para firmar.
+- [ ] Un formulario de una versión anterior (datos leídos, sin archivo) pide cargarlos de nuevo en Documentos.
+- [ ] En el consolidado: columnas RIT y RUT con enlace, y RIT.pdf y RUT.pdf en la carpeta del contratista.
+
 ## General
 - [ ] La consola no muestra errores al cargar ni al recorrer los 8 pasos.
 - [ ] A 375 px de ancho no hay desplazamiento horizontal (`document.documentElement.scrollWidth === innerWidth`).

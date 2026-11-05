@@ -57,6 +57,19 @@ describe('Consolidador.leer', () => {
     assert.equal(sin.pendientes, con.pendientes + 1);
   });
 
+  test('el RIT y el RUT son soportes obligatorios, con columna y archivo propios', async () => {
+    const rit = await soporte('mi rit.pdf');
+    const rut = await soporte('mi rut.pdf');
+    const con = registro(PERSONA, { soportes: { rit: [rit], rut: [rut] } });
+    assert.equal(registro(PERSONA).pendientes, con.pendientes + 2);
+    const { registros } = C.unificar([con]);
+    assert.deepEqual(C.archivosDe(registros[0]).map((a) => a.ruta),
+      ['Contratistas/' + CARPETA + '/RIT.pdf', 'Contratistas/' + CARPETA + '/RUT.pdf']);
+    assert.deepEqual(C.columnas().filter((c) => c.soporte).map((c) => c.titulo).slice(0, 3), ['RIT', 'RUT', 'Certificación bancaria']);
+    assert.equal(C.claseDeArchivo('RIT.pdf'), 'rit');
+    assert.equal(C.claseDeArchivo('RUT.jpg'), 'rut');
+  });
+
   test('el soporte del dependiente no se pide para hijos menores de 23 (motivos 1 y 2)', () => {
     const motivos = globalThis.CATALOGOS.motivosDependientes;
     const pendientes = (n) => registro(Object.assign({}, PERSONA, { dedDependientes: 'SI', depMotivo: motivos[n].texto })).pendientes;
