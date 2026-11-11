@@ -695,6 +695,25 @@ describe('print.js (documento imprimible)', () => {
     assert.ok(hoja2.includes('Cédula de ciudadanía ' + NIT) && !hoja2.includes('C.C. '));
   });
 
+  test('subraya en rojo la respuesta de pensionado solo cuando es SI', () => {
+    assert.ok(!Imprimir.html(COMPLETO, D).includes('imp-pensionado'), 'pensionado NO sin resaltar');
+    const h = Imprimir.html(VARIANTE, Calc.derivados(VARIANTE));
+    assert.match(h, /class="imp-campo imp-pensionado"[^>]*><span class="imp-rotulo"><span class="imp-subrayado">Es usted pensionado/);
+    assert.match(h, /<span class="imp-subrayado"><span class="imp-sino">/);
+  });
+
+  test('con firma electrónica: sello con fecha y código en cada hoja; sin ella, la línea para firmar a mano', () => {
+    const firma = { fecha: '11/11/2026 10:32', codigo: 'AB12-CD34-EF56-7890' };
+    const h = Imprimir.html(COMPLETO, D, { firma });
+    assert.equal((h.match(/class="imp-firma imp-firmado"/g) || []).length, 2, 'las dos hojas firmadas');
+    assert.ok(h.includes('Firmado electrónicamente el 11/11/2026 10:32 · Código de verificación AB12-CD34-EF56-7890'));
+    assert.ok(h.includes('<div class="imp-firma-trazo">Ana Prueba</div>'), 'trazo con primer nombre y primer apellido');
+    assert.ok(h.includes('Ley 1581 de 2012'));
+    const sin = Imprimir.html(COMPLETO, D);
+    assert.ok(!sin.includes('imp-firmado') && !sin.includes('imp-firma-sello'));
+    assert.ok(sin.includes('<div class="imp-firma"><div class="imp-firma-linea"></div><div class="imp-firma-nombre">'));
+  });
+
   test('escapa el HTML de los valores y funciona sin Calc', () => {
     const h = Imprimir.html({ primerApellido: '<b>X</b>', direccion: 'A & B' }, {});
     assert.ok(h.includes('&lt;b&gt;X&lt;/b&gt;'));
@@ -948,7 +967,7 @@ const PRUEBA_DOCUMENTOS = String.raw`(async () => {
   await espera(50);
   const texto = document.getElementById('paso').textContent;
   r.revision = { interna: /BI13/.test(texto), codificacion: !!document.querySelector('.codificacion'), nombrePendiente: /te lo mostramos/.test(texto),
-    resumenAntesDeDescargas: !!document.querySelector('.resumen-datos + .descargas'), renglonesPendientes: document.querySelectorAll('.pendiente-fila').length,
+    resumenAntesDeDescargas: !!document.querySelector('.resumen-datos + .firma-electronica + .descargas'), renglonesPendientes: document.querySelectorAll('.pendiente-fila').length,
     borrador: /borrador|\.json/i.test(texto) };
   Calc.validar = validarOriginal;
   document.querySelector('.descargas .boton--primario').click();
