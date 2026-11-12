@@ -4,7 +4,7 @@ Versión web del formato **13-IF-016 "Formulario de actualización de datos para
 
 El contratista carga su **RUT** (DIAN) y su **RIT** (Secretaría Distrital de Hacienda) en PDF, los datos del contrato se toman de **SECOP II**, el formulario se llena casi solo y al final descarga:
 
-1. **El PDF para firmar**, con la misma información y estructura del formato oficial (y la hoja de deducciones cuando aplica).
+1. **El PDF firmado**, con la misma información y estructura del formato oficial (y la hoja de deducciones cuando aplica). Al final, la persona marca que acepta el tratamiento de sus datos (Ley 1581 de 2012) y que firma electrónicamente: el PDF sale con el sello de la firma (nombre, fecha y hora, código de verificación) y no hay que imprimirlo para firmarlo. Si cambia un dato después de firmar, la firma deja de valer y se pide de nuevo. Si la persona es pensionada, esa respuesta sale subrayada en rojo para que quien revisa la vea de inmediato.
 2. **El Excel original diligenciado** (`13-IF-016…xlsx`), con sus fórmulas, validaciones, hoja oculta y protección intactas, para que el proceso de Tesorería no cambie.
 
 Los documentos se leen en el navegador y **la aplicación no los envía a ningún servidor** (en la creación de tercero, el PDF lo carga la persona en el enlace de envío). Lo único más que sale del equipo es la consulta del contrato a Datos Abiertos Colombia (SECOP II), con el número de identificación. Sin internet, todo lo demás funciona y el contrato se llena a mano.

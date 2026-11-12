@@ -13,7 +13,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '1.2.8';
+  const VERSION = '1.2.9';
   const MAX_OPCIONES_COMBO = 50;
 
   const SCHEMA = window.SCHEMA;
@@ -309,6 +309,7 @@
     creacion: creacionVacia(),
     validacion: null,
     derivados: {},
+    aceptaDatos: false,     // casilla de tratamiento de datos marcada (la firma se guarda al marcar las dos)
   };
 
   /** docs: { rit, rut, banco } (items de Soportes) · datosRut: para nombrar el PDF · pdf: { blob, nombre } ya generado. */
@@ -329,7 +330,7 @@
    * docs: resumen de cada documento leído; secop: contratos encontrados y el elegido.
    */
   function metaInicial() {
-    return { paso: 0, fuentes: {}, visitados: {}, plegables: {}, docs: {}, conflictos: {}, secop: null };
+    return { paso: 0, fuentes: {}, visitados: {}, plegables: {}, docs: {}, conflictos: {}, secop: null, firma: null };
   }
 
   const visibleEn = (id, s) => {
@@ -368,6 +369,7 @@
 
   const G = window.Guardado || null;
   const S = window.Soportes || null;
+  const F = window.Firma || null;
   const archivo = {
     id: null,           // identificador del formulario guardado (va dentro del archivo)
     manejador: null,    // archivo elegido en "Guardar como" (Chrome/Edge)
@@ -738,6 +740,7 @@
       meta.conflictos[k] = { valor: texto500(v.valor), fuente: v.fuente, dudoso: v.dudoso === true };
     }
     meta.secop = metaSecop(metaOrigen.secop);
+    meta.firma = F ? F.normalizar(metaOrigen.firma) : null;
     const paso = Number(metaOrigen.paso);
     meta.paso = Number.isInteger(paso) && paso >= 0 && paso < PASOS.length ? paso : 0;
     estado.s = s;
@@ -3667,8 +3670,17 @@
         h('div', { class: 'avisos' }, advertencias.map((a) => h('p', { class: 'aviso' }, icono('alerta'), h('span', null, textoAdvertencia(a)))))));
     }
 
-    // Primero se verifica (resumen), después se descarga.
+    // Primero se verifica (resumen), después se firma y se descarga.
     cuerpo.append(construirResumenDatos(completo));
+
+    const liFirma = h('li');
+    const pintarQueSigue = () => {
+      liFirma.textContent = firmaVigente()
+        ? 'Tu PDF ya sale firmado electrónicamente: no tienes que imprimirlo ni firmarlo a mano.'
+        : 'Firma el formulario aquí arriba para que el PDF salga firmado electrónicamente (o fírmalo a mano en la primera hoja).';
+    };
+    pintarQueSigue();
+    cuerpo.append(construirFirma(d, pintarQueSigue));
 
     const botonPdf = h('button', { type: 'button', class: 'boton boton--primario boton--grande', onclick: () => descargarPdf(botonPdf) },
       icono('firma'), h('span', null, 'Descargar PDF para firmar'));
@@ -3691,7 +3703,7 @@
     cuerpo.append(h('section', { class: 'que-sigue', 'aria-labelledby': 'rev-sigue' },
       h('h3', { class: 'que-sigue-titulo', id: 'rev-sigue' }, '¿Qué sigue?'),
       h('ol', null,
-        h('li', null, 'Firma el PDF (en la primera hoja, la del formato).'),
+        liFirma,
         h('li', null, 'Envíalo a tu operativo o jefe de área. Esa persona lo remite a ',
           h('a', { href: 'mailto:' + (CFG.correoRadicacion || '') }, CFG.correoRadicacion || 'el buzón de Tesorería'),
           conSoportes ? '. Ya lleva dentro tu RIT, tu RUT, tu certificación bancaria y los soportes de deducciones.'
@@ -3704,6 +3716,83 @@
     if (completo && d.codificacion && !/^REVISE/i.test(String(d.codificacion))) {
       cuerpo.append(h('p', { class: 'codificacion' }, h('span', null, 'Codificación tributaria (uso interno de Tesorería): '), h('span', { class: 'codificacion-valor' }, String(d.codificacion))));
     }
+  }
+
+  // ─────────────────────────── Firma electrónica ───────────────────────────
+  // Dos casillas: acepta el tratamiento de datos y firma la declaración. Con las dos marcadas se guarda la
+  // firma (Firma.firmar) con la huella de los datos; si después cambia un dato, deja de valer y se pide de nuevo.
+
+  /** La firma guardada corresponde a los datos actuales. */
+  function firmaVigente() {
+    return !!(F && estado.meta.firma && F.vigente(estado.meta.firma, estadoLimpio()));
+  }
+
+  /** { fecha, codigo } para el sello del PDF, o null si no hay firma vigente. */
+  function firmaParaPdf() {
+    if (!firmaVigente()) return null;
+    return { fecha: F.fechaTexto(estado.meta.firma), codigo: F.codigo(estado.meta.firma) };
+  }
+
+  function construirFirma(d, alCambiar) {
+    const seccion = h('section', { class: 'grupo firma-electronica', id: 'firma-electronica', 'aria-labelledby': 'rev-firma' },
+      h('h3', { class: 'grupo-titulo', id: 'rev-firma' }, 'Autorización y firma'));
+    if (!F) {
+      seccion.append(h('p', { class: 'ayuda-campo' }, 'La firma electrónica no está disponible en esta versión: firma el PDF a mano.'));
+      return seccion;
+    }
+    const vigente = firmaVigente();
+    const desactualizada = !!estado.meta.firma && !vigente;
+    if (vigente || desactualizada) sesion.aceptaDatos = true;
+
+    const texto = h('div', { class: 'firma-texto', tabindex: '0', 'aria-label': 'Texto de la certificación y del tratamiento de datos' });
+    String((d && d.textoCertificacion) || '').split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean)
+      .forEach((p) => texto.append(h('p', null, p)));
+
+    const casilla = (id, titulo, desc) => {
+      const input = h('input', { type: 'checkbox', id, class: 'check-input' });
+      const label = h('label', { class: 'check', for: id }, input,
+        h('span', { class: 'check-texto' }, h('span', { class: 'check-titulo' }, titulo), desc ? h('span', { class: 'check-desc' }, desc) : null));
+      return { input, label };
+    };
+    const acepta = casilla('firma-acepta', 'Leí y acepto la autorización para el tratamiento de mis datos personales',
+      'Ley 1581 de 2012 y Política de Tratamiento de Datos de la Secretaría de Educación del Distrito.');
+    const firmo = casilla('firma-firmo', 'Declaro que la información es cierta y firmo electrónicamente este formulario',
+      'Bajo la gravedad del juramento. Tu nombre, tu documento, la fecha y hora y un código de verificación quedan en el PDF (Ley 527 de 1999).');
+    acepta.input.checked = sesion.aceptaDatos;
+    firmo.input.checked = vigente;
+    firmo.input.disabled = !acepta.input.checked;
+
+    const estadoFirma = h('p', { class: 'firma-estado', role: 'status' });
+    const pintar = () => {
+      const ok = firmaVigente();
+      estadoFirma.textContent = '';
+      estadoFirma.className = 'firma-estado' + (ok ? ' firma-estado--ok' : desactualizada && !firmo.input.checked ? ' firma-estado--aviso' : '');
+      if (ok) {
+        estadoFirma.append(icono('firma'), h('span', null, 'Firmado el ' + F.fechaTexto(estado.meta.firma) + ' · código ' + F.codigo(estado.meta.firma) +
+          '. El PDF sale firmado. Si cambias algún dato, tendrás que firmar de nuevo.'));
+      } else if (desactualizada && !firmo.input.checked) {
+        estadoFirma.append(icono('alerta'), h('span', null, 'Cambiaste datos después de firmar. Revísalos y vuelve a firmar para que el PDF salga firmado.'));
+      } else {
+        estadoFirma.hidden = true;
+        return;
+      }
+      estadoFirma.hidden = false;
+    };
+    const actualizar = () => {
+      sesion.aceptaDatos = acepta.input.checked;
+      if (!acepta.input.checked) firmo.input.checked = false;
+      firmo.input.disabled = !acepta.input.checked;
+      estado.meta.firma = acepta.input.checked && firmo.input.checked ? F.firmar(estadoLimpio()) : null;
+      guardarPronto();
+      pintar();
+      if (typeof alCambiar === 'function') alCambiar();
+    };
+    acepta.input.addEventListener('change', actualizar);
+    firmo.input.addEventListener('change', actualizar);
+    pintar();
+
+    seccion.append(texto, h('div', { class: 'firma-casillas' }, acepta.label, firmo.label), estadoFirma);
+    return seccion;
   }
 
   /** abierto: el resumen empieza desplegado (formulario completo en pantalla ancha). */
@@ -3768,6 +3857,28 @@
     return r === 'secundario';
   }
 
+  /** Sin firma vigente: lo recomendado es firmar aquí; también se puede descargar para firmar a mano. */
+  async function confirmarSinFirma() {
+    if (!F || firmaVigente()) return true;
+    const r = await confirmar({
+      titulo: 'Aún no has firmado',
+      mensaje: estado.meta.firma
+        ? 'Cambiaste datos después de firmar. Vuelve a marcar las casillas de «Autorización y firma» para que el PDF salga firmado.'
+        : 'Marca las casillas de «Autorización y firma» y el PDF saldrá firmado, sin imprimirlo ni firmarlo a mano.',
+      principal: 'Firmar ahora',
+      secundario: 'Descargar sin firma',
+      enfocar: 'principal',
+      nativo: { pregunta: '¿Descargar el PDF sin firma?', si: 'secundario' },
+    });
+    if (r === 'principal') {
+      const sec = document.getElementById('firma-electronica');
+      const casilla = document.getElementById(sesion.aceptaDatos ? 'firma-firmo' : 'firma-acepta');
+      if (sec && sec.scrollIntoView) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (casilla) casilla.focus({ preventScroll: true });
+    }
+    return r === 'secundario';
+  }
+
   function ocupado(boton, si, texto) {
     if (!boton) return;
     if (si) {
@@ -3788,24 +3899,27 @@
       return;
     }
     if (!(await confirmarSiIncompleto('el PDF'))) return;
+    if (!(await confirmarSinFirma())) return;
     guardarAhora();
     ocupado(boton, true, 'Preparando el PDF…');
     try {
       const limpio = estadoLimpio();
+      const firma = firmaParaPdf();
       if (typeof window.Imprimir.puedeGenerarPdf === 'function' && window.Imprimir.puedeGenerarPdf()) {
         const nombre = window.Imprimir.nombreArchivo(limpio);
         const anexos = soportesParaPdf();
         const omitidos = [];
         if (anexos.length && boton && boton.lastChild) boton.lastChild.textContent = 'Uniendo tus soportes…';
-        descargarBlob(await window.Imprimir.pdf(limpio, { anexos, alOmitir: (item) => omitidos.push(item.nombre) }), nombre);
+        descargarBlob(await window.Imprimir.pdf(limpio, { anexos, firma, alOmitir: (item) => omitidos.push(item.nombre) }), nombre);
         if (omitidos.length) {
           toast('Descargamos ' + nombre + ', pero no pudimos agregarle ' + omitidos.map((n) => '«' + n + '»').join(', ') +
             '. Envía ese soporte aparte o adjúntalo en otro formato (PDF, JPG o PNG).', { tono: 'error' });
         } else {
-          toast('Descargamos ' + nombre + (anexos.length ? ', con tus soportes en las páginas siguientes' : '') + '. Fírmalo y envíalo.');
+          toast('Descargamos ' + nombre + (anexos.length ? ', con tus soportes en las páginas siguientes' : '') +
+            (firma ? '. Ya va firmado: envíalo.' : '. Fírmalo y envíalo.'));
         }
       } else {
-        await window.Imprimir.imprimir(limpio);
+        await window.Imprimir.imprimir(limpio, { firma });
       }
     } catch (e) {
       avisarUnaVez('Imprimir.imprimir', e);
@@ -3866,6 +3980,7 @@
     estado.s = estadoInicial();
     estado.meta = metaInicial();
     estado.soportes = {};
+    sesion.aceptaDatos = false;
     for (const k of Object.keys(errorSoportes)) delete errorSoportes[k];
     sesion.tocados.clear();
     sesion.vistos.clear();
@@ -4215,6 +4330,8 @@
     validar,
     derivar,
     estadoLimpio: () => estadoLimpio(),
+    /** { fecha, codigo } de la firma electrónica vigente, o null. */
+    firmaParaPdf: () => firmaParaPdf(),
     reiniciar,
   };
 

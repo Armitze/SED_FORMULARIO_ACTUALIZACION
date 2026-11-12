@@ -1,4 +1,4 @@
 {
-  "version": "1.2.8",
-  "notas": "Tu RIT y tu RUT ahora quedan guardados en el formulario y van dentro del PDF para firmar. Si ya los habías cargado, el formulario te pedirá cargarlos de nuevo."
+  "version": "1.2.9",
+  "notas": "Ahora puedes aceptar el tratamiento de datos y firmar electrónicamente al final: el PDF sale firmado, sin imprimirlo ni firmarlo a mano."
 }

@@ -16,6 +16,7 @@
 //   html(s, d?, opts?) -> string          el mismo documento como HTML (sin DOM; útil para pruebas)
 //   necesitaHojaDeducciones(s) -> boolean hoja 2 solo con dependientes / hipotecario / salud no POS
 // opts: { hoy?: Date (fecha de diligenciamiento de la hoja de deducciones),
+//         firma?: { fecha, codigo } (firma electrónica: el PDF sale firmado; ver firma.js),
 //         anexos?: [item de Soportes] (en ese orden; PDF tal cual, JPG/PNG en una hoja carta cada uno),
 //         alOmitir?(item, error) (un soporte que no se pudo agregar; el PDF sale sin él) }
 // El logo sale de window.LOGO_SRC (data URI que inyecta el build) o de 'img/logo.png' en desarrollo.
@@ -136,8 +137,9 @@
     if (extra && extra.clase) clases.push(extra.clase);
     const v = extra && extra.html != null ? extra.html : esc(valor);
     const codigo = extra && !vacio(extra.codigo) && !vacio(v) ? `<span class="imp-cod">${esc(txt(extra.codigo))}</span>` : '';
+    const r = extra && extra.rotuloHtml != null ? extra.rotuloHtml : esc(rotulo);
     return `<div class="${clases.join(' ')}" style="grid-column:span ${span || 6}">`
-      + `<span class="imp-rotulo">${esc(rotulo)}</span>`
+      + `<span class="imp-rotulo">${r}</span>`
       + `<span class="imp-valor">${codigo}${v || '&nbsp;'}</span></div>`;
   }
 
@@ -183,7 +185,29 @@
 
   // ───────────────────────── Hoja 1: actualización de datos ─────────────────────────
 
-  function hojaDatos(s, d) {
+  // ───────────────────────── Firma electrónica ─────────────────────────
+  // firma (opts.firma): { fecha: 'dd/mm/aaaa hh:mm', codigo: 'XXXX-XXXX-XXXX-XXXX' } cuando la persona aceptó el
+  // tratamiento de datos y firmó en el formulario (Firma.vigente). Sin ella, la línea queda para firmar a mano.
+
+  // 'ANA MARÍA' + 'PÉREZ' → 'Ana Pérez': el trazo de la firma (primer nombre y primer apellido).
+  function trazo(s) {
+    const tit = (x) => txt(x).toLowerCase().replace(/(^|[\s-])(\S)/g, (m, a, b) => a + b.toUpperCase());
+    return [tit(String(txt(s.primerNombre)).split(/\s+/)[0]), tit(s.primerApellido)].filter(Boolean).join(' ');
+  }
+
+  function bloqueFirma(s, firma, lineas) {
+    const sello = firma
+      ? `<div class="imp-firma-sello"><div class="imp-firma-trazo">${esc(trazo(s))}</div>`
+        + `<div class="imp-firma-meta">Firmado electrónicamente el ${esc(firma.fecha)} · Código de verificación ${esc(firma.codigo)}</div></div>`
+      : '';
+    return `<div class="imp-firma${firma ? ' imp-firmado' : ''}">${sello}<div class="imp-firma-linea"></div>`
+      + lineas.map((l, i) => `<div${i === 0 ? ' class="imp-firma-nombre"' : ''}>${esc(l)}</div>`).join('')
+      + (firma ? '<div class="imp-firma-legal">Aceptó la autorización de tratamiento de datos personales (Ley 1581 de 2012) '
+        + 'y firmó electrónicamente (Ley 527 de 1999, Decreto 1074 de 2015).</div>' : '')
+      + '</div>';
+  }
+
+  function hojaDatos(s, d, firma) {
     const SCHEMA = root.SCHEMA || {};
     const cfg = root.CONFIG || {};
     // Texto literal del Excel (C61, C64, C67, C70); si el esquema es antiguo, el de pantalla.
@@ -208,7 +232,14 @@
         campo('Nombre Completo', txt(d.nombreCompleto).replace(/\s+/g, ' '), 8),
       )
       + fila(
-        campo('Es usted pensionado o ya adquirió los derechos para serlo', '', 8, { html: marcaSiNo(s.pensionado) }),
+        // Pensionado: subrayado en rojo para que quien revisa lo vea de inmediato.
+        txt(s.pensionado).toUpperCase() === 'SI'
+          ? campo('', '', 8, {
+            clase: 'imp-pensionado',
+            rotuloHtml: '<span class="imp-subrayado">Es usted pensionado o ya adquirió los derechos para serlo</span>',
+            html: `<span class="imp-subrayado">${marcaSiNo(s.pensionado)}</span>`,
+          })
+          : campo('Es usted pensionado o ya adquirió los derechos para serlo', '', 8, { html: marcaSiNo(s.pensionado) }),
         campo('Dirección reportada en el RUT', txt(s.direccion), 16),
       )
       + fila(
@@ -317,19 +348,19 @@
       `<div class="imp-juramento">${parrafos(d.textoCertificacion)}</div>`
       + (mensaje ? `<div class="imp-mensaje${mensajeAlerta}">${esc(mensaje)}</div>` : ''));
 
-    const firma = `<div class="imp-firma"><div class="imp-firma-linea"></div>`
-      + `<div class="imp-firma-nombre">${esc(txt(d.firmaNombre) === 'ERROR' ? d.nombreCompleto : txt(d.firmaNombre).replace(/\s+/g, ' '))}</div>`
-      + `<div>${esc(txt(d.firmaDocumento))}</div><div>${esc(txt(d.firmaContrato))}</div></div>`;
+    const bloque = bloqueFirma(s, firma, [
+      txt(d.firmaNombre) === 'ERROR' ? txt(d.nombreCompleto) : txt(d.firmaNombre).replace(/\s+/g, ' '),
+      txt(d.firmaDocumento), txt(d.firmaContrato)]);
 
     return `<section class="imp-hoja imp-hoja-datos">`
       + encabezado('FORMULARIO DE ACTUALIZACIÓN DE DATOS PARA PERSONAS NATURALES HONORARIOS Y SERVICIOS PERSONALES ART.103 DEL ET')
-      + identificacion + pagos + tributario + contrato + retencion + disminucion + certificacion + firma
+      + identificacion + pagos + tributario + contrato + retencion + disminucion + certificacion + bloque
       + `</section>`;
   }
 
   // ───────────────────────── Hoja 2: deducciones ─────────────────────────
 
-  function hojaDeducciones(s, d, hoy) {
+  function hojaDeducciones(s, d, hoy, firmaE) {
     const C = catalogos();
     const dep = s.dedDependientes === 'SI';
     const sal = s.dedSaludNoPos === 'SI';
@@ -392,9 +423,7 @@
     const declaracion = `<div class="imp-declaracion">${parrafos(C.declaracionDeducciones)}</div>`
       + `<div class="imp-folios"><span>No de folios anexos</span><span class="imp-caja">${esc(txt(s.foliosAnexos))}</span></div>`;
 
-    const firma = `<div class="imp-firma"><div class="imp-firma-linea"></div>`
-      + `<div class="imp-firma-nombre">${esc(txt(d.nombreCompleto).replace(/\s+/g, ' '))}</div>`
-      + `<div>${esc(txt(d.firmaDocumento) || txt(s.numeroId))}</div></div>`
+    const firma = bloqueFirma(s, firmaE, [txt(d.nombreCompleto).replace(/\s+/g, ' '), txt(d.firmaDocumento) || txt(s.numeroId)])
       + `<div class="imp-autorizacion">${parrafos(C.autorizacionDeducciones)}</div>`;
 
     return `<section class="imp-hoja imp-hoja-deducciones">`
@@ -409,8 +438,9 @@
     const st = s || {};
     const o = opts || {};
     const der = completarDerivados(st, d || derivados(st, o.hoy));
-    let h = hojaDatos(st, der);
-    if (necesitaHojaDeducciones(st)) h += hojaDeducciones(st, der, o.hoy);
+    const firma = o.firma && o.firma.fecha && o.firma.codigo ? o.firma : null;
+    let h = hojaDatos(st, der, firma);
+    if (necesitaHojaDeducciones(st)) h += hojaDeducciones(st, der, o.hoy, firma);
     return h;
   }
 
@@ -695,7 +725,8 @@
         doc.addImage(lienzo.toDataURL('image/jpeg', 0.92), 'JPEG', (CARTA_MM.ancho - ancho) / 2, 0, ancho, alto, undefined, 'FAST');
       }
       const titulo = nombreArchivo(st).replace(/\.pdf$/, '');
-      doc.setProperties({ title: titulo, subject: 'Formato 13-IF-016', creator: 'Formulario 13-IF-016' });
+      const firmado = o.firma && o.firma.codigo ? `Firmado electrónicamente el ${o.firma.fecha} · Código de verificación ${o.firma.codigo}` : '';
+      doc.setProperties({ title: titulo, subject: 'Formato 13-IF-016', creator: 'Formulario 13-IF-016', keywords: firmado });
       const anexos = (o.anexos || []).filter((x) => x && x.datos);
       if (!anexos.length) return doc.output('blob');
       return await anexar(doc.output('arraybuffer'), anexos, titulo, o.alOmitir);
@@ -715,7 +746,7 @@
     if (!App || typeof App.estadoLimpio !== 'function') return;
     try {
       const s = App.estadoLimpio();
-      render(s, derivados(s));
+      render(s, derivados(s), { firma: typeof App.firmaParaPdf === 'function' ? App.firmaParaPdf() : null });
       tituloAntesDeImprimir = document.title;
       document.title = nombreArchivo(s).replace(/\.pdf$/, '');
     } catch (e) {

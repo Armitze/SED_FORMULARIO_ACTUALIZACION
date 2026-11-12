@@ -1122,6 +1122,18 @@ input.sr-only:focus-visible + .soportes-pie .soportes-agregar { box-shadow: 0 0 
   .resumen-fila dt { font-size: 13.5px; }
 }
 
+/* Autorización y firma electrónica (Revisión) */
+.firma-electronica { margin-top: 36px; }
+.firma-texto { max-height: 168px; overflow-y: auto; margin: 4px 0 14px; padding: 12px 16px; border: 1px solid var(--borde); border-radius: var(--radio); background: var(--superficie-suave); font-size: 13.5px; line-height: 1.55; color: var(--texto-2); }
+.firma-texto p + p { margin-top: 8px; }
+.firma-texto:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; }
+.firma-casillas { display: grid; gap: 2px; }
+.firma-casillas .check-input:disabled { cursor: not-allowed; }
+.firma-casillas .check-input:disabled ~ .check-texto { opacity: .55; }
+.firma-estado { display: flex; gap: 10px; align-items: flex-start; margin-top: 10px; padding: 12px 16px; border-radius: 12px; font-size: 14px; line-height: 1.5; }
+.firma-estado .icono { flex: none; width: 17px; height: 17px; margin-top: 2px; }
+.firma-estado--ok { border: 1px solid var(--exito-borde); background: var(--exito-50); color: var(--exito); }
+.firma-estado--aviso { background: var(--aviso-50); color: var(--aviso-texto); }
 .descargas { margin-top: 36px; }
 .descargas-botones { display: grid; gap: 12px; }
 @media (min-width: 640px) { .descargas-botones { grid-template-columns: 1fr 1fr; } }
