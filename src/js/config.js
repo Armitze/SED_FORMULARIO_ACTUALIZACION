@@ -50,7 +50,7 @@ window.CONFIG = {
   // Creación de tercero: el PDF con RIT, RUT y certificación bancaria se envía por este enlace.
   // Estos archivos no se guardan en el HTML, así que su límite por archivo puede ser mayor que el de los soportes.
   creacionTercero: {
-    enlaceEnvio: 'https://educacionbogota-my.sharepoint.com/:f:/g/personal/jcampos_educacionbogota_gov_co/IgACT4OcReb9S4153gs6kekjAcd-DIBOGb_OhOvTws4yhlA',
+    enlaceEnvio: 'https://educacionbogota-my.sharepoint.com/:f:/g/personal/crearterceros_educacionbogota_gov_co/IgDILTCZYt95RLAsXUoUlpk_AZJav5hl0P9HzD64fI5Ip3k',
     maxArchivoMb: 15,
   },
 

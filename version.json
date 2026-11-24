@@ -1,4 +1,4 @@
 {
-  "version": "1.2.9",
+  "version": "1.2.10",
   "notas": "Ahora puedes aceptar el tratamiento de datos y firmar electrónicamente al final: el PDF sale firmado, sin imprimirlo ni firmarlo a mano."
 }
