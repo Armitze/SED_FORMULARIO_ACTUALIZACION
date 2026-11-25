@@ -21,7 +21,7 @@ Al abrir un formulario en limpio se elige el trámite (un archivo que ya trae da
 ## Creación de tercero
 
 1. Abre `Creacion o actualizacion de terceros.html` y elige **Creación de tercero**.
-2. Adjunta **RIT**, **RUT** y **certificación bancaria** (PDF, JPG o PNG, un archivo por documento, sin contraseña).
+2. Adjunta **cédula**, **RUT** y **certificación bancaria** (PDF, JPG o PNG, un archivo por documento, sin contraseña). La creación no pide RIT ni exige que los documentos sean de los últimos 60 días.
 3. Pulsa **Guardar**: los tres se unen en un solo PDF, en ese orden, y se descarga como `CREACION_TERCERO_NIT_NOMBRE.pdf` (NIT y nombre salen del RUT; si no se pueden leer, por ejemplo en un escaneo, el nombre lleva la fecha y la hora).
 4. Pulsa **Abrir enlace de envío** y, en la pestaña que se abre, selecciona o arrastra el PDF.
 5. Cuando la página diga **Carga finalizada**, guárdala en PDF (Ctrl + P → *Guardar como PDF*). Ese es el soporte del envío: se envía junto con los demás documentos.

@@ -15,8 +15,10 @@ Desde la consola del navegador, `App` expone: `obtenerEstado()`, `establecer(val
       directo a la actualización. "Empezar de nuevo" vuelve a esta pantalla.
 - [ ] "Cambiar de trámite" (en Documentos y en Creación) vuelve al inicio sin perder lo diligenciado.
 - [ ] Creación: "Guardar" sin archivos marca los tres documentos que faltan y no descarga nada.
-- [ ] Un RUT en el espacio del RIT (o al revés) se rechaza con un mensaje; un escaneo o una foto se acepta.
-- [ ] Con los tres: descarga un PDF con RIT, RUT y certificación, en ese orden, y aparece "Envía tu PDF" con el enlace.
+- [ ] Creación pide Cédula, RUT y Certificación bancaria, en ese orden; no aparece RIT.
+- [ ] Un RUT en el espacio de la cédula se rechaza con un mensaje; un RIT en cualquier espacio dice que no se pide;
+      una foto o escaneo de la cédula se acepta sin avisos de vigencia (60 días).
+- [ ] Con los tres: descarga un PDF con cédula, RUT y certificación, en ese orden, y aparece "Envía tu PDF" con el enlace.
 - [ ] "Envía tu PDF" indica guardar en PDF la página de "Carga finalizada" y enviar ese soporte con los demás documentos.
 - [ ] Cambiar o quitar un documento retira "Envía tu PDF" hasta volver a guardar. "Crear otro tercero" deja todo vacío.
 

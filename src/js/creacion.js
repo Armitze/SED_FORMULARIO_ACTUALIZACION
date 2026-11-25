@@ -1,11 +1,12 @@
 // Creación de tercero: lo que no depende de la pantalla (la interfaz está en app.js).
-// La persona adjunta RIT, RUT y certificación bancaria; se unen en un solo PDF (Imprimir.unir) que se descarga y
+// La persona adjunta cédula, RUT y certificación bancaria; se unen en un solo PDF (Imprimir.unir) que se descarga y
 // se envía por el enlace de CONFIG.creacionTercero. Estos archivos no se guardan dentro del HTML.
+// La creación no pide RIT ni aplica la vigencia de 60 días (CONFIG.diasVigenciaDocumentos), que es de la actualización.
 //
 // API (window.CreacionTercero):
 //   DOCUMENTOS                     los tres documentos, en el orden en que van en el PDF
 //   limites(cfg?)                  límites para Soportes.leer (de CONFIG.creacionTercero)
-//   faltantes(docs) -> [doc]       documentos sin adjuntar; docs: { rit: item, rut: item, banco: item }
+//   faltantes(docs) -> [doc]       documentos sin adjuntar; docs: { cedula: item, rut: item, banco: item }
 //   enOrden(docs) -> [item]        los archivos adjuntos en el orden del PDF
 //   documentoEquivocado(id, tipos) mensaje si el archivo es claramente otro documento, o ''
 //   datosDelRut(res) -> { nit, nombre }   del Resultado de RutParser (persona natural o jurídica)
@@ -13,10 +14,12 @@
 (function (root) {
   'use strict';
 
+  // tipo: lo que DocDetect reconoce en el PDF (solo 'RUT' y 'RIT'); vacío = no se reconoce por su texto.
+  // nombre: cómo se nombra el documento dentro de una frase ("no la cédula").
   const DOCUMENTOS = [
-    { id: 'rit', tipo: 'RIT', titulo: 'RIT', descripcion: 'Certificado RIT de la Secretaría Distrital de Hacienda.' },
-    { id: 'rut', tipo: 'RUT', titulo: 'RUT', descripcion: 'Copia del RUT descargada de la DIAN.' },
-    { id: 'banco', tipo: '', titulo: 'Certificación bancaria', descripcion: 'Certificación de la cuenta a la que se harán los pagos.' },
+    { id: 'cedula', tipo: '', titulo: 'Cédula', nombre: 'la cédula', descripcion: 'Copia de tu cédula de ciudadanía por ambas caras.' },
+    { id: 'rut', tipo: 'RUT', titulo: 'RUT', nombre: 'el RUT', descripcion: 'Copia del RUT descargada de la DIAN.' },
+    { id: 'banco', tipo: '', titulo: 'Certificación bancaria', nombre: 'la certificación bancaria', descripcion: 'Certificación de la cuenta a la que se harán los pagos.' },
   ];
 
   function limites(cfg) {
@@ -34,8 +37,9 @@
     const doc = DOCUMENTOS.find((d) => d.id === id);
     const leidos = tipos || [];
     if (!doc || !leidos.length || leidos.includes(doc.tipo)) return '';
-    return 'Este archivo parece ser el ' + leidos[0] + ', no ' + (doc.tipo ? 'el ' + doc.titulo : 'la certificación bancaria') +
-      '. Adjúntalo en el espacio que le corresponde.';
+    // Un RIT no tiene espacio en la creación: se pide quitarlo en lugar de moverlo.
+    const donde = DOCUMENTOS.some((d) => d.tipo === leidos[0]) ? ' Adjúntalo en el espacio que le corresponde.' : ' La creación de tercero no lo pide.';
+    return 'Este archivo parece ser el ' + leidos[0] + ', no ' + doc.nombre + '.' + donde;
   }
 
   const valor = (c) => (c && c.valor != null ? String(c.valor).trim() : '');

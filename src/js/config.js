@@ -47,7 +47,7 @@ window.CONFIG = {
   // Van codificados en el HTML (ocupan un 33 % más), así que el total se limita para que guardar siga siendo rápido.
   soportes: { maxArchivoMb: 4, maxTotalMb: 16, maxPorTipo: 5 },
 
-  // Creación de tercero: el PDF con RIT, RUT y certificación bancaria se envía por este enlace.
+  // Creación de tercero: el PDF con cédula, RUT y certificación bancaria se envía por este enlace.
   // Estos archivos no se guardan en el HTML, así que su límite por archivo puede ser mayor que el de los soportes.
   creacionTercero: {
     enlaceEnvio: 'https://educacionbogota-my.sharepoint.com/:f:/g/personal/crearterceros_educacionbogota_gov_co/IgDILTCZYt95RLAsXUoUlpk_AZJav5hl0P9HzD64fI5Ip3k',

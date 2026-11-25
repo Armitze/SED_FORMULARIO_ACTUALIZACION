@@ -13,7 +13,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '1.2.11';
+  const VERSION = '1.2.12';
   const MAX_OPCIONES_COMBO = 50;
 
   const SCHEMA = window.SCHEMA;
@@ -1778,7 +1778,7 @@
   const CT = window.CreacionTercero || null;
   const TEXTOS_TRAMITE = {
     inicio: { titulo: 'Creación o actualización de terceros', subtitulo: 'Elige el trámite que vas a hacer' },
-    creacion: { titulo: 'Creación de tercero', subtitulo: 'Adjunta RIT, RUT y certificación bancaria' },
+    creacion: { titulo: 'Creación de tercero', subtitulo: 'Adjunta cédula, RUT y certificación bancaria' },
   };
   const TEXTOS_FORMULARIO = {};
 
@@ -1827,7 +1827,7 @@
       h('header', { class: 'paso-cabecera' },
         h('h2', { class: 'paso-titulo', id: 'paso-titulo', tabindex: '-1' }, '¿Qué trámite vas a hacer?')),
       h('div', { class: 'tramite-opciones' },
-        CT ? opcion('creacion', 'Creación de tercero', 'Es la primera vez. Solo adjuntas RIT, RUT y certificación bancaria.') : null,
+        CT ? opcion('creacion', 'Creación de tercero', 'Es la primera vez. Solo adjuntas cédula, RUT y certificación bancaria.') : null,
         opcion('actualizacion', 'Actualización de tercero', 'Ya estás creado. Diligencias el formulario 13-IF-016.')));
   }
 
@@ -1985,7 +1985,7 @@
     ocupado(boton, true, 'Uniendo tus documentos…');
     try {
       const nombre = CT.nombrePdf(c.datosRut);
-      const blob = await window.Imprimir.unir(CT.enOrden(c.docs), { titulo: nombre.replace(/\.pdf$/, ''), asunto: 'Creación de tercero: RIT, RUT y certificación bancaria' });
+      const blob = await window.Imprimir.unir(CT.enOrden(c.docs), { titulo: nombre.replace(/\.pdf$/, ''), asunto: 'Creación de tercero: cédula, RUT y certificación bancaria' });
       c.pdf = { blob, nombre };
       descargarBlob(blob, nombre);
       toast('Descargamos ' + nombre + '. Ahora envíalo.');
@@ -2280,7 +2280,7 @@
     rit: { titulo: 'RIT' },
     rut: { titulo: 'RUT' },
   };
-  /** RIT y RUT adjuntos al formulario, primero en el PDF (el mismo orden de la creación de tercero). */
+  /** RIT y RUT adjuntos al formulario, primero en el PDF. */
   const DOCUMENTOS_EN_PDF = ['rit', 'rut'];
   const SOPORTE_DE_CHECK = { dedDependientes: 'dependientes', dedHipotecario: 'hipotecario', dedSaludNoPos: 'saludNoPos' };
 
