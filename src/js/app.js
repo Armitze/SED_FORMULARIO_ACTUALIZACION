@@ -13,7 +13,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '1.2.10';
+  const VERSION = '1.2.11';
   const MAX_OPCIONES_COMBO = 50;
 
   const SCHEMA = window.SCHEMA;
@@ -3697,20 +3697,11 @@
     const soportes = construirSoportesRevision(conSoportes);
     if (soportes) cuerpo.append(soportes);
 
-    // El nombre solo se muestra cuando ya cumple la regla NOMBRE_APELLIDO_CONTRATO_AÑO.
-    const limpio = estadoLimpio();
-    const nombre = I && limpio.primerNombre && limpio.primerApellido && limpio.numeroContrato && limpio.anioContrato ? I.nombreArchivo(limpio) : '';
     cuerpo.append(h('section', { class: 'que-sigue', 'aria-labelledby': 'rev-sigue' },
       h('h3', { class: 'que-sigue-titulo', id: 'rev-sigue' }, '¿Qué sigue?'),
       h('ol', null,
         liFirma,
-        h('li', null, 'Envíalo a tu operativo o jefe de área. Esa persona lo remite a ',
-          h('a', { href: 'mailto:' + (CFG.correoRadicacion || '') }, CFG.correoRadicacion || 'el buzón de Tesorería'),
-          conSoportes ? '. Ya lleva dentro tu RIT, tu RUT, tu certificación bancaria y los soportes de deducciones.'
-            : ' en un solo PDF, junto con tu RIT, tu RUT, tu certificación bancaria y los soportes de deducciones, si aplican.'),
-        h('li', null, 'El archivo debe llamarse NOMBRE_APELLIDO_CONTRATO_AÑO',
-          nombre ? ['; el tuyo: ', h('strong', { class: 'nombre-archivo' }, nombre)]
-            : ' (te lo mostramos cuando llenes tu primer nombre, tu primer apellido, el número y el año del contrato).'))));
+        h('li', null, 'Envía el PDF generado a tu operativo.'))));
 
     // Uso interno de Tesorería: solo con el formulario completo (mientras tanto el Excel dice "REVISE…").
     if (completo && d.codificacion && !/^REVISE/i.test(String(d.codificacion))) {
