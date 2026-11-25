@@ -352,6 +352,19 @@ describe('validar', () => {
     assert.equal(v.completo, false); // número ≠ NIT y CIIU inexistente bloquean como en el Excel
   });
 
+  test('fecha del CRP 1 posterior al acta de inicio: error salvo en una cesión', () => {
+    const despues = { fechaInicio: '2026-02-01', fechaCrp1: '2026-03-01' };
+    assert.match(Calc.validar(base({ ...despues, cesion: 'NO' }), HOY_FIJO).errores.fechaCrp1, /no puede ser posterior al acta de inicio/);
+    assert.match(Calc.validar(base({ ...despues, cesion: '' }), HOY_FIJO).errores.fechaCrp1, /no puede ser posterior al acta de inicio/,
+      'sin responder la cesión se mantiene la regla');
+    assert.equal(Calc.validar(base({ ...despues, cesion: 'SI' }), HOY_FIJO).errores.fechaCrp1, undefined);
+    assert.equal(Calc.validar(base({ fechaInicio: '2026-02-01', fechaCrp1: '2026-02-01', cesion: 'NO' }), HOY_FIJO).errores.fechaCrp1, undefined,
+      'el mismo día del acta se acepta');
+    // La cesión no quita el rango de fechas.
+    assert.match(Calc.validar(base({ fechaCrp1: '2031-01-15', cesion: 'SI' }), HOY_FIJO).errores.fechaCrp1, /debe estar entre/);
+    assert.match(Calc.validar(base({ fechaCrp1: '2015-12-31', cesion: 'SI' }), HOY_FIJO).errores.fechaCrp1, /posterior al 1 de enero de 2016/);
+  });
+
   test('deducciones: titulares, edad y corte del certificado', () => {
     const v = Calc.validar(deducciones({ hipTitulares: '0', depEdad: '120', saludFechaCorte: '2025-06-30' }), HOY_FIJO);
     assert.ok(v.errores.hipTitulares);

@@ -1057,9 +1057,13 @@
       else if (fin > fMax || fin < fMin) err('fechaTerminacion', 'La fecha de terminación debe estar ' + rangoFechas + '.');
     }
     const crp1 = fechaValida('fechaCrp1');
+    // En una cesión el CRP del cesionario se expide después del acta de inicio original: ahí sí puede ser posterior.
+    const cedido = val('cesion') === 'SI';
     if (crp1) {
       if (crp1 < fMin) err('fechaCrp1', 'La fecha del CRP debe ser posterior al ' + fechaLarga(fMin) + '.');
-      else if (inicio && crp1 > inicio) err('fechaCrp1', 'La fecha del CRP no puede ser posterior al acta de inicio.');
+      else if (inicio && crp1 > inicio && !cedido) {
+        err('fechaCrp1', 'La fecha del CRP no puede ser posterior al acta de inicio (solo puede serlo si el contrato fue cedido).');
+      }
       else if (crp1 > fMax) err('fechaCrp1', 'La fecha del CRP debe estar ' + rangoFechas + '.');
     }
     ['fechaCrp2', 'fechaCrp3'].forEach((id) => {
