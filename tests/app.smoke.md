@@ -66,6 +66,9 @@ Desde la consola del navegador, `App` expone: `obtenerEstado()`, `establecer(val
 - [ ] "+ Agregar otro CRP" muestra CRP 2 y luego CRP 3.
 - [ ] Contrato: el bloque Duración / Valor sin IVA / IVA va debajo de las fechas; con fechas o valores con error,
       la duración muestra "—". Número de contrato con letras: aviso suave en el paso.
+- [ ] Contrato con SECOP II lento (simula una respuesta demorada): apenas se entra al paso el recuadro dice
+      "Consultando SECOP II…" con el ícono girando y la barra que avanza; a los 8 s cambia a "está tardando más de
+      lo normal". Salir del paso y volver mantiene el aviso; "Buscar de nuevo" pulsado dos veces hace una sola consulta.
 - [ ] Retención: las preguntas C1–C4 van sin tarjetas (separadas por una línea); deducciones y AFC / pensiones
       voluntarias muestran sus campos solo al marcarlas; motivos del dependiente cortos con el texto legal debajo
       al elegir; parentesco acepta texto libre con sugerencias; nota del año de los certificados.

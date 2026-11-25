@@ -13,7 +13,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '1.2.12';
+  const VERSION = '1.2.13';
   const MAX_OPCIONES_COMBO = 50;
 
   const SCHEMA = window.SCHEMA;
@@ -3485,10 +3485,14 @@
     const caja = h('section', { class: 'secop', id: 'secop', 'aria-live': 'polite' });
     cuerpo.append(caja);
     construirGenerico(cuerpo, 'contrato');
-    // El paso aún no está en el documento: se pinta en el contenedor recién creado.
-    pintarSecop(caja);
+    // La búsqueda va primero para que el recuadro ya salga con «Consultando SECOP II…»: el paso aún no está en
+    // el documento, así que lo que buscarSecop pinta antes de esperar a SECOP se perdería.
     buscarSecopSiCorresponde();
+    pintarSecop(caja);
   }
+
+  // Si SECOP II tarda más que esto, el aviso dice que está lento (la consulta sigue hasta CONFIG.secop.tiempoMaximoMs).
+  const SECOP_LENTO_MS = 8000;
 
   const documentoParaSecop = () => soloDigitos(estado.s.numeroId || estado.s.nit);
 
@@ -3502,11 +3506,18 @@
 
   async function buscarSecop() {
     const cc = documentoParaSecop();
-    if (!cc || !modulo('Secop', 'buscar')) return;
-    sesion.secop = { estado: 'buscando', mensaje: '' };
+    if (!cc || !modulo('Secop', 'buscar') || sesion.secop.estado === 'buscando') return;
+    const consulta = { estado: 'buscando', mensaje: '', lento: false };
+    sesion.secop = consulta;
     pintarSecop();
+    const reloj = setTimeout(() => {
+      if (sesion.secop !== consulta) return;
+      consulta.lento = true;
+      pintarSecop();
+    }, SECOP_LENTO_MS);
     try {
       const r = await window.Secop.buscar(cc, { hoy: hoyLocal() });
+      if (sesion.secop !== consulta) return; // se empezó de nuevo mientras SECOP respondía
       const vigentes = r.vigentes.length > 0;
       const contratos = (vigentes ? r.vigentes : r.otros).slice(0, 20);
       estado.meta.secop = { consulta: cc, fecha: new Date().toISOString(), contratos, vigentes, elegido: '' };
@@ -3515,10 +3526,13 @@
       else guardarPronto();
       if (vigentes && contratos.length === 1) toast('Encontramos tu contrato en SECOP II y llenamos sus datos. Revísalos.');
     } catch (e) {
+      if (sesion.secop !== consulta) return;
       if (!e || !e.codigo) avisarUnaVez('Secop.buscar', e);
       sesion.secop = { estado: 'error', mensaje: e && /^(SIN_CONEXION|TIEMPO)$/.test(e.codigo)
         ? 'No pudimos conectarnos con SECOP II. Revisa tu conexión a internet o llena los datos del contrato a mano.'
         : 'SECOP II no respondió como esperábamos. Puedes intentar de nuevo o llenar los datos a mano.' };
+    } finally {
+      clearTimeout(reloj);
     }
     pintarSecop();
   }
@@ -3570,7 +3584,14 @@
       cuerpo.push(h('p', { class: 'secop-texto' }, 'Para buscar tu contrato necesitamos tu número de identificación. ',
         h('button', { type: 'button', class: 'enlace', onclick: () => irAlCampo('numeroId') }, 'Escríbelo en Datos personales'), '.'));
     } else if (sesion.secop.estado === 'buscando') {
-      cuerpo.push(h('p', { class: 'secop-texto secop-buscando' }, h('span', { html: svgIcono('girando', 'icono girando') }), 'Buscando tu contrato…'));
+      cuerpo.push(h('div', { class: 'secop-buscando' },
+        h('span', { class: 'secop-buscando-icono', html: svgIcono('girando', 'icono girando') }),
+        h('p', { class: 'secop-buscando-textos' },
+          h('strong', null, 'Consultando SECOP II…'),
+          h('span', null, sesion.secop.lento
+            ? 'SECOP II está tardando más de lo normal. Seguimos esperando; mientras tanto puedes llenar los datos del contrato a mano.'
+            : 'Estamos buscando tu contrato. Puede tardar unos segundos.')),
+        h('span', { class: 'secop-progreso', 'aria-hidden': 'true' })));
     } else if (sesion.secop.estado === 'error') {
       cuerpo.push(h('p', { class: 'secop-texto' }, sesion.secop.mensaje), reintentar);
     } else if (!sec || sec.consulta !== cc) {
