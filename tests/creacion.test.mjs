@@ -25,16 +25,19 @@ async function itemPdf(nombre, ancho, n = 1) {
 }
 
 describe('CreacionTercero', () => {
-  test('el PDF lleva RIT, RUT y certificación bancaria, en ese orden', () => {
-    assert.deepEqual(Creacion.DOCUMENTOS.map((d) => d.id), ['rit', 'rut', 'banco']);
-    const docs = { banco: { id: 'b' }, rit: { id: 'r' }, rut: { id: 'u' } };
-    assert.deepEqual(Creacion.enOrden(docs).map((x) => x.id), ['r', 'u', 'b']);
+  test('el PDF lleva cédula, RUT y certificación bancaria, en ese orden; no pide RIT', () => {
+    assert.deepEqual(Creacion.DOCUMENTOS.map((d) => d.id), ['cedula', 'rut', 'banco']);
+    assert.deepEqual(Creacion.DOCUMENTOS.map((d) => d.titulo), ['Cédula', 'RUT', 'Certificación bancaria']);
+    assert.ok(!Creacion.DOCUMENTOS.some((d) => d.tipo === 'RIT' || /RIT/.test(d.titulo + d.descripcion)));
+    const docs = { banco: { id: 'b' }, cedula: { id: 'c' }, rut: { id: 'u' }, rit: { id: 'r' } };
+    assert.deepEqual(Creacion.enOrden(docs).map((x) => x.id), ['c', 'u', 'b'], 'un RIT suelto no entra al PDF');
   });
 
   test('faltantes dice qué documentos no se han adjuntado', () => {
-    assert.deepEqual(Creacion.faltantes({}).map((d) => d.id), ['rit', 'rut', 'banco']);
-    assert.deepEqual(Creacion.faltantes({ rit: {}, banco: {} }).map((d) => d.id), ['rut']);
-    assert.deepEqual(Creacion.faltantes({ rit: {}, rut: {}, banco: {} }), []);
+    assert.deepEqual(Creacion.faltantes({}).map((d) => d.id), ['cedula', 'rut', 'banco']);
+    assert.deepEqual(Creacion.faltantes({ cedula: {}, banco: {} }).map((d) => d.id), ['rut']);
+    assert.deepEqual(Creacion.faltantes({ cedula: {}, rut: {}, banco: {} }), []);
+    assert.deepEqual(Creacion.faltantes({ rit: {}, rut: {}, banco: {} }).map((d) => d.id), ['cedula'], 'el RIT no reemplaza la cédula');
   });
 
   test('límites por archivo desde la configuración, un archivo por documento', () => {
@@ -44,9 +47,12 @@ describe('CreacionTercero', () => {
   });
 
   test('objeta solo cuando reconoce otro documento', () => {
-    assert.match(Creacion.documentoEquivocado('rut', ['RIT']), /parece ser el RIT, no el RUT/);
-    assert.match(Creacion.documentoEquivocado('rit', ['RUT']), /parece ser el RUT, no el RIT/);
+    assert.match(Creacion.documentoEquivocado('rut', ['RIT']), /parece ser el RIT, no el RUT\. La creación de tercero no lo pide\./);
+    assert.match(Creacion.documentoEquivocado('cedula', ['RUT']), /parece ser el RUT, no la cédula\. Adjúntalo en el espacio que le corresponde\./);
+    assert.match(Creacion.documentoEquivocado('cedula', ['RIT']), /parece ser el RIT, no la cédula\. La creación de tercero no lo pide\./);
     assert.match(Creacion.documentoEquivocado('banco', ['RUT']), /no la certificación bancaria/);
+    assert.equal(Creacion.documentoEquivocado('cedula', []), '', 'una foto o un escaneo de la cédula sirve');
+    assert.equal(Creacion.documentoEquivocado('rit', ['RUT']), '', 'ya no hay espacio de RIT');
     assert.equal(Creacion.documentoEquivocado('rut', ['RUT', 'RIT']), '', 'un paquete que trae ambos sirve');
     assert.equal(Creacion.documentoEquivocado('rut', []), '', 'un escaneo no se puede reconocer');
     assert.equal(Creacion.documentoEquivocado('banco', []), '');
@@ -82,7 +88,7 @@ describe('CreacionTercero', () => {
 
 describe('Imprimir.unir', () => {
   test('junta todas las hojas de cada archivo, en el orden dado', async () => {
-    const items = [await itemPdf('rit.pdf', 300, 2), await itemPdf('rut.pdf', 400, 3), await itemPdf('banco.pdf', 500)];
+    const items = [await itemPdf('cedula.pdf', 300, 2), await itemPdf('rut.pdf', 400, 3), await itemPdf('banco.pdf', 500)];
     const blob = await Imprimir.unir(items, { titulo: 'CREACION_TERCERO_1' });
     assert.equal(blob.type, 'application/pdf');
     const salida = await PDFDocument.load(await blob.arrayBuffer());
@@ -91,7 +97,7 @@ describe('Imprimir.unir', () => {
   });
 
   test('si un archivo no se puede agregar no entrega un PDF incompleto', async () => {
-    const bueno = await itemPdf('rit.pdf', 300);
+    const bueno = await itemPdf('cedula.pdf', 300);
     const malo = { id: 'x', nombre: 'dañado.pdf', tipo: 'application/pdf', bytes: 8, datos: Buffer.from('no es pdf').toString('base64') };
     await assert.rejects(Imprimir.unir([bueno, malo]), (e) => e.item === malo);
   });

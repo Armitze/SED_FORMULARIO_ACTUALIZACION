@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Instructivo: creación de tercero</title>
+<!--
+  Fuente del PDF «Instructivo creación de tercero.pdf» (raíz del repositorio).
+  Pantallazos tomados de la aplicación con documentos ficticios (img/). Para regenerar el PDF:
+  msedge --headless --no-pdf-header-footer --print-to-pdf="Instructivo creación de tercero.pdf" docs/instructivo-creacion-tercero/instructivo.html
+-->
+<style>
+  @page {
+    size: letter;
+    margin: 18mm 20mm 18mm 20mm;
+    @top-left { content: "Instructivo: creación de tercero"; font: 8pt "Segoe UI", Arial, sans-serif; color: #6b7280; }
+    @bottom-right { content: "Página " counter(page) " de " counter(pages); font: 8pt "Segoe UI", Arial, sans-serif; color: #6b7280; }
+  }
+  :root { --texto: #1f2937; --suave: #4b5563; --rojo: #d0161b; --borde: #e5e7eb; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { font: 11.5pt/1.5 "Segoe UI", Arial, sans-serif; color: var(--texto); margin: 0; }
+  h1, h2 { font-family: Georgia, "Times New Roman", serif; font-weight: 400; color: #111827; }
+  h1 { font-size: 26pt; margin: 0 0 6pt; line-height: 1.15; }
+  h2 { font-size: 17pt; margin: 20pt 0 4pt; break-after: avoid; }
+  p { margin: 0 0 8pt; }
+  ul, ol { margin: 0 0 8pt; padding-left: 20pt; }
+  li { margin: 2pt 0; }
+  code { font: 10pt Consolas, "Courier New", monospace; background: #f3f4f6; padding: 1pt 4pt; border-radius: 3pt; }
+  .paso { break-inside: auto; }
+  figure { margin: 8pt 0 12pt; break-inside: avoid; }
+  figure img { display: block; box-sizing: border-box; max-width: 100%; width: 82%; border: 1px solid var(--borde); border-radius: 4pt; }
+  figure.media img { width: 66%; }
+  figure.angosta img { width: 60%; }
+  figcaption, .nota { font-size: 10pt; color: var(--suave); font-style: italic; margin-top: 4pt; }
+  .aviso { border-left: 3pt solid #1e3a8a; background: #eef2fb; padding: 6pt 10pt; margin: 8pt 0; border-radius: 0 4pt 4pt 0; }
+
+  /* Ilustración del paso 5 (no es una captura: la carga real no se hizo para no subir archivos de prueba). */
+  .ilus { display: flex; border: 1px solid var(--borde); border-radius: 4pt; overflow: hidden; background: #f0f0f0; font-family: "Segoe UI", Arial, sans-serif; }
+  .ilus .izq { flex: 1; padding: 16pt; display: flex; align-items: center; justify-content: center; }
+  .ilus .hoja { background: #fff; border: 1px solid #ddd; width: 100%; max-width: 210pt; padding: 26pt 14pt; text-align: center; }
+  .ilus .check { width: 34pt; height: 34pt; border-radius: 50%; background: #107c10; color: #fff; font-size: 20pt; line-height: 34pt; margin: 0 auto 10pt; }
+  .ilus .linea { height: 5pt; background: #e5e7eb; border-radius: 3pt; margin: 6pt auto; }
+  .ilus .der { flex: 1; background: #fff; padding: 16pt; border-left: 1px solid var(--borde); }
+  .ilus .der h3 { font: 400 15pt "Segoe UI", Arial, sans-serif; margin: 0 0 14pt; }
+  .ilus .fila { display: flex; align-items: center; gap: 10pt; margin-bottom: 10pt; font-size: 10.5pt; }
+  .ilus .fila span:first-child { width: 48pt; }
+  .ilus .campo { flex: 1; border: 1px solid #c7c7c7; border-radius: 4pt; padding: 5pt 8pt; font-size: 10pt; }
+  .ilus .botones { display: flex; justify-content: flex-end; gap: 8pt; margin-top: 26pt; }
+  .ilus .btn { border-radius: 14pt; padding: 5pt 14pt; font-size: 10pt; font-weight: 600; }
+  .ilus .primario { background: #1a73e8; color: #fff; }
+  .ilus .secundario { border: 1px solid #c7c7c7; color: #1a73e8; }
+  .marca { outline: 2.5pt solid var(--rojo); outline-offset: 3pt; }
+</style>
+</head>
+<body>
+
+<h1>Instructivo: creación de tercero</h1>
+<p>En 6 pasos envías tus documentos para la creación de tercero. Ten a la mano tu <b>cédula</b>, tu <b>RUT</b> y tu <b>certificación bancaria</b>, en PDF, JPG o PNG (máximo 15 MB cada uno). Cada documento va en un solo archivo y sin contraseña.</p>
+
+<section class="paso">
+  <h2>1. Elige el trámite</h2>
+  <p>Abre el archivo <code>Creacion o actualizacion de terceros.html</code> y pulsa <b>Creación de tercero</b>.</p>
+  <figure><img src="img/1-elige-tramite.png" alt="Pantalla «¿Qué trámite vas a hacer?» con la opción Creación de tercero marcada"></figure>
+</section>
+
+<section class="paso">
+  <h2>2. Adjunta tus documentos</h2>
+  <p>En cada recuadro pulsa <b>Adjuntar archivo</b> y elige el documento, en este orden: <b>cédula</b>, <b>RUT</b> y <b>certificación bancaria</b>.</p>
+  <ul>
+    <li><b>Cédula:</b> copia por ambas caras, las dos en el mismo archivo. Sirve una foto o un escaneo.</li>
+    <li><b>RUT:</b> la copia descargada de la DIAN.</li>
+    <li><b>Certificación bancaria:</b> de la cuenta a la que se harán los pagos.</li>
+  </ul>
+  <figure class="media"><img src="img/2-adjunta-documentos.png" alt="Recuadros Cédula, RUT y Certificación bancaria con el botón Adjuntar archivo marcado"></figure>
+  <p>Cuando adjuntas un documento ves su nombre. Si te equivocaste, pulsa <b>Cambiar archivo</b> o <b>Quitar</b>.</p>
+  <figure class="angosta"><img src="img/2-documento-adjunto.png" alt="Recuadro de la cédula con el archivo adjunto y las opciones Ver, Quitar y Cambiar archivo"></figure>
+</section>
+
+<section class="paso">
+  <h2>3. Guarda el PDF</h2>
+  <p>Pulsa <b>Guardar</b>. Tus tres documentos se unen en un solo PDF, que queda en tu carpeta de <b>Descargas</b> con el nombre <code>CREACION_TERCERO_</code> seguido de tu NIT y tu nombre.</p>
+  <p>Si falta un documento, su recuadro se marca con «Adjunta este documento para continuar».</p>
+  <figure><img src="img/3-guardar.png" alt="Botón Guardar marcado y, debajo, el aviso «Envía tu PDF» con el nombre del archivo descargado"></figure>
+</section>
+
+<section class="paso">
+  <h2>4. Carga el PDF</h2>
+  <p>Pulsa <b>Abrir enlace de envío</b>. En la pestaña que se abre, pulsa <b>Seleccionar archivos</b>, elige tu PDF de <b>Descargas</b> y sigue las indicaciones hasta ver <b>Carga finalizada</b>.</p>
+  <figure><img src="img/4-abrir-enlace.png" alt="Recuadro «Envía tu PDF» con el botón Abrir enlace de envío marcado"></figure>
+  <figure class="media"><img src="img/4-seleccionar-archivos.png" alt="Página «CREAR TERCEROS le envió una solicitud de archivo» con el botón Seleccionar archivos marcado"></figure>
+  <p class="aviso">La página dice «Adjunte PDF's - Diligencie Nombre Operativo Responsable»: ahí va tu PDF con los tres documentos. Cuando te pida un nombre, escribe el de tu operativo responsable.</p>
+</section>
+
+<section class="paso">
+  <h2>5. Guarda tu soporte</h2>
+  <p>Cuando veas <b>Carga finalizada</b>, no cierres la página:</p>
+  <ol>
+    <li>Pulsa <b>Ctrl + P</b>.</li>
+    <li>En <b>Destino</b> (o <b>Impresora</b>), elige <b>Guardar como PDF</b>.</li>
+    <li>Pulsa <b>Guardar</b>.</li>
+  </ol>
+  <figure>
+    <div class="ilus" role="img" aria-label="Ilustración: página Carga finalizada y ventana Imprimir con Guardar como PDF">
+      <div class="izq">
+        <div class="hoja">
+          <div class="check">✓</div>
+          <div style="font-size:13pt; margin-bottom:12pt">Carga finalizada</div>
+          <div class="linea" style="width:80%"></div>
+          <div class="linea" style="width:62%"></div>
+        </div>
+      </div>
+      <div class="der">
+        <h3>Imprimir</h3>
+        <div class="fila"><span>Destino</span><span class="campo marca">Guardar como PDF ▾</span></div>
+        <div class="fila"><span>Páginas</span><span class="campo">Todas</span></div>
+        <div class="botones"><span class="btn primario marca">Guardar</span><span class="btn secundario">Cancelar</span></div>
+      </div>
+    </div>
+    <figcaption>Ilustración: en tu navegador puede verse un poco distinta.</figcaption>
+  </figure>
+</section>
+
+<section class="paso">
+  <h2>6. Envía el soporte</h2>
+  <p>Envía ese PDF junto con los demás documentos. Es la prueba de que ya cargaste tu información.</p>
+</section>
+
+</body>
+</html>

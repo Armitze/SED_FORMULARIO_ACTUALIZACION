@@ -15,8 +15,10 @@ Desde la consola del navegador, `App` expone: `obtenerEstado()`, `establecer(val
       directo a la actualización. "Empezar de nuevo" vuelve a esta pantalla.
 - [ ] "Cambiar de trámite" (en Documentos y en Creación) vuelve al inicio sin perder lo diligenciado.
 - [ ] Creación: "Guardar" sin archivos marca los tres documentos que faltan y no descarga nada.
-- [ ] Un RUT en el espacio del RIT (o al revés) se rechaza con un mensaje; un escaneo o una foto se acepta.
-- [ ] Con los tres: descarga un PDF con RIT, RUT y certificación, en ese orden, y aparece "Envía tu PDF" con el enlace.
+- [ ] Creación pide Cédula, RUT y Certificación bancaria, en ese orden; no aparece RIT.
+- [ ] Un RUT en el espacio de la cédula se rechaza con un mensaje; un RIT en cualquier espacio dice que no se pide;
+      una foto o escaneo de la cédula se acepta sin avisos de vigencia (60 días).
+- [ ] Con los tres: descarga un PDF con cédula, RUT y certificación, en ese orden, y aparece "Envía tu PDF" con el enlace.
 - [ ] "Envía tu PDF" indica guardar en PDF la página de "Carga finalizada" y enviar ese soporte con los demás documentos.
 - [ ] Cambiar o quitar un documento retira "Envía tu PDF" hasta volver a guardar. "Crear otro tercero" deja todo vacío.
 
@@ -64,6 +66,11 @@ Desde la consola del navegador, `App` expone: `obtenerEstado()`, `establecer(val
 - [ ] "+ Agregar otro CRP" muestra CRP 2 y luego CRP 3.
 - [ ] Contrato: el bloque Duración / Valor sin IVA / IVA va debajo de las fechas; con fechas o valores con error,
       la duración muestra "—". Número de contrato con letras: aviso suave en el paso.
+- [ ] Fecha CRP 1 posterior al acta de inicio: con "¿El contrato fue cedido?" en No (o sin responder) muestra el
+      error; al marcar Sí el error desaparece y al volver a No reaparece. El rango 2016–2030 aplica siempre.
+- [ ] Contrato con SECOP II lento (simula una respuesta demorada): apenas se entra al paso el recuadro dice
+      "Consultando SECOP II…" con el ícono girando y la barra que avanza; a los 8 s cambia a "está tardando más de
+      lo normal". Salir del paso y volver mantiene el aviso; "Buscar de nuevo" pulsado dos veces hace una sola consulta.
 - [ ] Retención: las preguntas C1–C4 van sin tarjetas (separadas por una línea); deducciones y AFC / pensiones
       voluntarias muestran sus campos solo al marcarlas; motivos del dependiente cortos con el texto legal debajo
       al elegir; parentesco acepta texto libre con sugerencias; nota del año de los certificados.

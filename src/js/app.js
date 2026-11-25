@@ -13,7 +13,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '1.2.9';
+  const VERSION = '1.2.14';
   const MAX_OPCIONES_COMBO = 50;
 
   const SCHEMA = window.SCHEMA;
@@ -1778,7 +1778,7 @@
   const CT = window.CreacionTercero || null;
   const TEXTOS_TRAMITE = {
     inicio: { titulo: 'Creación o actualización de terceros', subtitulo: 'Elige el trámite que vas a hacer' },
-    creacion: { titulo: 'Creación de tercero', subtitulo: 'Adjunta RIT, RUT y certificación bancaria' },
+    creacion: { titulo: 'Creación de tercero', subtitulo: 'Adjunta cédula, RUT y certificación bancaria' },
   };
   const TEXTOS_FORMULARIO = {};
 
@@ -1827,7 +1827,7 @@
       h('header', { class: 'paso-cabecera' },
         h('h2', { class: 'paso-titulo', id: 'paso-titulo', tabindex: '-1' }, '¿Qué trámite vas a hacer?')),
       h('div', { class: 'tramite-opciones' },
-        CT ? opcion('creacion', 'Creación de tercero', 'Es la primera vez. Solo adjuntas RIT, RUT y certificación bancaria.') : null,
+        CT ? opcion('creacion', 'Creación de tercero', 'Es la primera vez. Solo adjuntas cédula, RUT y certificación bancaria.') : null,
         opcion('actualizacion', 'Actualización de tercero', 'Ya estás creado. Diligencias el formulario 13-IF-016.')));
   }
 
@@ -1985,7 +1985,7 @@
     ocupado(boton, true, 'Uniendo tus documentos…');
     try {
       const nombre = CT.nombrePdf(c.datosRut);
-      const blob = await window.Imprimir.unir(CT.enOrden(c.docs), { titulo: nombre.replace(/\.pdf$/, ''), asunto: 'Creación de tercero: RIT, RUT y certificación bancaria' });
+      const blob = await window.Imprimir.unir(CT.enOrden(c.docs), { titulo: nombre.replace(/\.pdf$/, ''), asunto: 'Creación de tercero: cédula, RUT y certificación bancaria' });
       c.pdf = { blob, nombre };
       descargarBlob(blob, nombre);
       toast('Descargamos ' + nombre + '. Ahora envíalo.');
@@ -2280,7 +2280,7 @@
     rit: { titulo: 'RIT' },
     rut: { titulo: 'RUT' },
   };
-  /** RIT y RUT adjuntos al formulario, primero en el PDF (el mismo orden de la creación de tercero). */
+  /** RIT y RUT adjuntos al formulario, primero en el PDF. */
   const DOCUMENTOS_EN_PDF = ['rit', 'rut'];
   const SOPORTE_DE_CHECK = { dedDependientes: 'dependientes', dedHipotecario: 'hipotecario', dedSaludNoPos: 'saludNoPos' };
 
@@ -3485,10 +3485,14 @@
     const caja = h('section', { class: 'secop', id: 'secop', 'aria-live': 'polite' });
     cuerpo.append(caja);
     construirGenerico(cuerpo, 'contrato');
-    // El paso aún no está en el documento: se pinta en el contenedor recién creado.
-    pintarSecop(caja);
+    // La búsqueda va primero para que el recuadro ya salga con «Consultando SECOP II…»: el paso aún no está en
+    // el documento, así que lo que buscarSecop pinta antes de esperar a SECOP se perdería.
     buscarSecopSiCorresponde();
+    pintarSecop(caja);
   }
+
+  // Si SECOP II tarda más que esto, el aviso dice que está lento (la consulta sigue hasta CONFIG.secop.tiempoMaximoMs).
+  const SECOP_LENTO_MS = 8000;
 
   const documentoParaSecop = () => soloDigitos(estado.s.numeroId || estado.s.nit);
 
@@ -3502,11 +3506,18 @@
 
   async function buscarSecop() {
     const cc = documentoParaSecop();
-    if (!cc || !modulo('Secop', 'buscar')) return;
-    sesion.secop = { estado: 'buscando', mensaje: '' };
+    if (!cc || !modulo('Secop', 'buscar') || sesion.secop.estado === 'buscando') return;
+    const consulta = { estado: 'buscando', mensaje: '', lento: false };
+    sesion.secop = consulta;
     pintarSecop();
+    const reloj = setTimeout(() => {
+      if (sesion.secop !== consulta) return;
+      consulta.lento = true;
+      pintarSecop();
+    }, SECOP_LENTO_MS);
     try {
       const r = await window.Secop.buscar(cc, { hoy: hoyLocal() });
+      if (sesion.secop !== consulta) return; // se empezó de nuevo mientras SECOP respondía
       const vigentes = r.vigentes.length > 0;
       const contratos = (vigentes ? r.vigentes : r.otros).slice(0, 20);
       estado.meta.secop = { consulta: cc, fecha: new Date().toISOString(), contratos, vigentes, elegido: '' };
@@ -3515,10 +3526,13 @@
       else guardarPronto();
       if (vigentes && contratos.length === 1) toast('Encontramos tu contrato en SECOP II y llenamos sus datos. Revísalos.');
     } catch (e) {
+      if (sesion.secop !== consulta) return;
       if (!e || !e.codigo) avisarUnaVez('Secop.buscar', e);
       sesion.secop = { estado: 'error', mensaje: e && /^(SIN_CONEXION|TIEMPO)$/.test(e.codigo)
         ? 'No pudimos conectarnos con SECOP II. Revisa tu conexión a internet o llena los datos del contrato a mano.'
         : 'SECOP II no respondió como esperábamos. Puedes intentar de nuevo o llenar los datos a mano.' };
+    } finally {
+      clearTimeout(reloj);
     }
     pintarSecop();
   }
@@ -3570,7 +3584,14 @@
       cuerpo.push(h('p', { class: 'secop-texto' }, 'Para buscar tu contrato necesitamos tu número de identificación. ',
         h('button', { type: 'button', class: 'enlace', onclick: () => irAlCampo('numeroId') }, 'Escríbelo en Datos personales'), '.'));
     } else if (sesion.secop.estado === 'buscando') {
-      cuerpo.push(h('p', { class: 'secop-texto secop-buscando' }, h('span', { html: svgIcono('girando', 'icono girando') }), 'Buscando tu contrato…'));
+      cuerpo.push(h('div', { class: 'secop-buscando' },
+        h('span', { class: 'secop-buscando-icono', html: svgIcono('girando', 'icono girando') }),
+        h('p', { class: 'secop-buscando-textos' },
+          h('strong', null, 'Consultando SECOP II…'),
+          h('span', null, sesion.secop.lento
+            ? 'SECOP II está tardando más de lo normal. Seguimos esperando; mientras tanto puedes llenar los datos del contrato a mano.'
+            : 'Estamos buscando tu contrato. Puede tardar unos segundos.')),
+        h('span', { class: 'secop-progreso', 'aria-hidden': 'true' })));
     } else if (sesion.secop.estado === 'error') {
       cuerpo.push(h('p', { class: 'secop-texto' }, sesion.secop.mensaje), reintentar);
     } else if (!sec || sec.consulta !== cc) {
@@ -3697,20 +3718,11 @@
     const soportes = construirSoportesRevision(conSoportes);
     if (soportes) cuerpo.append(soportes);
 
-    // El nombre solo se muestra cuando ya cumple la regla NOMBRE_APELLIDO_CONTRATO_AÑO.
-    const limpio = estadoLimpio();
-    const nombre = I && limpio.primerNombre && limpio.primerApellido && limpio.numeroContrato && limpio.anioContrato ? I.nombreArchivo(limpio) : '';
     cuerpo.append(h('section', { class: 'que-sigue', 'aria-labelledby': 'rev-sigue' },
       h('h3', { class: 'que-sigue-titulo', id: 'rev-sigue' }, '¿Qué sigue?'),
       h('ol', null,
         liFirma,
-        h('li', null, 'Envíalo a tu operativo o jefe de área. Esa persona lo remite a ',
-          h('a', { href: 'mailto:' + (CFG.correoRadicacion || '') }, CFG.correoRadicacion || 'el buzón de Tesorería'),
-          conSoportes ? '. Ya lleva dentro tu RIT, tu RUT, tu certificación bancaria y los soportes de deducciones.'
-            : ' en un solo PDF, junto con tu RIT, tu RUT, tu certificación bancaria y los soportes de deducciones, si aplican.'),
-        h('li', null, 'El archivo debe llamarse NOMBRE_APELLIDO_CONTRATO_AÑO',
-          nombre ? ['; el tuyo: ', h('strong', { class: 'nombre-archivo' }, nombre)]
-            : ' (te lo mostramos cuando llenes tu primer nombre, tu primer apellido, el número y el año del contrato).'))));
+        h('li', null, 'Envía el PDF generado a tu operativo.'))));
 
     // Uso interno de Tesorería: solo con el formulario completo (mientras tanto el Excel dice "REVISE…").
     if (completo && d.codificacion && !/^REVISE/i.test(String(d.codificacion))) {
